@@ -223,10 +223,10 @@ typedef AUT_RESULT (AutoIt_Script::*AU3_FUNCTION)(VectorVariant &vParams, Varian
 
 typedef struct
 {
-    char            *szName;                    // Function name
+    const char      *szName;                    // Function name
     AU3_FUNCTION    lpFunc;                        // Pointer to function
-    int                nMin;                        // Min params
-    int                nMax;                        // Max params
+    int             nMin;                        // Min params
+    int             nMax;                        // Max params
 } AU3_FuncInfo;
 
 
@@ -372,19 +372,19 @@ private:
 
     // Lexing and parsing vars
 #ifdef AUT_CONFIG_LEXERCACHE
-    LexerCache        m_LexerCache[AUT_LEXER_CACHESIZE];
+    LexerCache         m_LexerCache[AUT_LEXER_CACHESIZE];
 #endif
     static char        m_PrecOpRules[OPR_MAXOPR][OPR_MAXOPR];    // Table for precedence rules
-    static char        *m_szKeywords[];            // Valid keywords
-    static char        *m_szMacros[];                // Valid functions
-    AU3_FuncInfo    *m_FuncList;                // List of functions and details for each
+    static const char  *m_szKeywords[];            // Valid keywords
+    static const char  *m_szMacros[];                // Valid functions
+    AU3_FuncInfo       *m_FuncList;                // List of functions and details for each
     int                m_nFuncListSize;            // Number of functions
 
     // Window related vars
     Variant            m_vWindowSearchTitle;        // Title/text used for win searches
     Variant            m_vWindowSearchText;        // Title/text used for win searches
 //    bool            m_bWinSearchFoundFlag;        // Temp var used in Window searches
-    HWND            m_WindowSearchHWND;            // Temp var used in Window searches
+    HWND               m_WindowSearchHWND;            // Temp var used in Window searches
     int                m_nWindowSearchMatchMode;    // Window title substring match mode
     int                m_nWindowSearchTextMode;    // Window title substring match mode
     WinListNode        *m_lpWinListFirst;            // First entry in window list
@@ -859,18 +859,18 @@ private:
     AUT_RESULT    F_String(VectorVariant &vParams, Variant &vResult);
     AUT_RESULT    F_Random(VectorVariant &vParams, Variant &vResult);
 
-    AUT_RESULT    F_Sin(VectorVariant &vParams, Variant &vResult);
-    AUT_RESULT    F_ASin(VectorVariant &vParams, Variant &vResult);
-    AUT_RESULT    F_Cos(VectorVariant &vParams, Variant &vResult);
-    AUT_RESULT    F_ACos(VectorVariant &vParams, Variant &vResult);
-    AUT_RESULT    F_Tan(VectorVariant &vParams, Variant &vResult);
-    AUT_RESULT    F_ATan(VectorVariant &vParams, Variant &vResult);
-    AUT_RESULT    F_Log(VectorVariant &vParams, Variant &vResult);
-    AUT_RESULT    F_Exp(VectorVariant &vParams, Variant &vResult);
-    AUT_RESULT    F_Abs(VectorVariant &vParams, Variant &vResult);
-    AUT_RESULT    F_Mod(VectorVariant &vParams, Variant &vResult);
-    AUT_RESULT    F_Sqrt(VectorVariant &vParams, Variant &vResult);
-    AUT_RESULT    F_Round(VectorVariant &vParams, Variant &vResult);
+    //AUT_RESULT    F_Sin(VectorVariant &vParams, Variant &vResult);
+    //AUT_RESULT    F_ASin(VectorVariant &vParams, Variant &vResult);
+    //AUT_RESULT    F_Cos(VectorVariant &vParams, Variant &vResult);
+    //AUT_RESULT    F_ACos(VectorVariant &vParams, Variant &vResult);
+    //AUT_RESULT    F_Tan(VectorVariant &vParams, Variant &vResult);
+    //AUT_RESULT    F_ATan(VectorVariant &vParams, Variant &vResult);
+    //AUT_RESULT    F_Log(VectorVariant &vParams, Variant &vResult);
+    //AUT_RESULT    F_Exp(VectorVariant &vParams, Variant &vResult);
+    //AUT_RESULT    F_Abs(VectorVariant &vParams, Variant &vResult);
+    //AUT_RESULT    F_Mod(VectorVariant &vParams, Variant &vResult);
+    //AUT_RESULT    F_Sqrt(VectorVariant &vParams, Variant &vResult);
+    //AUT_RESULT    F_Round(VectorVariant &vParams, Variant &vResult);
     AUT_RESULT    F_Hex(VectorVariant &vParams, Variant &vResult);
 
 };

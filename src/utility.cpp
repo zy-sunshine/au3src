@@ -111,7 +111,7 @@ void Util_FatalError(UINT iErrTitle, UINT iErrMsg, HWND hWnd)
 } // Util_FatalError()
 
 
-void Util_FatalError(char *szTitle, char *szText, HWND hWnd)
+void Util_FatalError(const char *szTitle, const char *szText, HWND hWnd)
 {
     MessageBox(hWnd, szText, szTitle, MB_ICONSTOP | MB_OK | MB_SYSTEMMODAL | MB_SETFOREGROUND);
 
@@ -189,7 +189,7 @@ void Util_RegReadString(HKEY hKey, LPCTSTR lpSubKey, LPCTSTR lpValueName, DWORD 
 
 void Util_WinKill(HWND hWnd)
 {
-    DWORD      dwResult;
+    DWORD_PTR      dwResult;
 
     LRESULT lResult = SendMessageTimeout(hWnd, WM_CLOSE, 0, 0, SMTO_ABORTIFHUNG, 500, &dwResult);    // wait 500ms
 
@@ -1123,7 +1123,8 @@ void Util_ExpandFilenameWildcardPart(const char *szSource, const char *szDest, c
     int        i = 0, j = 0, k = 0;
 
     // Replace first * in the dest with the src, remove any other *
-    char *lpTemp = strchr(szDest, '*');
+    // TODO: check char* force convert
+    char *lpTemp = strchr((char*)szDest, '*');
     if (lpTemp != NULL)
     {
         // Contains at least one *, copy up to this point
@@ -1790,7 +1791,7 @@ bool Util_ConvDec(const char *szHex, int &nDec)
 
 bool Util_IsWinHung(HWND hWnd, UINT nTimeOut)
 {
-    DWORD dwResult;
+    DWORD_PTR dwResult;
 
     if (SendMessageTimeout(hWnd, WM_NULL, 0, 0, SMTO_ABORTIFHUNG, nTimeOut, &dwResult))
         return false;

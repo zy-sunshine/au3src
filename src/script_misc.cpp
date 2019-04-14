@@ -235,9 +235,10 @@ AUT_RESULT AutoIt_Script::F_EnvSet(VectorVariant &vParams, Variant &vResult)
 
 AUT_RESULT AutoIt_Script::F_EnvUpdate(VectorVariant &vParams, Variant &vResult)
 {
-    ULONG    nResult;
+    DWORD_PTR nResult;
 
-    if(SendMessageTimeout(HWND_BROADCAST,WM_SETTINGCHANGE,0,(LPARAM)"Environment",SMTO_BLOCK,15000,&nResult)==0)
+    if(SendMessageTimeout(HWND_BROADCAST, WM_SETTINGCHANGE, 0, (LPARAM)"Environment",
+            SMTO_BLOCK, 15000, &nResult)==0)
         SetFuncErrorCode(1);
 
     return AUT_OK;
@@ -1864,15 +1865,15 @@ AUT_RESULT AutoIt_Script::F_AutoItSetOption(VectorVariant &vParams, Variant &vRe
         else
             g_bTrayIconDebug = true;
     }
-    else if ( !stricmp(szOption, "TrayIconHide") )            // TrayIconHide
-    {
-        vResult = (int)!g_bTrayIcon;    // Store current value
-
-        if (nValue == 0)
-            g_oApplication.CreateTrayIcon();
-        else
-            g_oApplication.DestroyTrayIcon();
-    }
+//    else if ( !stricmp(szOption, "TrayIconHide") )            // TrayIconHide
+//    {
+//        vResult = (int)!g_bTrayIcon;    // Store current value
+//
+//        if (nValue == 0)
+//            g_oApplication.CreateTrayIcon();
+//        else
+//            g_oApplication.DestroyTrayIcon();
+//    }
     else if (!stricmp(szOption, "WinSearchChildren"))
     {
         vResult = (int)m_bWinSearchChildren;    // Store current value

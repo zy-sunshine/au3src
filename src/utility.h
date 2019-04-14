@@ -57,7 +57,7 @@
 
 // Function declarations
 void    Util_FatalError(UINT iErrTitle, UINT iErrMsg, HWND hWnd);
-void    Util_FatalError(char *szTitle, char *szText, HWND hWnd);
+void    Util_FatalError(const char *szTitle, const char *szText, HWND hWnd);
 int        Util_NewHandler( size_t size);
 
 void    Util_RandInit(void);

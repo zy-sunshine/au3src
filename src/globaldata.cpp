@@ -86,10 +86,10 @@ int                        g_nExitMethod;            // The way AutoIt finished
 
 OS_Version                g_oVersion;                // Version object
 
-AutoIt_App                g_oApplication;            // Main application object
+//AutoIt_App                g_oApplication;            // Main application object
 AutoIt_Script            g_oScript;                // The scripting engine object
 
-CmdLine                    g_oCmdLine;                // CmdLine object
+//CmdLine                    g_oCmdLine;                // CmdLine object
 SetForegroundWinEx        g_oSetForeWinEx;        // Foreground window hack object
 
 VariableTable            g_oVarTable;            // Object for accessing autoit variables

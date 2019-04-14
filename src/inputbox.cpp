@@ -302,7 +302,7 @@ UINT CInputBox::DoModal(HINSTANCE hInstance, HWND hWnd)
     int iRetVal;
 
     CurrInputBox = this;
-    iRetVal=(int)DialogBox(hInstance, MAKEINTRESOURCE(IDD), hWnd, ProcHandler);
+    iRetVal=(int)DialogBox(hInstance, MAKEINTRESOURCE(IDD), hWnd, (DLGPROC)ProcHandler);
     CurrInputBox=NULL;
 
     return iRetVal;

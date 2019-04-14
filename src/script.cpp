@@ -51,7 +51,7 @@
     #include <windows.h>
     #include <limits.h>
 #else
-    #include "qmath.h"                            // MinGW doesn't like our asm maths functions
+//    #include "qmath.h"                            // MinGW doesn't like our asm maths functions
 #endif
 
 #include "AutoIt.h"                                // Autoit values, macros and config options
@@ -73,7 +73,7 @@
 
 // Keyword values (must match the order as in script.cpp)
 // Must be in UPPERCASE
-char * AutoIt_Script::m_szKeywords[K_MAX] =    {
+const char * AutoIt_Script::m_szKeywords[K_MAX] =    {
     "AND", "OR", "NOT",
     "IF", "THEN", "ELSE", "ELSEIF", "ENDIF",
     "WHILE", "WEND",
@@ -176,14 +176,14 @@ AutoIt_Script::AutoIt_Script()
 // Failure to observe these instructions will be very bad...
 AU3_FuncInfo funcList[] = 
 {
-    {"ABS", &AutoIt_Script::F_Abs, 1, 1},
-    {"ACOS", &AutoIt_Script::F_ACos, 1, 1},
+//    {"ABS", &AutoIt_Script::F_Abs, 1, 1},
+//    {"ACOS", &AutoIt_Script::F_ACos, 1, 1},
     {"ADLIBDISABLE", &AutoIt_Script::F_AdlibDisable, 0, 0},
     {"ADLIBENABLE", &AutoIt_Script::F_AdlibEnable, 1, 2},
     {"ASC", &AutoIt_Script::F_Asc, 1, 1},
-    {"ASIN", &AutoIt_Script::F_ASin, 1, 1},
+//    {"ASIN", &AutoIt_Script::F_ASin, 1, 1},
     {"ASSIGN", &AutoIt_Script::F_Assign, 2, 3},
-    {"ATAN", &AutoIt_Script::F_ATan, 1, 1},
+//    {"ATAN", &AutoIt_Script::F_ATan, 1, 1},
     {"AUTOITSETOPTION", &AutoIt_Script::F_AutoItSetOption, 2, 2},
     {"AUTOITWINGETTITLE", &AutoIt_Script::F_AutoItWinGetTitle, 0, 0},
     {"AUTOITWINSETTITLE", &AutoIt_Script::F_AutoItWinSetTitle, 1, 1},
@@ -215,7 +215,7 @@ AU3_FuncInfo funcList[] =
     {"CONTROLSEND", &AutoIt_Script::F_ControlSend, 4, 5},
     {"CONTROLSETTEXT", &AutoIt_Script::F_ControlSetText, 4, 4},
     {"CONTROLSHOW", &AutoIt_Script::F_ControlShow, 3, 3},
-    {"COS", &AutoIt_Script::F_Cos, 1, 1},
+//    {"COS", &AutoIt_Script::F_Cos, 1, 1},
     {"DEC", &AutoIt_Script::F_Dec, 1, 1},
     {"DIRCOPY", &AutoIt_Script::F_DirCopy, 2, 3},
     {"DIRCREATE", &AutoIt_Script::F_DirCreate, 1, 1},
@@ -241,7 +241,7 @@ AU3_FuncInfo funcList[] =
     {"ENVSET", &AutoIt_Script::F_EnvSet, 1, 2},
     {"ENVUPDATE", &AutoIt_Script::F_EnvUpdate, 0, 0},
     {"EVAL", &AutoIt_Script::F_Eval, 1, 1},
-    {"EXP", &AutoIt_Script::F_Exp, 1, 1},
+//    {"EXP", &AutoIt_Script::F_Exp, 1, 1},
     {"FILECHANGEDIR", &AutoIt_Script::F_FileChangeDir, 1, 1},
     {"FILECLOSE", &AutoIt_Script::F_FileClose, 1, 1},
     {"FILECOPY", &AutoIt_Script::F_FileCopy, 2, 3},
@@ -354,9 +354,9 @@ AU3_FuncInfo funcList[] =
     {"ISINT", &AutoIt_Script::F_IsInt, 1, 1},
     {"ISNUMBER", &AutoIt_Script::F_IsNumber, 1, 1},
     {"ISSTRING", &AutoIt_Script::F_IsString, 1, 1},
-    {"LOG", &AutoIt_Script::F_Log, 1, 1},
+//    {"LOG", &AutoIt_Script::F_Log, 1, 1},
     {"MEMGETSTATS", &AutoIt_Script::F_MemGetStats, 0, 0},
-    {"MOD", &AutoIt_Script::F_Mod, 2, 2},
+//    {"MOD", &AutoIt_Script::F_Mod, 2, 2},
     {"MOUSECLICK", &AutoIt_Script::F_MouseClick, 1, 5},
     {"MOUSECLICKDRAG", &AutoIt_Script::F_MouseClickDrag, 5, 6},
     {"MOUSEDOWN", &AutoIt_Script::F_MouseDown, 1, 1},
@@ -387,7 +387,7 @@ AU3_FuncInfo funcList[] =
     {"REGENUMVAL", &AutoIt_Script::F_RegEnumVal, 2, 2},
     {"REGREAD", &AutoIt_Script::F_RegRead, 2, 2},
     {"REGWRITE", &AutoIt_Script::F_RegWrite, 1, 4},
-    {"ROUND", &AutoIt_Script::F_Round, 1, 2},
+//    {"ROUND", &AutoIt_Script::F_Round, 1, 2},
     {"RUN", &AutoIt_Script::F_Run, 1, 3},
     {"RUNASSET", &AutoIt_Script::F_RunAsSet, 0, 4},
     {"RUNWAIT", &AutoIt_Script::F_RunWait, 1, 3},
@@ -395,14 +395,14 @@ AU3_FuncInfo funcList[] =
     {"SETERROR", &AutoIt_Script::F_SetError, 1, 1},
     {"SETEXTENDED", &AutoIt_Script::F_SetExtended, 1, 1},
     {"SHUTDOWN", &AutoIt_Script::F_Shutdown, 1, 1},
-    {"SIN", &AutoIt_Script::F_Sin, 1, 1},
+//    {"SIN", &AutoIt_Script::F_Sin, 1, 1},
     {"SLEEP", &AutoIt_Script::F_Sleep, 1, 1},
     {"SOUNDPLAY", &AutoIt_Script::F_SoundPlay, 1, 2},
     {"SOUNDSETWAVEVOLUME", &AutoIt_Script::F_SoundSetWaveVolume, 1, 1},
     {"SPLASHIMAGEON", &AutoIt_Script::F_SplashImageOn, 2, 7},
     {"SPLASHOFF", &AutoIt_Script::F_SplashOff, 0, 0},
     {"SPLASHTEXTON", &AutoIt_Script::F_SplashTextOn, 2, 10},
-    {"SQRT", &AutoIt_Script::F_Sqrt, 1, 1},
+//    {"SQRT", &AutoIt_Script::F_Sqrt, 1, 1},
 //    {"STATUSBARGETTEXT", &AutoIt_Script::F_StatusbarGetText, 1, 3},
     {"STRING", &AutoIt_Script::F_String, 1, 1},
     {"STRINGADDCR", &AutoIt_Script::F_StringAddCR, 1, 1},
@@ -432,7 +432,7 @@ AU3_FuncInfo funcList[] =
     {"STRINGTRIMLEFT", &AutoIt_Script::F_StringTrimLeft, 2, 2},
     {"STRINGTRIMRIGHT", &AutoIt_Script::F_StringTrimRight, 2, 2},
     {"STRINGUPPER", &AutoIt_Script::F_StringUpper, 1, 1},
-    {"TAN", &AutoIt_Script::F_Tan, 1, 1},
+//    {"TAN", &AutoIt_Script::F_Tan, 1, 1},
     {"TIMERDIFF", &AutoIt_Script::F_TimerDiff, 1, 1},
     {"TIMERINIT", &AutoIt_Script::F_TimerInit, 0, 0},
     {"TIMERSTART", &AutoIt_Script::F_TimerInit, 0, 0},

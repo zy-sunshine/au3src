@@ -354,7 +354,8 @@ AUT_RESULT AutoIt_Script::F_RegWrite(VectorVariant &vParams, Variant &vResult)
 
     //local
     // Open the registry key
-    if ( RegCreateKeyEx(hMainKey, sSubKey.c_str(), 0, "", REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &hRegKey, &dwRes) != ERROR_SUCCESS )
+    if ( RegCreateKeyEx(hMainKey, sSubKey.c_str(), 0, NULL, REG_OPTION_NON_VOLATILE,
+            KEY_WRITE, NULL, &hRegKey, &dwRes) != ERROR_SUCCESS )
     {
         vResult = 0;                            // Default is 1
 

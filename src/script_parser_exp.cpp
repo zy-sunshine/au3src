@@ -52,7 +52,8 @@
     #include <time.h>
     #include <math.h>
 #else
-    #include "qmath.h"                            // MinGW doesn't like our asm maths functions
+//    #include "qmath.h"                            // MinGW doesn't like our asm maths functions
+    #include <math.h>
 #endif
 
 #include "AutoIt.h"                                // Autoit values, macros and config options
@@ -91,7 +92,7 @@ enum
 
 // Macro variables - order must match above
 // Must be in UPPERCASE
-char * AutoIt_Script::m_szMacros[M_MAX] =    {
+const char * AutoIt_Script::m_szMacros[M_MAX] =    {
     "ERROR", "EXTENDED",
     "SEC", "MIN", "HOUR", "MDAY", "MON", "YEAR", "WDAY", "YDAY",
     "PROGRAMFILESDIR", "COMMONFILESDIR",
@@ -1460,7 +1461,7 @@ AUT_RESULT AutoIt_Script::Parser_OprReduce(StackInt &opStack, StackVariant &valS
             {
 #ifdef _MSC_VER
                 // MS Compiler
-                vOp1 = qmathPow(qmathFabs(vOp1.fValue()), vOp2.fValue());
+                vOp1 = pow(fabs(vOp1.fValue()), vOp2.fValue());
 #else
                 vOp1 = pow(fabs(vOp1.fValue()), vOp2.fValue());
 #endif
@@ -1473,7 +1474,7 @@ AUT_RESULT AutoIt_Script::Parser_OprReduce(StackInt &opStack, StackVariant &valS
             else
 #ifdef _MSC_VER
                 // MS Compiler
-                vOp1 = qmathPow(vOp1.fValue(), vOp2.fValue());
+                vOp1 = pow(vOp1.fValue(), vOp2.fValue());
 #else
                 vOp1 = pow(vOp1.fValue(), vOp2.fValue());
 #endif

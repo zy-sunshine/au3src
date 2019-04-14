@@ -52,7 +52,7 @@
     #include <math.h>
     #include <limits.h>
 #else
-    #include "qmath.h"                            // MinGW doesn't like our asm maths functions
+//    #include "qmath.h"                            // MinGW doesn't like our asm maths functions
 #endif
 
 #include "AutoIt.h"                                // Autoit values, macros and config options
@@ -499,252 +499,252 @@ AUT_RESULT AutoIt_Script::F_Random(VectorVariant &vParams, Variant &vResult)
 // Exp()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_Exp(VectorVariant &vParams, Variant &vResult)
-{
-#ifdef _MSC_VER
-        // MS Compiler
-    vResult = qmathExp(vParams[0].fValue());
-#else
-        // Non MS/Ming
-    vResult = exp(vParams[0].fValue());
-#endif
-
-    return AUT_OK;
-
-} // Exp()
+//AUT_RESULT AutoIt_Script::F_Exp(VectorVariant &vParams, Variant &vResult)
+//{
+//#ifdef _MSC_VER
+//        // MS Compiler
+//    vResult = qmathExp(vParams[0].fValue());
+//#else
+//        // Non MS/Ming
+//    vResult = exp(vParams[0].fValue());
+//#endif
+//
+//    return AUT_OK;
+//
+//} // Exp()
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // Log()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_Log(VectorVariant &vParams, Variant &vResult)
-{
-#ifdef _MSC_VER
-        // MS Compiler
-    vResult = qmathLog(vParams[0].fValue());
-#else
-        // Non MS/Ming
-    vResult = log(vParams[0].fValue());
-#endif
-
-    return AUT_OK;
-
-} // Log()
+//AUT_RESULT AutoIt_Script::F_Log(VectorVariant &vParams, Variant &vResult)
+//{
+//#ifdef _MSC_VER
+//        // MS Compiler
+//    vResult = qmathLog(vParams[0].fValue());
+//#else
+//        // Non MS/Ming
+//    vResult = log(vParams[0].fValue());
+//#endif
+//
+//    return AUT_OK;
+//
+//} // Log()
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // ATan()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_ATan(VectorVariant &vParams, Variant &vResult)
-{
-#ifdef _MSC_VER
-        // MS Compiler
-    vResult = qmathAtan(vParams[0].fValue());
-#else
-        // Non MS/Ming
-    vResult = atan(vParams[0].fValue());
-#endif
-
-    return AUT_OK;
-
-} // ATab()
+//AUT_RESULT AutoIt_Script::F_ATan(VectorVariant &vParams, Variant &vResult)
+//{
+//#ifdef _MSC_VER
+//        // MS Compiler
+//    vResult = qmathAtan(vParams[0].fValue());
+//#else
+//        // Non MS/Ming
+//    vResult = atan(vParams[0].fValue());
+//#endif
+//
+//    return AUT_OK;
+//
+//} // ATab()
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // ACos()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_ACos(VectorVariant &vParams, Variant &vResult)
-{
-#ifdef _MSC_VER
-        // MS Compiler
-    vResult = qmathAcos(vParams[0].fValue());
-#else
-        // Non MS/Ming
-    vResult = acos(vParams[0].fValue());
-#endif
-
-    return AUT_OK;
-
-} // ACos()
+//AUT_RESULT AutoIt_Script::F_ACos(VectorVariant &vParams, Variant &vResult)
+//{
+//#ifdef _MSC_VER
+//        // MS Compiler
+//    vResult = qmathAcos(vParams[0].fValue());
+//#else
+//        // Non MS/Ming
+//    vResult = acos(vParams[0].fValue());
+//#endif
+//
+//    return AUT_OK;
+//
+//} // ACos()
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // ASin()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_ASin(VectorVariant &vParams, Variant &vResult)
-{
-#ifdef _MSC_VER
-        // MS Compiler
-    vResult = qmathAsin(vParams[0].fValue());
-#else
-        // Non MS/Ming
-    vResult = asin(vParams[0].fValue());
-#endif
-
-    return AUT_OK;
-
-} // ASin()
+//AUT_RESULT AutoIt_Script::F_ASin(VectorVariant &vParams, Variant &vResult)
+//{
+//#ifdef _MSC_VER
+//        // MS Compiler
+//    vResult = qmathAsin(vParams[0].fValue());
+//#else
+//        // Non MS/Ming
+//    vResult = asin(vParams[0].fValue());
+//#endif
+//
+//    return AUT_OK;
+//
+//} // ASin()
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // Tan()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_Tan(VectorVariant &vParams, Variant &vResult)
-{
-#ifdef _MSC_VER
-        // MS Compiler
-    vResult = qmathTan(vParams[0].fValue());
-#else
-        // Non MS/Ming
-    vResult = tan(vParams[0].fValue());
-#endif
-
-    return AUT_OK;
-
-} // Tan()
+//AUT_RESULT AutoIt_Script::F_Tan(VectorVariant &vParams, Variant &vResult)
+//{
+//#ifdef _MSC_VER
+//        // MS Compiler
+//    vResult = qmathTan(vParams[0].fValue());
+//#else
+//        // Non MS/Ming
+//    vResult = tan(vParams[0].fValue());
+//#endif
+//
+//    return AUT_OK;
+//
+//} // Tan()
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // Cos()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_Cos(VectorVariant &vParams, Variant &vResult)
-{
-#ifdef _MSC_VER
-        // MS Compiler
-    vResult = qmathCos(vParams[0].fValue());
-#else
-        // Non MS/Ming
-    vResult = cos(vParams[0].fValue());
-#endif
-
-    return AUT_OK;
-
-} // Cos()
+//AUT_RESULT AutoIt_Script::F_Cos(VectorVariant &vParams, Variant &vResult)
+//{
+//#ifdef _MSC_VER
+//        // MS Compiler
+//    vResult = qmathCos(vParams[0].fValue());
+//#else
+//        // Non MS/Ming
+//    vResult = cos(vParams[0].fValue());
+//#endif
+//
+//    return AUT_OK;
+//
+//} // Cos()
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // Sin()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_Sin(VectorVariant &vParams, Variant &vResult)
-{
-#ifdef _MSC_VER
-        // MS Compiler
-    vResult = qmathSin(vParams[0].fValue());
-#else
-        // Non MS/Ming
-    vResult = sin(vParams[0].fValue());
-#endif
-
-    return AUT_OK;
-
-} // Sin()
+//AUT_RESULT AutoIt_Script::F_Sin(VectorVariant &vParams, Variant &vResult)
+//{
+//#ifdef _MSC_VER
+//        // MS Compiler
+//    vResult = qmathSin(vParams[0].fValue());
+//#else
+//        // Non MS/Ming
+//    vResult = sin(vParams[0].fValue());
+//#endif
+//
+//    return AUT_OK;
+//
+//} // Sin()
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // Abs()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_Abs(VectorVariant &vParams, Variant &vResult)
-{
-#ifdef _MSC_VER
-        // MS Compiler
-    vResult = qmathFabs(vParams[0].fValue());
-
-#else
-        // Non MS/Ming
-    vResult = fabs(vParams[0].fValue());
-#endif
-
-    return AUT_OK;
-
-} // Abs()
+//AUT_RESULT AutoIt_Script::F_Abs(VectorVariant &vParams, Variant &vResult)
+//{
+//#ifdef _MSC_VER
+//        // MS Compiler
+//    vResult = qmathFabs(vParams[0].fValue());
+//
+//#else
+//        // Non MS/Ming
+//    vResult = fabs(vParams[0].fValue());
+//#endif
+//
+//    return AUT_OK;
+//
+//} // Abs()
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // Mod()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_Mod(VectorVariant &vParams, Variant &vResult)
-{
-#ifdef _MSC_VER
-        // MS Compiler
-    vResult = qmathFmod(vParams[0].fValue(), vParams[1].fValue());
-#else
-        // Non MS/Ming
-    vResult = fmod(vParams[0].fValue(), vParams[1].fValue());
-#endif
-
-    return AUT_OK;
-
-} // Mod()
+//AUT_RESULT AutoIt_Script::F_Mod(VectorVariant &vParams, Variant &vResult)
+//{
+//#ifdef _MSC_VER
+//        // MS Compiler
+//    vResult = qmathFmod(vParams[0].fValue(), vParams[1].fValue());
+//#else
+//        // Non MS/Ming
+//    vResult = fmod(vParams[0].fValue(), vParams[1].fValue());
+//#endif
+//
+//    return AUT_OK;
+//
+//} // Mod()
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // Sqrt()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_Sqrt(VectorVariant &vParams, Variant &vResult)
-{
-#ifdef _MSC_VER
-        // MS Compiler
-    vResult = qmathSqrt(vParams[0].fValue());
-#else
-        // Non MS/Ming
-    vResult = sqrt(vParams[0].fValue());
-#endif
-
-    return AUT_OK;
-
-} // Sqrt()
+//AUT_RESULT AutoIt_Script::F_Sqrt(VectorVariant &vParams, Variant &vResult)
+//{
+//#ifdef _MSC_VER
+//        // MS Compiler
+//    vResult = qmathSqrt(vParams[0].fValue());
+//#else
+//        // Non MS/Ming
+//    vResult = sqrt(vParams[0].fValue());
+//#endif
+//
+//    return AUT_OK;
+//
+//} // Sqrt()
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // Round()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_Round(VectorVariant &vParams, Variant &vResult)
-{
-    int        nTemp1;
-    double    fTemp1;
-
-#ifdef _MSC_VER
-        // MS Compiler
-    if (vParams.size() == 1)
-        nTemp1 = 0;
-    else
-        nTemp1 = vParams[1].nValue();
-
-    fTemp1 = qmathPow(10.0, nTemp1);
-    if (vParams[0].fValue() >= 0.0)
-        vResult = qmathFloor(vParams[0].fValue()*fTemp1+0.5)/fTemp1;
-    else
-        vResult = qmathCeil(vParams[0].fValue()*fTemp1-0.5)/fTemp1;
-
-#else
-        // Non MS/Ming
-    if (vParams.size() == 1)
-        nTemp1 = 0;
-    else
-        nTemp1 = vParams[1].nValue();
-
-    fTemp1 = pow(10.0, nTemp1);
-    if (vParams[0].fValue() >= 0.0)
-        vResult = floor(vParams[0].fValue()*fTemp1+0.5)/fTemp1;
-    else
-        vResult = ceil(vParams[0].fValue()*fTemp1-0.5)/fTemp1;
-
-#endif
-
-    return AUT_OK;
-
-} // Round()
+//AUT_RESULT AutoIt_Script::F_Round(VectorVariant &vParams, Variant &vResult)
+//{
+//    int        nTemp1;
+//    double    fTemp1;
+//
+//#ifdef _MSC_VER
+//        // MS Compiler
+//    if (vParams.size() == 1)
+//        nTemp1 = 0;
+//    else
+//        nTemp1 = vParams[1].nValue();
+//
+//    fTemp1 = qmathPow(10.0, nTemp1);
+//    if (vParams[0].fValue() >= 0.0)
+//        vResult = qmathFloor(vParams[0].fValue()*fTemp1+0.5)/fTemp1;
+//    else
+//        vResult = qmathCeil(vParams[0].fValue()*fTemp1-0.5)/fTemp1;
+//
+//#else
+//        // Non MS/Ming
+//    if (vParams.size() == 1)
+//        nTemp1 = 0;
+//    else
+//        nTemp1 = vParams[1].nValue();
+//
+//    fTemp1 = pow(10.0, nTemp1);
+//    if (vParams[0].fValue() >= 0.0)
+//        vResult = floor(vParams[0].fValue()*fTemp1+0.5)/fTemp1;
+//    else
+//        vResult = ceil(vParams[0].fValue()*fTemp1-0.5)/fTemp1;
+//
+//#endif
+//
+//    return AUT_OK;
+//
+//} // Round()
 
 
 ///////////////////////////////////////////////////////////////////////////////
