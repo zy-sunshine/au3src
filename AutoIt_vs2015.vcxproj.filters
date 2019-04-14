@@ -1,0 +1,265 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4db8ecd8-cbc7-4154-ae83-7f412e722aad}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;def;odl;idl;hpj;bat;asm</Extensions>
+    </Filter>
+    <Filter Include="Source Files\Datatypes">
+      <UniqueIdentifier>{c236d0ad-8a67-43bd-a9e0-65e0433cdb1a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Script_cpp">
+      <UniqueIdentifier>{714561be-3f13-4711-ace1-3e97def5e3b7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Misc">
+      <UniqueIdentifier>{27d62863-6f94-409c-9049-aeed69fe9530}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{66c61c46-6dbe-42c8-a9c9-bc5c6db83184}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc</Extensions>
+    </Filter>
+    <Filter Include="Header Files\Datatypes">
+      <UniqueIdentifier>{c932d09c-9965-4296-ae48-c4b4325e2a8b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Misc">
+      <UniqueIdentifier>{08e5b1fc-af28-4550-93f3-7a2248e0f48c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{5deab667-9130-4b47-b3fa-128ae7b0b634}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\application.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AutoIt.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cmdline.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\globaldata.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\guibox.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\inputbox.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\os_version.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\regexp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\scriptfile.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sendkeys.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\setforegroundwinex.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\shared_memory.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\userfunction_list.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utility.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\variabletable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\astring_datatype.cpp">
+      <Filter>Source Files\Datatypes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\stack_int_datatype.cpp">
+      <Filter>Source Files\Datatypes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\stack_statement_datatype.cpp">
+      <Filter>Source Files\Datatypes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\stack_variable_list.cpp">
+      <Filter>Source Files\Datatypes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\stack_variant_datatype.cpp">
+      <Filter>Source Files\Datatypes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\token_datatype.cpp">
+      <Filter>Source Files\Datatypes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\variable_list.cpp">
+      <Filter>Source Files\Datatypes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\variant_datatype.cpp">
+      <Filter>Source Files\Datatypes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\vector_token_datatype.cpp">
+      <Filter>Source Files\Datatypes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\vector_variant_datatype.cpp">
+      <Filter>Source Files\Datatypes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\script.cpp">
+      <Filter>Source Files\Script_cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\script_file.cpp">
+      <Filter>Source Files\Script_cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\script_gui.cpp">
+      <Filter>Source Files\Script_cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\script_lexer.cpp">
+      <Filter>Source Files\Script_cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\script_math.cpp">
+      <Filter>Source Files\Script_cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\script_misc.cpp">
+      <Filter>Source Files\Script_cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\script_parser.cpp">
+      <Filter>Source Files\Script_cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\script_parser_exp.cpp">
+      <Filter>Source Files\Script_cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\script_process.cpp">
+      <Filter>Source Files\Script_cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\script_registry.cpp">
+      <Filter>Source Files\Script_cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\script_string.cpp">
+      <Filter>Source Files\Script_cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\script_win.cpp">
+      <Filter>Source Files\Script_cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mt19937ar-cok.cpp">
+      <Filter>Source Files\Misc</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\application.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\AutoIt.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cmdline.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\globaldata.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\guibox.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\inputbox.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\os_version.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\regexp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\resources\resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\script.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\scriptfile.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sendkeys.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\setforegroundwinex.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\shared_memory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\StdAfx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\userfunction_list.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utility.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\variabletable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\astring_datatype.h">
+      <Filter>Header Files\Datatypes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\stack_int_datatype.h">
+      <Filter>Header Files\Datatypes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\stack_statement_datatype.h">
+      <Filter>Header Files\Datatypes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\stack_variable_list.h">
+      <Filter>Header Files\Datatypes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\stack_variant_datatype.h">
+      <Filter>Header Files\Datatypes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\token_datatype.h">
+      <Filter>Header Files\Datatypes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\variable_list.h">
+      <Filter>Header Files\Datatypes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\variant_datatype.h">
+      <Filter>Header Files\Datatypes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\vector_token_datatype.h">
+      <Filter>Header Files\Datatypes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\vector_variant_datatype.h">
+      <Filter>Header Files\Datatypes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\mt19937ar-cok.h">
+      <Filter>Header Files\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="src\qmath.h">
+      <Filter>Header Files\Misc</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="src\resources\AutoIt.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="src\resources\AutoIt3.exe.manifest">
+      <Filter>Resource Files</Filter>
+    </Manifest>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="src\resources\AutoIt_32x32x16.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="src\resources\Paused.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="AUTHORS.txt" />
+    <Text Include="ChangeLog.txt" />
+    <Text Include="LICENSE.txt" />
+    <Text Include="README.txt" />
+    <Text Include="TODO.txt" />
+  </ItemGroup>
+</Project>
