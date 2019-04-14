@@ -1,0 +1,7 @@
+AutoIt_*.db
+AutoIt_*.vcxproj.filters
+*.swp
+.vs
+debug/
+release/
+ipch/
