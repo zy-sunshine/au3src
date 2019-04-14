@@ -4,8 +4,8 @@
 // AutoIt v3
 //
 // Copyright (C)1999-2005:
-//		- Jonathan Bennett <jon at hiddensoft dot com>
-//		- See "AUTHORS.txt" for contributors.
+//        - Jonathan Bennett <jon at hiddensoft dot com>
+//        - See "AUTHORS.txt" for contributors.
 //
 // This file is part of AutoIt.
 //
@@ -42,13 +42,13 @@
 
 
 // Includes
-#include "StdAfx.h"								// Pre-compiled headers
+#include "StdAfx.h"                                // Pre-compiled headers
 
-#ifndef _MSC_VER								// Includes for non-MS compilers
-	#include <stdio.h>
-	#include <stdlib.h>
-	#include <string.h>
-	#include <windef.h>
+#ifndef _MSC_VER                                // Includes for non-MS compilers
+    #include <stdio.h>
+    #include <stdlib.h>
+    #include <string.h>
+    #include <windef.h>
 #endif
 
 #include "variant_datatype.h"
@@ -59,64 +59,64 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 Variant::Variant(const Variant &vOp2):
-	m_nVarType(vOp2.m_nVarType),	// Get type of var to copy
-	m_szValue(NULL)					// Zero required vars
+    m_nVarType(vOp2.m_nVarType),    // Get type of var to copy
+    m_szValue(NULL)                    // Zero required vars
 {
-	//MessageBox(NULL, "Copy constructor called.", "Variant", MB_OK);
+    //MessageBox(NULL, "Copy constructor called.", "Variant", MB_OK);
 
-	switch(m_nVarType)
-	{
-		case VAR_INT32:
-			m_nValue	= vOp2.m_nValue;
-			break;
+    switch(m_nVarType)
+    {
+        case VAR_INT32:
+            m_nValue    = vOp2.m_nValue;
+            break;
 
-		case VAR_INT64:
-			m_n64Value	= vOp2.m_n64Value;
-			break;
+        case VAR_INT64:
+            m_n64Value    = vOp2.m_n64Value;
+            break;
 
-		case VAR_DOUBLE:
-			m_fValue	= vOp2.m_fValue;
-			break;
+        case VAR_DOUBLE:
+            m_fValue    = vOp2.m_fValue;
+            break;
 
-		case VAR_STRING:
-			m_nStrLen	= vOp2.m_nStrLen;
-			m_nStrAlloc = m_nStrLen + 1;
-			m_szValue	= new char[m_nStrAlloc];
-			strcpy(m_szValue, vOp2.m_szValue);
-			break;
+        case VAR_STRING:
+            m_nStrLen    = vOp2.m_nStrLen;
+            m_nStrAlloc = m_nStrLen + 1;
+            m_szValue    = new char[m_nStrAlloc];
+            strcpy(m_szValue, vOp2.m_szValue);
+            break;
 
-		case VAR_REFERENCE:
-			m_pValue	= vOp2.m_pValue;
-			break;
+        case VAR_REFERENCE:
+            m_pValue    = vOp2.m_pValue;
+            break;
 
-		case VAR_HWND:
-			m_hWnd	= vOp2.m_hWnd;
-			break;
+        case VAR_HWND:
+            m_hWnd    = vOp2.m_hWnd;
+            break;
 
-		case VAR_ARRAY:
-			int i;
-			m_Array = NULL;						// Must set this to NULL for ArrayDetailsCreate to work.
-			ArrayDetailsCreate();				// Create our array handling structure
+        case VAR_ARRAY:
+            int i;
+            m_Array = NULL;                        // Must set this to NULL for ArrayDetailsCreate to work.
+            ArrayDetailsCreate();                // Create our array handling structure
 
-			// Copy the required dimension sizes
-			m_Array->DimensionsCur	= vOp2.m_Array->Dimensions;
-			for (i=0; i<m_Array->DimensionsCur; i++)
-				m_Array->SubscriptCur[i] = vOp2.m_Array->Subscript[i];
+            // Copy the required dimension sizes
+            m_Array->DimensionsCur    = vOp2.m_Array->Dimensions;
+            for (i=0; i<m_Array->DimensionsCur; i++)
+                m_Array->SubscriptCur[i] = vOp2.m_Array->Subscript[i];
 
-			// Allocate this array (based on _current_ subscript)
-			ArrayDim();
+            // Allocate this array (based on _current_ subscript)
+            ArrayDim();
 
-			// Now copy the individual variant elements (each array element is a pointer to a variant)
-			for (i=0; i<m_Array->nElements; i++)
-			{
-				if (vOp2.m_Array->Data[i] != NULL)
-				{
-					m_Array->Data[i] = new Variant;	// Allocate a variant for this spot
-					*(m_Array->Data[i]) = *(vOp2.m_Array->Data[i]);
-				}
-			}
-			break;
-	}
+            // Now copy the individual variant elements (each array element is a pointer to a variant)
+            for (i=0; i<m_Array->nElements; i++)
+            {
+                if (vOp2.m_Array->Data[i] != NULL)
+                {
+                    m_Array->Data[i] = new Variant;    // Allocate a variant for this spot
+                    *(m_Array->Data[i]) = *(vOp2.m_Array->Data[i]);
+                }
+            }
+            break;
+    }
 }
 
 
@@ -126,14 +126,14 @@ Variant::Variant(const Variant &vOp2):
 
 Variant::~Variant()
 {
-	//MessageBox(NULL, "Destructor called.", "Variant", MB_OK);
+    //MessageBox(NULL, "Destructor called.", "Variant", MB_OK);
 
-	// Free up the cache string if required
-	InvalidateStringValue();
+    // Free up the cache string if required
+    InvalidateStringValue();
 
-	// Free any array stuff if required
-	ArrayFree();
-	ArrayDetailsFree();
+    // Free any array stuff if required
+    ArrayFree();
+    ArrayDetailsFree();
 
 } // ~Variant()
 
@@ -145,15 +145,15 @@ Variant::~Variant()
 
 void Variant::ReInit(void)
 {
-	// Free up the char string if required
-	InvalidateStringValue();
+    // Free up the char string if required
+    InvalidateStringValue();
 
-	// Free any array stuff if required
-	ArrayFree();
-	ArrayDetailsFree();
+    // Free any array stuff if required
+    ArrayFree();
+    ArrayDetailsFree();
 
-	m_nVarType		= VAR_INT32;				// Type of this variant
-	m_nValue		= 0;						// Value
+    m_nVarType        = VAR_INT32;                // Type of this variant
+    m_nValue        = 0;                        // Value
 
 } // ReInit()
 
@@ -164,39 +164,39 @@ void Variant::ReInit(void)
 
 bool Variant::HexToDec(const char *szHex, int &nDec)
 {
-	// Really crappy hex conversion
-	int i = (int)strlen(szHex) - 1;
+    // Really crappy hex conversion
+    int i = (int)strlen(szHex) - 1;
 
-	nDec = 0;
-	int nMult = 1;
-	for (int j = 0; j < 8; ++j)
-	{
-		if (i < 0)
-			break;
+    nDec = 0;
+    int nMult = 1;
+    for (int j = 0; j < 8; ++j)
+    {
+        if (i < 0)
+            break;
 
-		if (szHex[i] >= '0' && szHex[i] <= '9')
-			nDec += (szHex[i] - '0') * nMult;
-		else if (szHex[i] >= 'A' && szHex[i] <= 'F')
-			nDec += (((szHex[i] - 'A'))+10) * nMult;
-		else if (szHex[i] >= 'a' && szHex[i] <= 'f')
-			nDec += (((szHex[i] - 'a'))+10) * nMult;
-		else
-		{
-			nDec = 0;					// Set value as 0
-			return false;
-		}
+        if (szHex[i] >= '0' && szHex[i] <= '9')
+            nDec += (szHex[i] - '0') * nMult;
+        else if (szHex[i] >= 'A' && szHex[i] <= 'F')
+            nDec += (((szHex[i] - 'A'))+10) * nMult;
+        else if (szHex[i] >= 'a' && szHex[i] <= 'f')
+            nDec += (((szHex[i] - 'a'))+10) * nMult;
+        else
+        {
+            nDec = 0;                    // Set value as 0
+            return false;
+        }
 
-		--i;
-		nMult = nMult * 16;
-	}
+        --i;
+        nMult = nMult * 16;
+    }
 
-	if (i != -1)
-	{
-		nDec = 0;
-		return false;
-	}
-	else
-		return true;
+    if (i != -1)
+    {
+        nDec = 0;
+        return false;
+    }
+    else
+        return true;
 
 } // Util_ConvDec()
 
@@ -207,12 +207,12 @@ bool Variant::HexToDec(const char *szHex, int &nDec)
 
 const char * Variant::szValue(void)
 {
-	// If this is not a string type AND no generated string exists then
-	// generate one
-	if (m_nVarType != VAR_STRING && m_szValue == NULL)
-		GenStringValue();						// Generate a cached string version
+    // If this is not a string type AND no generated string exists then
+    // generate one
+    if (m_nVarType != VAR_STRING && m_szValue == NULL)
+        GenStringValue();                        // Generate a cached string version
 
-	return m_szValue;
+    return m_szValue;
 
 } // szvalue()
 
@@ -223,35 +223,35 @@ const char * Variant::szValue(void)
 
 double Variant::fValue(void)
 {
-	switch(m_nVarType)
-	{
-		case VAR_INT32:
-			return (double)m_nValue;
+    switch(m_nVarType)
+    {
+        case VAR_INT32:
+            return (double)m_nValue;
 
-		case VAR_INT64:
-			return (double)m_n64Value;
+        case VAR_INT64:
+            return (double)m_n64Value;
 
-		case VAR_DOUBLE:
-			return m_fValue;
+        case VAR_DOUBLE:
+            return m_fValue;
 
-		case VAR_STRING:
-			int nTemp;
+        case VAR_STRING:
+            int nTemp;
 
-			if ( (m_szValue[0] == '0') && (m_szValue[1] == 'x' || m_szValue[1] == 'X') )
-			{
-				HexToDec(&m_szValue[2], nTemp);	// Assume hex conversion
-				return (double)nTemp;
-			}
-			else
-				return atof(m_szValue);
+            if ( (m_szValue[0] == '0') && (m_szValue[1] == 'x' || m_szValue[1] == 'X') )
+            {
+                HexToDec(&m_szValue[2], nTemp);    // Assume hex conversion
+                return (double)nTemp;
+            }
+            else
+                return atof(m_szValue);
 
-		case VAR_REFERENCE:
-		case VAR_ARRAY:
-		case VAR_HWND:
-			return 0.0;
-	}
+        case VAR_REFERENCE:
+        case VAR_ARRAY:
+        case VAR_HWND:
+            return 0.0;
+    }
 
-	return 0.0;
+    return 0.0;
 
 } // fValue()
 
@@ -260,37 +260,37 @@ double Variant::fValue(void)
 // nValue()
 ///////////////////////////////////////////////////////////////////////////////
 
-int	Variant::nValue(void)
+int    Variant::nValue(void)
 {
-	switch(m_nVarType)
-	{
-		case VAR_INT32:
-			return m_nValue;
+    switch(m_nVarType)
+    {
+        case VAR_INT32:
+            return m_nValue;
 
-		case VAR_INT64:
-			return (int)m_n64Value;
+        case VAR_INT64:
+            return (int)m_n64Value;
 
-		case VAR_DOUBLE:
-			return (int)m_fValue;
+        case VAR_DOUBLE:
+            return (int)m_fValue;
 
-		case VAR_STRING:
-			int nTemp;
+        case VAR_STRING:
+            int nTemp;
 
-			if ( (m_szValue[0] == '0') && (m_szValue[1] == 'x' || m_szValue[1] == 'X') )
-			{
-				HexToDec(&m_szValue[2], nTemp);	// Assume hex conversion
-				return nTemp;
-			}
-			else
-				return atoi(m_szValue);
+            if ( (m_szValue[0] == '0') && (m_szValue[1] == 'x' || m_szValue[1] == 'X') )
+            {
+                HexToDec(&m_szValue[2], nTemp);    // Assume hex conversion
+                return nTemp;
+            }
+            else
+                return atoi(m_szValue);
 
-		case VAR_REFERENCE:
-		case VAR_ARRAY:
-		case VAR_HWND:
-			return 0;
-	}
+        case VAR_REFERENCE:
+        case VAR_ARRAY:
+        case VAR_HWND:
+            return 0;
+    }
 
-	return 0;
+    return 0;
 
 } // nValue()
 
@@ -299,37 +299,37 @@ int	Variant::nValue(void)
 // n64Value()
 ///////////////////////////////////////////////////////////////////////////////
 
-__int64	Variant::n64Value(void)
+__int64    Variant::n64Value(void)
 {
-	switch(m_nVarType)
-	{
-		case VAR_INT32:
-			return (__int64)m_nValue;
+    switch(m_nVarType)
+    {
+        case VAR_INT32:
+            return (__int64)m_nValue;
 
-		case VAR_INT64:
-			return m_n64Value;
+        case VAR_INT64:
+            return m_n64Value;
 
-		case VAR_DOUBLE:
-			return (__int64)m_fValue;
+        case VAR_DOUBLE:
+            return (__int64)m_fValue;
 
-		case VAR_STRING:
-			int nTemp;
+        case VAR_STRING:
+            int nTemp;
 
-			if ( (m_szValue[0] == '0') && (m_szValue[1] == 'x' || m_szValue[1] == 'X') )
-			{
-				HexToDec(&m_szValue[2], nTemp);	// Assume hex conversion
-				return (__int64)nTemp;
-			}
-			else
-				return _atoi64(m_szValue);
+            if ( (m_szValue[0] == '0') && (m_szValue[1] == 'x' || m_szValue[1] == 'X') )
+            {
+                HexToDec(&m_szValue[2], nTemp);    // Assume hex conversion
+                return (__int64)nTemp;
+            }
+            else
+                return _atoi64(m_szValue);
 
-		case VAR_REFERENCE:
-		case VAR_ARRAY:
-		case VAR_HWND:
-			return 0;
-	}
+        case VAR_REFERENCE:
+        case VAR_ARRAY:
+        case VAR_HWND:
+            return 0;
+    }
 
-	return 0;
+    return 0;
 
 } // n64Value()
 
@@ -338,12 +338,12 @@ __int64	Variant::n64Value(void)
 // hWnd()
 ///////////////////////////////////////////////////////////////////////////////
 
-HWND	Variant::hWnd(void)
+HWND    Variant::hWnd(void)
 {
-	if (m_nVarType == VAR_HWND)
-		return m_hWnd;
-	else
-		return NULL;
+    if (m_nVarType == VAR_HWND)
+        return m_hWnd;
+    else
+        return NULL;
 
 } // hWnd()
 
@@ -354,10 +354,10 @@ HWND	Variant::hWnd(void)
 
 Variant * Variant::pValue(void)
 {
-	if (m_nVarType == VAR_REFERENCE)
-		return m_pValue;
-	else
-		return NULL;
+    if (m_nVarType == VAR_REFERENCE)
+        return m_pValue;
+    else
+        return NULL;
 
 } // pValue()
 
@@ -372,46 +372,46 @@ Variant * Variant::pValue(void)
 
 void Variant::GenStringValue(void)
 {
-	if (m_nVarType == VAR_STRING)
-		return;									// Already a current string, nothing to do
+    if (m_nVarType == VAR_STRING)
+        return;                                    // Already a current string, nothing to do
 
-	char	szTemp[128];						// It is unclear just how many 0000 the sprintf function can add...
+    char    szTemp[128];                        // It is unclear just how many 0000 the sprintf function can add...
 
-	InvalidateStringValue();					// Remove previous string cache
+    InvalidateStringValue();                    // Remove previous string cache
 
-	switch(m_nVarType)
-	{
-		case VAR_INT32:
-			// Work out the string representation of the number
-			itoa(m_nValue, szTemp, 10);
-			break;
+    switch(m_nVarType)
+    {
+        case VAR_INT32:
+            // Work out the string representation of the number
+            itoa(m_nValue, szTemp, 10);
+            break;
 
-		case VAR_INT64:
-			// Work out the string representation of the number
-			_i64toa(m_n64Value, szTemp, 10);
-			break;
+        case VAR_INT64:
+            // Work out the string representation of the number
+            _i64toa(m_n64Value, szTemp, 10);
+            break;
 
 
-		case VAR_DOUBLE:
-			// Work out the string representation of the number, don't print trailing zeros
-			sprintf(szTemp, "%.15g", m_fValue);		// Have at least 15 digits after the . for precision (default is 6)
-			break;
+        case VAR_DOUBLE:
+            // Work out the string representation of the number, don't print trailing zeros
+            sprintf(szTemp, "%.15g", m_fValue);        // Have at least 15 digits after the . for precision (default is 6)
+            break;
 
-		case VAR_REFERENCE:
-		case VAR_ARRAY:
-			szTemp[0] = '\0';
-			break;
+        case VAR_REFERENCE:
+        case VAR_ARRAY:
+            szTemp[0] = '\0';
+            break;
 
-		case VAR_HWND:
-			sprintf(szTemp, "%p", m_hWnd);
-			break;
-	}
+        case VAR_HWND:
+            sprintf(szTemp, "%p", m_hWnd);
+            break;
+    }
 
-	// Copy from szTemp
-	m_nStrLen = (int)strlen(szTemp);
-	m_nStrAlloc = m_nStrLen + 1;
-	m_szValue = new char[m_nStrAlloc];
-	strcpy(m_szValue, szTemp);
+    // Copy from szTemp
+    m_nStrLen = (int)strlen(szTemp);
+    m_nStrAlloc = m_nStrLen + 1;
+    m_szValue = new char[m_nStrAlloc];
+    strcpy(m_szValue, szTemp);
 
 } // GenStringValue()
 
@@ -428,11 +428,11 @@ void Variant::GenStringValue(void)
 
 void Variant::InvalidateStringValue(void)
 {
-	if (m_szValue)
-	{
-		delete [] m_szValue;
-		m_szValue = NULL;
-	}
+    if (m_szValue)
+    {
+        delete [] m_szValue;
+        m_szValue = NULL;
+    }
 
 } // InvalidateStringValue()
 
@@ -443,71 +443,71 @@ void Variant::InvalidateStringValue(void)
 
 Variant& Variant::operator=(const Variant &vOp2)
 {
-	if (this == &vOp2)							// Stop copies to self!
-		return *this;
+    if (this == &vOp2)                            // Stop copies to self!
+        return *this;
 
-	// ReInit this variant (clears all arrays/strings, resets to default)
-	ReInit();
+    // ReInit this variant (clears all arrays/strings, resets to default)
+    ReInit();
 
-	m_nVarType	= vOp2.m_nVarType;
+    m_nVarType    = vOp2.m_nVarType;
 
-	m_szValue		= NULL;
+    m_szValue        = NULL;
 
-	switch(m_nVarType)
-	{
-		case VAR_INT32:
-			m_nValue	= vOp2.m_nValue;
-			break;
+    switch(m_nVarType)
+    {
+        case VAR_INT32:
+            m_nValue    = vOp2.m_nValue;
+            break;
 
-		case VAR_INT64:
-			m_n64Value	= vOp2.m_n64Value;
-			break;
+        case VAR_INT64:
+            m_n64Value    = vOp2.m_n64Value;
+            break;
 
-		case VAR_DOUBLE:
-			m_fValue	= vOp2.m_fValue;
-			break;
+        case VAR_DOUBLE:
+            m_fValue    = vOp2.m_fValue;
+            break;
 
-		case VAR_STRING:
-			m_nStrLen = vOp2.m_nStrLen;
-			m_nStrAlloc = vOp2.m_nStrAlloc;
-			m_szValue = new char[m_nStrAlloc];	// Same as the ALLOCATED size of the other string
-			strcpy(m_szValue, vOp2.m_szValue);
-			break;
+        case VAR_STRING:
+            m_nStrLen = vOp2.m_nStrLen;
+            m_nStrAlloc = vOp2.m_nStrAlloc;
+            m_szValue = new char[m_nStrAlloc];    // Same as the ALLOCATED size of the other string
+            strcpy(m_szValue, vOp2.m_szValue);
+            break;
 
-		case VAR_REFERENCE:
-			m_pValue	= vOp2.m_pValue;
-			break;
+        case VAR_REFERENCE:
+            m_pValue    = vOp2.m_pValue;
+            break;
 
-		case VAR_HWND:
-			m_hWnd		= vOp2.m_hWnd;
-			break;
+        case VAR_HWND:
+            m_hWnd        = vOp2.m_hWnd;
+            break;
 
-		case VAR_ARRAY:
-			int i;
+        case VAR_ARRAY:
+            int i;
 
-			ArrayDetailsCreate();
+            ArrayDetailsCreate();
 
-			// Copy the required dimension sizes
-			m_Array->DimensionsCur	= vOp2.m_Array->Dimensions;
-			for (i=0; i<m_Array->DimensionsCur; i++)
-				m_Array->SubscriptCur[i] = vOp2.m_Array->Subscript[i];
+            // Copy the required dimension sizes
+            m_Array->DimensionsCur    = vOp2.m_Array->Dimensions;
+            for (i=0; i<m_Array->DimensionsCur; i++)
+                m_Array->SubscriptCur[i] = vOp2.m_Array->Subscript[i];
 
-			// Allocate this array (based on _current_ subscript)
-			ArrayDim();
+            // Allocate this array (based on _current_ subscript)
+            ArrayDim();
 
-			// Now copy the individual variant elements (each array element is a pointer to a variant)
-			for (i=0; i<m_Array->nElements; i++)
-			{
-				if (vOp2.m_Array->Data[i] != NULL)
-				{
-					m_Array->Data[i] = new Variant;	// Allocate a variant for this spot
-					*(m_Array->Data[i]) = *(vOp2.m_Array->Data[i]);
-				}
-			}
-			break;
-	}
+            // Now copy the individual variant elements (each array element is a pointer to a variant)
+            for (i=0; i<m_Array->nElements; i++)
+            {
+                if (vOp2.m_Array->Data[i] != NULL)
+                {
+                    m_Array->Data[i] = new Variant;    // Allocate a variant for this spot
+                    *(m_Array->Data[i]) = *(vOp2.m_Array->Data[i]);
+                }
+            }
+            break;
+    }
 
-	return *this;								// Return this object that generated the call
+    return *this;                                // Return this object that generated the call
 
 } // operator=()
 
@@ -518,13 +518,13 @@ Variant& Variant::operator=(const Variant &vOp2)
 
 Variant& Variant::operator=(int nOp2)
 {
-	// Free any local array data / zero array variables
-	ReInit();
+    // Free any local array data / zero array variables
+    ReInit();
 
-	m_nVarType	= VAR_INT32;
-	m_nValue	= nOp2;
+    m_nVarType    = VAR_INT32;
+    m_nValue    = nOp2;
 
-	return *this;								// Return this object that generated the call
+    return *this;                                // Return this object that generated the call
 
 } // operator=()
 
@@ -535,13 +535,13 @@ Variant& Variant::operator=(int nOp2)
 
 Variant& Variant::operator=(__int64 nOp2)
 {
-	// Free any local array data / zero array variables
-	ReInit();
+    // Free any local array data / zero array variables
+    ReInit();
 
-	m_nVarType	= VAR_INT64;
-	m_n64Value	= nOp2;
+    m_nVarType    = VAR_INT64;
+    m_n64Value    = nOp2;
 
-	return *this;								// Return this object that generated the call
+    return *this;                                // Return this object that generated the call
 
 } // operator=()
 
@@ -552,13 +552,13 @@ Variant& Variant::operator=(__int64 nOp2)
 
 Variant& Variant::operator=(HWND nOp2)
 {
-	// Free any local array data / zero array variables
-	ReInit();
+    // Free any local array data / zero array variables
+    ReInit();
 
-	m_nVarType	= VAR_HWND;
-	m_hWnd		= nOp2;
+    m_nVarType    = VAR_HWND;
+    m_hWnd        = nOp2;
 
-	return *this;								// Return this object that generated the call
+    return *this;                                // Return this object that generated the call
 
 } // operator=()
 
@@ -569,13 +569,13 @@ Variant& Variant::operator=(HWND nOp2)
 
 Variant& Variant::operator=(double fOp2)
 {
-	// Free any local array data / zero array variables
-	ReInit();
+    // Free any local array data / zero array variables
+    ReInit();
 
-	m_nVarType	= VAR_DOUBLE;
-	m_fValue	= fOp2;
+    m_nVarType    = VAR_DOUBLE;
+    m_fValue    = fOp2;
 
-	return *this;								// Return this object that generated the call
+    return *this;                                // Return this object that generated the call
 
 } // operator=()
 
@@ -586,18 +586,18 @@ Variant& Variant::operator=(double fOp2)
 
 Variant& Variant::operator=(const char *szOp2)
 {
-	// Free any local array data / zero array variables
-	ReInit();
+    // Free any local array data / zero array variables
+    ReInit();
 
-	m_nVarType	= VAR_STRING;
+    m_nVarType    = VAR_STRING;
 
-	// Copy the string
-	m_nStrLen = (int)strlen(szOp2);
-	m_nStrAlloc =  m_nStrLen + 1;
-	m_szValue = new char[m_nStrAlloc];
-	strcpy(m_szValue, szOp2);
+    // Copy the string
+    m_nStrLen = (int)strlen(szOp2);
+    m_nStrAlloc =  m_nStrLen + 1;
+    m_szValue = new char[m_nStrAlloc];
+    strcpy(m_szValue, szOp2);
 
-	return *this;								// Return this object that generated the call
+    return *this;                                // Return this object that generated the call
 
 } // operator=()
 
@@ -608,13 +608,13 @@ Variant& Variant::operator=(const char *szOp2)
 
 Variant& Variant::operator=(Variant *pOp2)
 {
-	// Free any local array data / zero array variables
-	ReInit();
+    // Free any local array data / zero array variables
+    ReInit();
 
-	m_nVarType	= VAR_REFERENCE;
-	m_pValue	= pOp2;
+    m_nVarType    = VAR_REFERENCE;
+    m_pValue    = pOp2;
 
-	return *this;								// Return this object that generated the call
+    return *this;                                // Return this object that generated the call
 
 } // operator=()
 
@@ -625,63 +625,63 @@ Variant& Variant::operator=(Variant *pOp2)
 
 Variant& Variant::operator+=(Variant &vOp2)
 {
-	__int64 n64Temp;
-	int		nTemp;
+    __int64 n64Temp;
+    int        nTemp;
 
-	switch (m_nVarType)
-	{
-		case VAR_INT32:
-			if (vOp2.m_nVarType == VAR_INT32)
-			{
-				nTemp = m_nValue + vOp2.m_nValue;
-				n64Temp = (__int64)(m_nValue) + (__int64)(vOp2.m_nValue);
+    switch (m_nVarType)
+    {
+        case VAR_INT32:
+            if (vOp2.m_nVarType == VAR_INT32)
+            {
+                nTemp = m_nValue + vOp2.m_nValue;
+                n64Temp = (__int64)(m_nValue) + (__int64)(vOp2.m_nValue);
 
-				if ( (__int64)(nTemp) != n64Temp )
-				{
-					// Promote to int64 because of int32 overflow
-					m_nVarType = VAR_INT64;
-					m_n64Value = n64Temp;
-				}
-				else
-					m_nValue = nTemp;
-			}
-			else if (vOp2.m_nVarType == VAR_INT64)
-			{
-				// As 2nd operation is a 64bit, promote anyway
-				m_n64Value = (__int64)(m_nValue) + vOp2.m_n64Value;
-				m_nVarType = VAR_INT64;
-			}
-			else
-			{
-				ChangeToDouble();
-				m_fValue += vOp2.fValue();
-			}
-			break;
+                if ( (__int64)(nTemp) != n64Temp )
+                {
+                    // Promote to int64 because of int32 overflow
+                    m_nVarType = VAR_INT64;
+                    m_n64Value = n64Temp;
+                }
+                else
+                    m_nValue = nTemp;
+            }
+            else if (vOp2.m_nVarType == VAR_INT64)
+            {
+                // As 2nd operation is a 64bit, promote anyway
+                m_n64Value = (__int64)(m_nValue) + vOp2.m_n64Value;
+                m_nVarType = VAR_INT64;
+            }
+            else
+            {
+                ChangeToDouble();
+                m_fValue += vOp2.fValue();
+            }
+            break;
 
-		case VAR_INT64:
-			if (vOp2.m_nVarType == VAR_INT32 || vOp2.m_nVarType == VAR_INT64)
-				m_n64Value += vOp2.n64Value();
-			else
-			{
-				ChangeToDouble();
-				m_fValue += vOp2.fValue();
-			}
-			break;
+        case VAR_INT64:
+            if (vOp2.m_nVarType == VAR_INT32 || vOp2.m_nVarType == VAR_INT64)
+                m_n64Value += vOp2.n64Value();
+            else
+            {
+                ChangeToDouble();
+                m_fValue += vOp2.fValue();
+            }
+            break;
 
-		case VAR_DOUBLE:
-			m_fValue += vOp2.fValue();
-			break;
+        case VAR_DOUBLE:
+            m_fValue += vOp2.fValue();
+            break;
 
-		case VAR_STRING:
-			ChangeToDouble();
-			m_fValue += vOp2.fValue();
-			break;
-	}
+        case VAR_STRING:
+            ChangeToDouble();
+            m_fValue += vOp2.fValue();
+            break;
+    }
 
-	// Erase any cached string version of this variant
-	InvalidateStringValue();
+    // Erase any cached string version of this variant
+    InvalidateStringValue();
 
-	return *this;
+    return *this;
 
 } // operator+=()
 
@@ -692,63 +692,63 @@ Variant& Variant::operator+=(Variant &vOp2)
 
 Variant& Variant::operator-=(Variant &vOp2)
 {
-	__int64 n64Temp;
-	int		nTemp;
+    __int64 n64Temp;
+    int        nTemp;
 
-	switch (m_nVarType)
-	{
-		case VAR_INT32:
-			if (vOp2.m_nVarType == VAR_INT32)
-			{
-				nTemp = m_nValue - vOp2.m_nValue;
-				n64Temp = (__int64)(m_nValue) - (__int64)(vOp2.m_nValue);
+    switch (m_nVarType)
+    {
+        case VAR_INT32:
+            if (vOp2.m_nVarType == VAR_INT32)
+            {
+                nTemp = m_nValue - vOp2.m_nValue;
+                n64Temp = (__int64)(m_nValue) - (__int64)(vOp2.m_nValue);
 
-				if ( (__int64)(nTemp) != n64Temp )
-				{
-					// Promote to int64 because of int32 overflow
-					m_nVarType = VAR_INT64;
-					m_n64Value = n64Temp;
-				}
-				else
-					m_nValue = nTemp;
-			}
-			else if (vOp2.m_nVarType == VAR_INT64)
-			{
-				// As 2nd operation is a 64bit, promote anyway
-				m_n64Value = (__int64)(m_nValue) - vOp2.m_n64Value;
-				m_nVarType = VAR_INT64;
-			}
-			else
-			{
-				ChangeToDouble();
-				m_fValue -= vOp2.fValue();
-			}
-			break;
+                if ( (__int64)(nTemp) != n64Temp )
+                {
+                    // Promote to int64 because of int32 overflow
+                    m_nVarType = VAR_INT64;
+                    m_n64Value = n64Temp;
+                }
+                else
+                    m_nValue = nTemp;
+            }
+            else if (vOp2.m_nVarType == VAR_INT64)
+            {
+                // As 2nd operation is a 64bit, promote anyway
+                m_n64Value = (__int64)(m_nValue) - vOp2.m_n64Value;
+                m_nVarType = VAR_INT64;
+            }
+            else
+            {
+                ChangeToDouble();
+                m_fValue -= vOp2.fValue();
+            }
+            break;
 
-		case VAR_INT64:
-			if (vOp2.m_nVarType == VAR_INT32 || vOp2.m_nVarType == VAR_INT64)
-				m_n64Value -= vOp2.n64Value();
-			else
-			{
-				ChangeToDouble();
-				m_fValue -= vOp2.fValue();
-			}
-			break;
+        case VAR_INT64:
+            if (vOp2.m_nVarType == VAR_INT32 || vOp2.m_nVarType == VAR_INT64)
+                m_n64Value -= vOp2.n64Value();
+            else
+            {
+                ChangeToDouble();
+                m_fValue -= vOp2.fValue();
+            }
+            break;
 
-		case VAR_DOUBLE:
-			m_fValue -= vOp2.fValue();
-			break;
+        case VAR_DOUBLE:
+            m_fValue -= vOp2.fValue();
+            break;
 
-		case VAR_STRING:
-			ChangeToDouble();
-			m_fValue -= vOp2.fValue();
-			break;
-	}
+        case VAR_STRING:
+            ChangeToDouble();
+            m_fValue -= vOp2.fValue();
+            break;
+    }
 
-	// Erase any cached string version of this variant
-	InvalidateStringValue();
+    // Erase any cached string version of this variant
+    InvalidateStringValue();
 
-	return *this;
+    return *this;
 
 } // operator-=()
 
@@ -759,63 +759,63 @@ Variant& Variant::operator-=(Variant &vOp2)
 
 Variant& Variant::operator*=(Variant &vOp2)
 {
-	__int64 n64Temp;
-	int		nTemp;
+    __int64 n64Temp;
+    int        nTemp;
 
-	switch (m_nVarType)
-	{
-		case VAR_INT32:
-			if (vOp2.m_nVarType == VAR_INT32)
-			{
-				nTemp = m_nValue * vOp2.m_nValue;
-				n64Temp = (__int64)(m_nValue) * (__int64)(vOp2.m_nValue);
+    switch (m_nVarType)
+    {
+        case VAR_INT32:
+            if (vOp2.m_nVarType == VAR_INT32)
+            {
+                nTemp = m_nValue * vOp2.m_nValue;
+                n64Temp = (__int64)(m_nValue) * (__int64)(vOp2.m_nValue);
 
-				if ( (__int64)(nTemp) != n64Temp )
-				{
-					// Promote to int64 because of int32 overflow
-					m_nVarType = VAR_INT64;
-					m_n64Value = n64Temp;
-				}
-				else
-					m_nValue = nTemp;
-			}
-			else if (vOp2.m_nVarType == VAR_INT64)
-			{
-				// As 2nd operation is a 64bit, promote anyway
-				m_n64Value = (__int64)(m_nValue) * vOp2.m_n64Value;
-				m_nVarType = VAR_INT64;
-			}
-			else
-			{
-				ChangeToDouble();
-				m_fValue *= vOp2.fValue();
-			}
-			break;
+                if ( (__int64)(nTemp) != n64Temp )
+                {
+                    // Promote to int64 because of int32 overflow
+                    m_nVarType = VAR_INT64;
+                    m_n64Value = n64Temp;
+                }
+                else
+                    m_nValue = nTemp;
+            }
+            else if (vOp2.m_nVarType == VAR_INT64)
+            {
+                // As 2nd operation is a 64bit, promote anyway
+                m_n64Value = (__int64)(m_nValue) * vOp2.m_n64Value;
+                m_nVarType = VAR_INT64;
+            }
+            else
+            {
+                ChangeToDouble();
+                m_fValue *= vOp2.fValue();
+            }
+            break;
 
-		case VAR_INT64:
-			if (vOp2.m_nVarType == VAR_INT32 || vOp2.m_nVarType == VAR_INT64)
-				m_n64Value *= vOp2.n64Value();
-			else
-			{
-				ChangeToDouble();
-				m_fValue *= vOp2.fValue();
-			}
-			break;
+        case VAR_INT64:
+            if (vOp2.m_nVarType == VAR_INT32 || vOp2.m_nVarType == VAR_INT64)
+                m_n64Value *= vOp2.n64Value();
+            else
+            {
+                ChangeToDouble();
+                m_fValue *= vOp2.fValue();
+            }
+            break;
 
-		case VAR_DOUBLE:
-			m_fValue *= vOp2.fValue();
-			break;
+        case VAR_DOUBLE:
+            m_fValue *= vOp2.fValue();
+            break;
 
-		case VAR_STRING:
-			ChangeToDouble();
-			m_fValue *= vOp2.fValue();
-			break;
-	}
+        case VAR_STRING:
+            ChangeToDouble();
+            m_fValue *= vOp2.fValue();
+            break;
+    }
 
-	// Erase any cached string version of this variant
-	InvalidateStringValue();
+    // Erase any cached string version of this variant
+    InvalidateStringValue();
 
-	return *this;
+    return *this;
 
 } // operator*=()
 
@@ -826,15 +826,15 @@ Variant& Variant::operator*=(Variant &vOp2)
 
 Variant& Variant::operator/=(Variant &vOp2)
 {
-	// Must be of double type first
-	ChangeToDouble();
+    // Must be of double type first
+    ChangeToDouble();
 
-	m_fValue = m_fValue / vOp2.fValue();	// FLOAT
+    m_fValue = m_fValue / vOp2.fValue();    // FLOAT
 
-	// Erase any cached string version of this variant
-	InvalidateStringValue();
+    // Erase any cached string version of this variant
+    InvalidateStringValue();
 
-	return *this;
+    return *this;
 
 } // operator/=()
 
@@ -845,16 +845,16 @@ Variant& Variant::operator/=(Variant &vOp2)
 
 Variant& Variant::operator&=(Variant &vOp2)
 {
-	// Must be of int32 type first
-	ChangeToInt32();
+    // Must be of int32 type first
+    ChangeToInt32();
 
-	// Do bitwise AND
-	m_nValue	= m_nValue & vOp2.nValue();
+    // Do bitwise AND
+    m_nValue    = m_nValue & vOp2.nValue();
 
-	// Erase any cached string version of this variant
-	InvalidateStringValue();
+    // Erase any cached string version of this variant
+    InvalidateStringValue();
 
-	return *this;
+    return *this;
 
 } // operator&=()
 
@@ -865,16 +865,16 @@ Variant& Variant::operator&=(Variant &vOp2)
 
 Variant& Variant::operator|=(Variant &vOp2)
 {
-	// Must be of int32 type first
-	ChangeToInt32();
+    // Must be of int32 type first
+    ChangeToInt32();
 
-	// Do bitwise OR
-	m_nValue	= m_nValue | vOp2.nValue();
+    // Do bitwise OR
+    m_nValue    = m_nValue | vOp2.nValue();
 
-	// Erase any cached string version of this variant
-	InvalidateStringValue();
+    // Erase any cached string version of this variant
+    InvalidateStringValue();
 
-	return *this;
+    return *this;
 
 } // operator|=()
 
@@ -885,15 +885,15 @@ Variant& Variant::operator|=(Variant &vOp2)
 
 Variant& Variant::operator!()
 {
-	// Must be of int32 type first
-	ChangeToInt32();
+    // Must be of int32 type first
+    ChangeToInt32();
 
-	m_nValue	= !m_nValue;
+    m_nValue    = !m_nValue;
 
-	// Erase any cached string version of this variant
-	InvalidateStringValue();
+    // Erase any cached string version of this variant
+    InvalidateStringValue();
 
-	return *this;
+    return *this;
 
 } // operator!()
 
@@ -909,72 +909,72 @@ Variant& Variant::operator!()
 
 int Variant::GetComparisionType(int nOp1, int nOp2) const
 {
-	switch (nOp1)
-	{
-		case VAR_INT32:
-			switch (nOp2)
-			{
-				case VAR_INT32:
-					return VAR_INT32;
-				case VAR_INT64:
-					return VAR_INT64;
-				case VAR_DOUBLE:
-					return VAR_DOUBLE;
-				case VAR_STRING:
-					return VAR_DOUBLE;
-			}
-			break;
+    switch (nOp1)
+    {
+        case VAR_INT32:
+            switch (nOp2)
+            {
+                case VAR_INT32:
+                    return VAR_INT32;
+                case VAR_INT64:
+                    return VAR_INT64;
+                case VAR_DOUBLE:
+                    return VAR_DOUBLE;
+                case VAR_STRING:
+                    return VAR_DOUBLE;
+            }
+            break;
 
-		case VAR_INT64:
-			switch (nOp2)
-			{
-				case VAR_INT32:
-					return VAR_INT64;
-				case VAR_INT64:
-					return VAR_INT64;
-				case VAR_DOUBLE:
-					return VAR_DOUBLE;
-				case VAR_STRING:
-					return VAR_DOUBLE;
-			}
-			break;
+        case VAR_INT64:
+            switch (nOp2)
+            {
+                case VAR_INT32:
+                    return VAR_INT64;
+                case VAR_INT64:
+                    return VAR_INT64;
+                case VAR_DOUBLE:
+                    return VAR_DOUBLE;
+                case VAR_STRING:
+                    return VAR_DOUBLE;
+            }
+            break;
 
-		case VAR_DOUBLE:
-			switch (nOp2)
-			{
-				case VAR_INT32:
-					return VAR_DOUBLE;
-				case VAR_INT64:
-					return VAR_DOUBLE;
-				case VAR_DOUBLE:
-					return VAR_DOUBLE;
-				case VAR_STRING:
-					return VAR_DOUBLE;
-			}
-			break;
+        case VAR_DOUBLE:
+            switch (nOp2)
+            {
+                case VAR_INT32:
+                    return VAR_DOUBLE;
+                case VAR_INT64:
+                    return VAR_DOUBLE;
+                case VAR_DOUBLE:
+                    return VAR_DOUBLE;
+                case VAR_STRING:
+                    return VAR_DOUBLE;
+            }
+            break;
 
-		case VAR_STRING:
-			switch (nOp2)
-			{
-				case VAR_INT32:
-					return VAR_DOUBLE;
-				case VAR_INT64:
-					return VAR_DOUBLE;
-				case VAR_DOUBLE:
-					return VAR_DOUBLE;
-				case VAR_STRING:
-					return VAR_STRING;
-			}
-			break;
+        case VAR_STRING:
+            switch (nOp2)
+            {
+                case VAR_INT32:
+                    return VAR_DOUBLE;
+                case VAR_INT64:
+                    return VAR_DOUBLE;
+                case VAR_DOUBLE:
+                    return VAR_DOUBLE;
+                case VAR_STRING:
+                    return VAR_STRING;
+            }
+            break;
 
-		case VAR_HWND:
-			if (nOp2 == VAR_HWND)
-				return VAR_HWND;
-			break;
-	}
+        case VAR_HWND:
+            if (nOp2 == VAR_HWND)
+                return VAR_HWND;
+            break;
+    }
 
-	// Everything else is undefined
-	return VAR_ERROR;
+    // Everything else is undefined
+    return VAR_ERROR;
 
 } // GetComparisionType()
 
@@ -988,41 +988,41 @@ int Variant::GetComparisionType(int nOp1, int nOp2) const
 
 bool operator==(Variant &vOp1, Variant &vOp2)
 {
-	switch( vOp1.GetComparisionType(vOp1.m_nVarType, vOp2.m_nVarType) )
-	{
-		case VAR_STRING:
-			// Do string conparision
-			if (!stricmp(vOp1.m_szValue, vOp2.m_szValue) )
-				return true;
-			else
-				return false;
+    switch( vOp1.GetComparisionType(vOp1.m_nVarType, vOp2.m_nVarType) )
+    {
+        case VAR_STRING:
+            // Do string conparision
+            if (!stricmp(vOp1.m_szValue, vOp2.m_szValue) )
+                return true;
+            else
+                return false;
 
-		case VAR_INT32:
-			if (vOp1.nValue() == vOp2.nValue())
-				return true;
-			else
-				return false;
+        case VAR_INT32:
+            if (vOp1.nValue() == vOp2.nValue())
+                return true;
+            else
+                return false;
 
-		case VAR_INT64:
-			if (vOp1.n64Value() == vOp2.n64Value())
-				return true;
-			else
-				return false;
+        case VAR_INT64:
+            if (vOp1.n64Value() == vOp2.n64Value())
+                return true;
+            else
+                return false;
 
-		case VAR_DOUBLE:
-			if (vOp1.fValue() == vOp2.fValue())
-				return true;
-			else
-				return false;
+        case VAR_DOUBLE:
+            if (vOp1.fValue() == vOp2.fValue())
+                return true;
+            else
+                return false;
 
-		case VAR_HWND:
-			if (vOp1.hWnd() == vOp2.hWnd())
-				return true;
-			else
-				return false;
-	}
+        case VAR_HWND:
+            if (vOp1.hWnd() == vOp2.hWnd())
+                return true;
+            else
+                return false;
+    }
 
-	return false;
+    return false;
 
 } // operator==()
 
@@ -1036,12 +1036,12 @@ bool operator==(Variant &vOp1, Variant &vOp2)
 
 bool Variant::StringCompare(Variant &vOp2)
 {
-	// Compare the two string portions - even if they aren't string variants
-	// Do string comparision
-	if (!strcmp(szValue(), vOp2.szValue()) )
-		return true;
-	else
-		return false;
+    // Compare the two string portions - even if they aren't string variants
+    // Do string comparision
+    if (!strcmp(szValue(), vOp2.szValue()) )
+        return true;
+    else
+        return false;
 
 } // StringCompare()
 
@@ -1052,35 +1052,35 @@ bool Variant::StringCompare(Variant &vOp2)
 
 bool operator>(Variant &vOp1, Variant &vOp2)
 {
-	switch( vOp1.GetComparisionType(vOp1.m_nVarType, vOp2.m_nVarType) )
-	{
-		case VAR_STRING:
-			// Do string conparision
-			if (stricmp(vOp1.m_szValue, vOp2.m_szValue) > 0)
-				return true;
-			else
-				return false;
+    switch( vOp1.GetComparisionType(vOp1.m_nVarType, vOp2.m_nVarType) )
+    {
+        case VAR_STRING:
+            // Do string conparision
+            if (stricmp(vOp1.m_szValue, vOp2.m_szValue) > 0)
+                return true;
+            else
+                return false;
 
-		case VAR_INT32:
-			if (vOp1.nValue() > vOp2.nValue())
-				return true;
-			else
-				return false;
+        case VAR_INT32:
+            if (vOp1.nValue() > vOp2.nValue())
+                return true;
+            else
+                return false;
 
-		case VAR_INT64:
-			if (vOp1.n64Value() > vOp2.n64Value())
-				return true;
-			else
-				return false;
+        case VAR_INT64:
+            if (vOp1.n64Value() > vOp2.n64Value())
+                return true;
+            else
+                return false;
 
-		case VAR_DOUBLE:
-			if (vOp1.fValue() > vOp2.fValue())
-				return true;
-			else
-				return false;
-	}
+        case VAR_DOUBLE:
+            if (vOp1.fValue() > vOp2.fValue())
+                return true;
+            else
+                return false;
+    }
 
-	return false;
+    return false;
 
 } // operator>()
 
@@ -1091,35 +1091,35 @@ bool operator>(Variant &vOp1, Variant &vOp2)
 
 bool operator<(Variant &vOp1, Variant &vOp2)
 {
-	switch( vOp1.GetComparisionType(vOp1.m_nVarType, vOp2.m_nVarType) )
-	{
-		case VAR_STRING:
-			// Do string conparision
-			if (stricmp(vOp1.m_szValue, vOp2.m_szValue) < 0)
-				return true;
-			else
-				return false;
+    switch( vOp1.GetComparisionType(vOp1.m_nVarType, vOp2.m_nVarType) )
+    {
+        case VAR_STRING:
+            // Do string conparision
+            if (stricmp(vOp1.m_szValue, vOp2.m_szValue) < 0)
+                return true;
+            else
+                return false;
 
-		case VAR_INT32:
-			if (vOp1.nValue() < vOp2.nValue())
-				return true;
-			else
-				return false;
+        case VAR_INT32:
+            if (vOp1.nValue() < vOp2.nValue())
+                return true;
+            else
+                return false;
 
-		case VAR_INT64:
-			if (vOp1.n64Value() < vOp2.n64Value())
-				return true;
-			else
-				return false;
+        case VAR_INT64:
+            if (vOp1.n64Value() < vOp2.n64Value())
+                return true;
+            else
+                return false;
 
-		case VAR_DOUBLE:
-			if (vOp1.fValue() < vOp2.fValue())
-				return true;
-			else
-				return false;
-	}
+        case VAR_DOUBLE:
+            if (vOp1.fValue() < vOp2.fValue())
+                return true;
+            else
+                return false;
+    }
 
-	return false;
+    return false;
 
 } // operator<()
 
@@ -1130,10 +1130,10 @@ bool operator<(Variant &vOp1, Variant &vOp2)
 
 bool operator&&(Variant &vOp1, Variant &vOp2)
 {
-	if (vOp1.isTrue() && vOp2.isTrue())
-		return true;
-	else
-		return false;
+    if (vOp1.isTrue() && vOp2.isTrue())
+        return true;
+    else
+        return false;
 
 } // operator&&()
 
@@ -1144,10 +1144,10 @@ bool operator&&(Variant &vOp1, Variant &vOp2)
 
 bool operator||(Variant &vOp1, Variant &vOp2)
 {
-	if (vOp1.isTrue() || vOp2.isTrue())
-		return true;
-	else
-		return false;
+    if (vOp1.isTrue() || vOp2.isTrue())
+        return true;
+    else
+        return false;
 
 } // operator||()
 
@@ -1159,35 +1159,35 @@ bool operator||(Variant &vOp1, Variant &vOp2)
 
 bool Variant::isTrue(void) const
 {
-	switch (m_nVarType)
-	{
-		case VAR_INT32:
-			if (m_nValue)
-				return true;
-			break;
+    switch (m_nVarType)
+    {
+        case VAR_INT32:
+            if (m_nValue)
+                return true;
+            break;
 
-		case VAR_INT64:
-			if (m_n64Value)
-				return true;
-			break;
+        case VAR_INT64:
+            if (m_n64Value)
+                return true;
+            break;
 
-		case VAR_DOUBLE:
-			if (m_fValue)
-				return true;
-			break;
+        case VAR_DOUBLE:
+            if (m_fValue)
+                return true;
+            break;
 
-		case VAR_STRING:
-			if (m_szValue[0] != '\0')
-				return true;
-			break;
+        case VAR_STRING:
+            if (m_szValue[0] != '\0')
+                return true;
+            break;
 
-		case VAR_HWND:
-			if (m_hWnd != NULL)
-				return true;
-			break;
-	}
+        case VAR_HWND:
+            if (m_hWnd != NULL)
+                return true;
+            break;
+    }
 
-	return false;
+    return false;
 
 } // isTrue()
 
@@ -1201,10 +1201,10 @@ bool Variant::isTrue(void) const
 
 bool Variant::isNumber(void) const
 {
-	if (m_nVarType == VAR_DOUBLE || m_nVarType == VAR_INT32 || m_nVarType == VAR_INT64)
-		return true;
-	else
-		return false;
+    if (m_nVarType == VAR_DOUBLE || m_nVarType == VAR_INT32 || m_nVarType == VAR_INT64)
+        return true;
+    else
+        return false;
 
 } // isNumber()
 
@@ -1218,10 +1218,10 @@ bool Variant::isNumber(void) const
 
 bool Variant::isString(void) const
 {
-	if (m_nVarType == VAR_STRING)
-		return true;
-	else
-		return false;
+    if (m_nVarType == VAR_STRING)
+        return true;
+    else
+        return false;
 
 } // isString()
 
@@ -1235,10 +1235,10 @@ bool Variant::isString(void) const
 
 bool Variant::isArray(void) const
 {
-	if (m_nVarType == VAR_ARRAY)
-		return true;
-	else
-		return false;
+    if (m_nVarType == VAR_ARRAY)
+        return true;
+    else
+        return false;
 
 } // isArray()
 
@@ -1252,10 +1252,10 @@ bool Variant::isArray(void) const
 
 bool Variant::isHWND(void) const
 {
-	if (m_nVarType == VAR_HWND)
-		return true;
-	else
-		return false;
+    if (m_nVarType == VAR_HWND)
+        return true;
+    else
+        return false;
 
 } // isHWND()
 
@@ -1266,17 +1266,17 @@ bool Variant::isHWND(void) const
 
 void Variant::ChangeToDouble(void)
 {
-	if (m_nVarType == VAR_DOUBLE)
-		return;									// Nothing to do
+    if (m_nVarType == VAR_DOUBLE)
+        return;                                    // Nothing to do
 
-	// Generate a double value
-	double fTemp	= fValue();
+    // Generate a double value
+    double fTemp    = fValue();
 
-	// Delete and reinit everything (includes strings/array)
-	ReInit();
+    // Delete and reinit everything (includes strings/array)
+    ReInit();
 
-	m_fValue	= fTemp;
-	m_nVarType	= VAR_DOUBLE;
+    m_fValue    = fTemp;
+    m_nVarType    = VAR_DOUBLE;
 
 } // ChangeToDouble()
 
@@ -1287,17 +1287,17 @@ void Variant::ChangeToDouble(void)
 
 void Variant::ChangeToInt32(void)
 {
-	if (m_nVarType == VAR_INT32)
-		return;									// Nothing to do
+    if (m_nVarType == VAR_INT32)
+        return;                                    // Nothing to do
 
-	// Generate an int32 value
-	int nTemp	= nValue();
+    // Generate an int32 value
+    int nTemp    = nValue();
 
-	// Delete and reinit everything (includes strings/array)
-	ReInit();
+    // Delete and reinit everything (includes strings/array)
+    ReInit();
 
-	m_nValue	= nTemp;
-	m_nVarType	= VAR_INT32;
+    m_nValue    = nTemp;
+    m_nVarType    = VAR_INT32;
 
 } // ChangeToInt32()
 
@@ -1308,17 +1308,17 @@ void Variant::ChangeToInt32(void)
 
 void Variant::ChangeToString(void)
 {
-	if (m_nVarType == VAR_STRING)
-		return;									// Nothing to do
+    if (m_nVarType == VAR_STRING)
+        return;                                    // Nothing to do
 
-	GenStringValue();							// Generate a string value of this variant
+    GenStringValue();                            // Generate a string value of this variant
 
-	// Delete any array data if required
-	ArrayFree();
-	ArrayDetailsFree();
+    // Delete any array data if required
+    ArrayFree();
+    ArrayDetailsFree();
 
-	// Finally change the type to a string
-	m_nVarType		= VAR_STRING;
+    // Finally change the type to a string
+    m_nVarType        = VAR_STRING;
 
 } // ChangeToString()
 
@@ -1329,35 +1329,35 @@ void Variant::ChangeToString(void)
 
 void Variant::Concat(Variant &vOp2)
 {
-	char	*szTempString;
-	const char	*szOp2;
+    char    *szTempString;
+    const char    *szOp2;
 
-	// This must be a string type
-	ChangeToString();
+    // This must be a string type
+    ChangeToString();
 
-	// Ensure that the other variant has a valid string value and
-	// the m_nStrLen m_nStrAlloc variables - VERY IMPORTANT
-	szOp2 = vOp2.szValue();
+    // Ensure that the other variant has a valid string value and
+    // the m_nStrLen m_nStrAlloc variables - VERY IMPORTANT
+    szOp2 = vOp2.szValue();
 
-	// Get new total string length
-	m_nStrLen += vOp2.m_nStrLen;
+    // Get new total string length
+    m_nStrLen += vOp2.m_nStrLen;
 
-	// Do we have enough space for the concat?
-	if ( (m_nStrLen+1) > m_nStrAlloc)			// +1 for \0
-	{
-		// Create DOUBLE the space we need (room to grow)
-		m_nStrAlloc = (m_nStrLen << 1) + 1;
+    // Do we have enough space for the concat?
+    if ( (m_nStrLen+1) > m_nStrAlloc)            // +1 for \0
+    {
+        // Create DOUBLE the space we need (room to grow)
+        m_nStrAlloc = (m_nStrLen << 1) + 1;
 
-		szTempString	= new char[m_nStrAlloc];
+        szTempString    = new char[m_nStrAlloc];
 
-		strcpy(szTempString, m_szValue);
-		strcat(szTempString, szOp2);
+        strcpy(szTempString, m_szValue);
+        strcat(szTempString, szOp2);
 
-		delete [] m_szValue;
-		m_szValue	= szTempString;
-	}
-	else
-		strcat(m_szValue, szOp2);		// We have the space - no need to realloc
+        delete [] m_szValue;
+        m_szValue    = szTempString;
+    }
+    else
+        strcat(m_szValue, szOp2);        // We have the space - no need to realloc
 
 
 } // Concat()
@@ -1372,17 +1372,17 @@ void Variant::Concat(Variant &vOp2)
 
 void Variant::ArrayDetailsCreate(void)
 {
-	if (m_nVarType != VAR_ARRAY || m_Array == NULL)
-	{
-		m_Array = new VariantArrayDetails;
+    if (m_nVarType != VAR_ARRAY || m_Array == NULL)
+    {
+        m_Array = new VariantArrayDetails;
 
-		m_Array->Data			= NULL;
-		m_Array->nElements		= 0;
-		m_Array->Dimensions		= 0;
-		m_Array->DimensionsCur	= 0;
+        m_Array->Data            = NULL;
+        m_Array->nElements        = 0;
+        m_Array->Dimensions        = 0;
+        m_Array->DimensionsCur    = 0;
 
-		m_nVarType = VAR_ARRAY;
-	}
+        m_nVarType = VAR_ARRAY;
+    }
 
 } // ArrayDetailsCreate()
 
@@ -1393,11 +1393,11 @@ void Variant::ArrayDetailsCreate(void)
 
 void Variant::ArrayDetailsFree(void)
 {
-	if (m_nVarType == VAR_ARRAY && m_Array)
-	{
-		delete m_Array;								// Will be OK if NULL
-		m_Array = NULL;
-	}
+    if (m_nVarType == VAR_ARRAY && m_Array)
+    {
+        delete m_Array;                                // Will be OK if NULL
+        m_Array = NULL;
+    }
 
 } // ArrayDetailsFree()
 
@@ -1410,11 +1410,11 @@ void Variant::ArrayDetailsFree(void)
 
 void Variant::ArraySubscriptClear(void)
 {
-	// Change to an array type if required
-	ArrayDetailsCreate();
+    // Change to an array type if required
+    ArrayDetailsCreate();
 
-	// Reset the current subscript details
-	m_Array->DimensionsCur	= 0;
+    // Reset the current subscript details
+    m_Array->DimensionsCur    = 0;
 
 } // ArraySubscriptClear()
 
@@ -1426,14 +1426,14 @@ void Variant::ArraySubscriptClear(void)
 
 bool Variant::ArraySubscriptSetNext(int iSub)
 {
-	// Any room for another subscript?
-	if (m_Array->DimensionsCur >= VAR_SUBSCRIPT_MAX)
-		return false;
+    // Any room for another subscript?
+    if (m_Array->DimensionsCur >= VAR_SUBSCRIPT_MAX)
+        return false;
 
-	m_Array->SubscriptCur[m_Array->DimensionsCur] = iSub;
-	m_Array->DimensionsCur++;
+    m_Array->SubscriptCur[m_Array->DimensionsCur] = iSub;
+    m_Array->DimensionsCur++;
 
-	return true;
+    return true;
 
 } // ArraySubscriptSetNext()
 
@@ -1449,24 +1449,24 @@ bool Variant::ArraySubscriptSetNext(int iSub)
 
 void Variant::ArrayFree(void)
 {
-	if (m_nVarType != VAR_ARRAY || m_Array == NULL)
-		return;							// Not an array or no array details
+    if (m_nVarType != VAR_ARRAY || m_Array == NULL)
+        return;                            // Not an array or no array details
 
-	if (m_Array->Data)					// Only delete if used
-	{
-		// Delete all the individual variants' in the array
-		for (int i=0; i<m_Array->nElements; i++)
-			delete m_Array->Data[i];
+    if (m_Array->Data)                    // Only delete if used
+    {
+        // Delete all the individual variants' in the array
+        for (int i=0; i<m_Array->nElements; i++)
+            delete m_Array->Data[i];
 
-		// Delete the array
-		delete [] m_Array->Data;
-		m_Array->Data = NULL;
-	}
+        // Delete the array
+        delete [] m_Array->Data;
+        m_Array->Data = NULL;
+    }
 
-	// Zero everything for possible reuse
-	m_Array->nElements		= 0;
-	m_Array->Dimensions		= 0;
-	//DimensionsCur	= 0;				// DO NOT UNCOMMENT
+    // Zero everything for possible reuse
+    m_Array->nElements        = 0;
+    m_Array->Dimensions        = 0;
+    //DimensionsCur    = 0;                // DO NOT UNCOMMENT
 
 } // ArrayFree()
 
@@ -1479,37 +1479,37 @@ void Variant::ArrayFree(void)
 
 bool Variant::ArrayDim(void)
 {
-	int	i;
+    int    i;
 
-	if (m_nVarType != VAR_ARRAY)
-		return false;							// ArrayCreateDetails not been called!
+    if (m_nVarType != VAR_ARRAY)
+        return false;                            // ArrayCreateDetails not been called!
 
-	// Delete any cached string values and any previous array DATA - Do not use
-	// ReInit() as the SubScriptCur contains valid data that would be destroyed
-	InvalidateStringValue();
-	ArrayFree();
+    // Delete any cached string values and any previous array DATA - Do not use
+    // ReInit() as the SubScriptCur contains valid data that would be destroyed
+    InvalidateStringValue();
+    ArrayFree();
 
-	// Copy the subscripts required and work out the total number of elements
-	m_Array->Dimensions	= m_Array->DimensionsCur;
-	m_Array->nElements	= 1;
-	for (i=0; i<m_Array->Dimensions; i++)
-	{
-		m_Array->Subscript[i] = m_Array->SubscriptCur[i];
-		m_Array->nElements = m_Array->nElements * m_Array->Subscript[i];
+    // Copy the subscripts required and work out the total number of elements
+    m_Array->Dimensions    = m_Array->DimensionsCur;
+    m_Array->nElements    = 1;
+    for (i=0; i<m_Array->Dimensions; i++)
+    {
+        m_Array->Subscript[i] = m_Array->SubscriptCur[i];
+        m_Array->nElements = m_Array->nElements * m_Array->Subscript[i];
 
-		// Check if the array is too big (4096*4096 (0x1000000) elements is 64MB JUST FOR THE TABLE!)
-		if ( m_Array->nElements >= 0x1000000 )
-			return false;						// Abort
-	}
+        // Check if the array is too big (4096*4096 (0x1000000) elements is 64MB JUST FOR THE TABLE!)
+        if ( m_Array->nElements >= 0x1000000 )
+            return false;                        // Abort
+    }
 
-	// Create space for the array (effectively an array of Variant POINTERS)
-	m_Array->Data = new Variant *[m_Array->nElements];
+    // Create space for the array (effectively an array of Variant POINTERS)
+    m_Array->Data = new Variant *[m_Array->nElements];
 
-	// We will allocate array entries when required, so just NULL for now
-	for (i=0; i<m_Array->nElements; i++)
-		m_Array->Data[i] = NULL;
+    // We will allocate array entries when required, so just NULL for now
+    for (i=0; i<m_Array->nElements; i++)
+        m_Array->Data[i] = NULL;
 
-	return true;
+    return true;
 
 } // ArrayDim()
 
@@ -1524,14 +1524,14 @@ bool Variant::ArrayDim(void)
 // n = 3
 //
 // s1 s2 s3
-// 0  0  0		element 0
-// 0  0  1		element 1
-// 0  1  0 		element 2
-// 0  1  1		element 3
-// 1  0  0		element 4
-// 1  0  1		element 5
-// 1  1  0 		element 6
-// 1  1  1		element 7
+// 0  0  0        element 0
+// 0  0  1        element 1
+// 0  1  0         element 2
+// 0  1  1        element 3
+// 1  0  0        element 4
+// 1  0  1        element 5
+// 1  1  0         element 6
+// 1  1  1        element 7
 //
 // index  = 0
 // index += s1 * b * c
@@ -1548,29 +1548,29 @@ bool Variant::ArrayDim(void)
 ///////////////////////////////////////////////////////////////////////////////
 int Variant::ArrayGetElem(void)
 {
-	int i, j;
-	int index, mult;
+    int i, j;
+    int index, mult;
 
-	// Do we have array data?
-	if (m_nVarType != VAR_ARRAY)
-		return -1;
+    // Do we have array data?
+    if (m_nVarType != VAR_ARRAY)
+        return -1;
 
-	// Get for correct number of subscripts/size etc
-	if (ArrayBoundsCheck() == false)
-		return -1;
+    // Get for correct number of subscripts/size etc
+    if (ArrayBoundsCheck() == false)
+        return -1;
 
-	// Convert our multidimensional array to an element in our internal single dimension array
-	index = 0;
-	for (i=0; i<m_Array->Dimensions; i++)
-	{
-		mult = 1;
-		for (j=i+1; j<m_Array->Dimensions; j++)
-			mult = mult * m_Array->Subscript[j];
+    // Convert our multidimensional array to an element in our internal single dimension array
+    index = 0;
+    for (i=0; i<m_Array->Dimensions; i++)
+    {
+        mult = 1;
+        for (j=i+1; j<m_Array->Dimensions; j++)
+            mult = mult * m_Array->Subscript[j];
 
-		mult = mult * m_Array->SubscriptCur[i];
-		index += mult;
-	}
-	return index;
+        mult = mult * m_Array->SubscriptCur[i];
+        index += mult;
+    }
+    return index;
 }
 
 
@@ -1585,21 +1585,21 @@ int Variant::ArrayGetElem(void)
 
 Variant* Variant::ArrayGetRef(bool bCreate)
 {
-	int	index;
+    int    index;
 
-	index = ArrayGetElem();
+    index = ArrayGetElem();
 
-	if (index < 0)
-	// not a valid element
-		return NULL;
+    if (index < 0)
+    // not a valid element
+        return NULL;
 
-	// index is the entry we need to return, if required, allocate the entry
-	// otherwise return previously allocated entry
+    // index is the entry we need to return, if required, allocate the entry
+    // otherwise return previously allocated entry
 
-	if (m_Array->Data[index] == NULL && bCreate)
-		m_Array->Data[index] = new Variant;
+    if (m_Array->Data[index] == NULL && bCreate)
+        m_Array->Data[index] = new Variant;
 
-	return m_Array->Data[index];
+    return m_Array->Data[index];
 
 } // ArrayGetRef()
 
@@ -1610,19 +1610,19 @@ Variant* Variant::ArrayGetRef(bool bCreate)
 
 bool Variant::ArrayBoundsCheck(void)
 {
-	int	i;
+    int    i;
 
-	if (m_Array->Dimensions != m_Array->DimensionsCur)
-		return false;
+    if (m_Array->Dimensions != m_Array->DimensionsCur)
+        return false;
 
-	for (i=0; i<m_Array->Dimensions; i++)
-	{
-		if (m_Array->SubscriptCur[i] < 0 || m_Array->SubscriptCur[i] >= m_Array->Subscript[i])
-			return false;
-	}
+    for (i=0; i<m_Array->Dimensions; i++)
+    {
+        if (m_Array->SubscriptCur[i] < 0 || m_Array->SubscriptCur[i] >= m_Array->Subscript[i])
+            return false;
+    }
 
-	// If we get here then the requested subscript is in bounds
-	return true;
+    // If we get here then the requested subscript is in bounds
+    return true;
 
 } // ArrayBoundsCheck()
 
@@ -1635,17 +1635,17 @@ bool Variant::ArrayBoundsCheck(void)
 
 int Variant::ArrayGetBound(int iSub)
 {
-	if (m_Array == NULL)
-		// not an array.  No dimensions and all dimensions read 0.
-		return 0;
-	else if (iSub == 0)
-		// If asks for 0, return number of dimensions
-		return m_Array->Dimensions;
-	else if (iSub < 0 || iSub > m_Array->Dimensions)
-		// Out of bounds.  Array does not have that dimension
-		return 0;								// failure
-	else
-		return m_Array->Subscript[iSub-1];
+    if (m_Array == NULL)
+        // not an array.  No dimensions and all dimensions read 0.
+        return 0;
+    else if (iSub == 0)
+        // If asks for 0, return number of dimensions
+        return m_Array->Dimensions;
+    else if (iSub < 0 || iSub > m_Array->Dimensions)
+        // Out of bounds.  Array does not have that dimension
+        return 0;                                // failure
+    else
+        return m_Array->Subscript[iSub-1];
 
 } // ArrayGetBound()
 
@@ -1659,42 +1659,42 @@ int Variant::ArrayGetBound(int iSub)
 ///////////////////////////////////////////////////////////////////////////////
 bool Variant::ArrayCopy(Variant &other)
 {
-	int i;
-	Variant *vOldValue, *vLocal;
+    int i;
+    Variant *vOldValue, *vLocal;
 
-	// make sure that this is an array and that the other is the same size.
-	if (m_Array->Dimensions == 0 || m_Array->Dimensions != other.m_Array->Dimensions)
-		return false;
-	// reset subscripts for comparison
-	for (i=0; i<m_Array->Dimensions; ++i) {
-		m_Array->SubscriptCur[i]=0;
-		other.m_Array->SubscriptCur[i]=0;
-	}
-	// start copying
-	do {
-		// check if variant in other exists
-		i = other.ArrayGetElem();
-		if (i < 0)
-			vOldValue = NULL;
-		else
-			vOldValue = other.m_Array->Data[i];
-		if (vOldValue != NULL) {
-			// copy variant
-			vLocal = ArrayGetRef();
-			if (vLocal != NULL)
-				*vLocal = *vOldValue;
-		}
-		// increment search locations
-		for (i=0; i<m_Array->Dimensions; ++i) {
-			++m_Array->SubscriptCur[i];
-			++other.m_Array->SubscriptCur[i];
-			if (ArrayBoundsCheck() && other.ArrayBoundsCheck())
-				break;
-			m_Array->SubscriptCur[i]=0;
-			other.m_Array->SubscriptCur[i]=0;
-		}
-	} while (i<m_Array->Dimensions);
+    // make sure that this is an array and that the other is the same size.
+    if (m_Array->Dimensions == 0 || m_Array->Dimensions != other.m_Array->Dimensions)
+        return false;
+    // reset subscripts for comparison
+    for (i=0; i<m_Array->Dimensions; ++i) {
+        m_Array->SubscriptCur[i]=0;
+        other.m_Array->SubscriptCur[i]=0;
+    }
+    // start copying
+    do {
+        // check if variant in other exists
+        i = other.ArrayGetElem();
+        if (i < 0)
+            vOldValue = NULL;
+        else
+            vOldValue = other.m_Array->Data[i];
+        if (vOldValue != NULL) {
+            // copy variant
+            vLocal = ArrayGetRef();
+            if (vLocal != NULL)
+                *vLocal = *vOldValue;
+        }
+        // increment search locations
+        for (i=0; i<m_Array->Dimensions; ++i) {
+            ++m_Array->SubscriptCur[i];
+            ++other.m_Array->SubscriptCur[i];
+            if (ArrayBoundsCheck() && other.ArrayBoundsCheck())
+                break;
+            m_Array->SubscriptCur[i]=0;
+            other.m_Array->SubscriptCur[i]=0;
+        }
+    } while (i<m_Array->Dimensions);
 
-	return false;
+    return false;
 
 } // ArrayCopy

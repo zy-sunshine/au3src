@@ -4,8 +4,8 @@
 // AutoIt v3
 //
 // Copyright (C)1999-2005:
-//		- Jonathan Bennett <jon at hiddensoft dot com>
-//		- See "AUTHORS.txt" for contributors.
+//        - Jonathan Bennett <jon at hiddensoft dot com>
+//        - See "AUTHORS.txt" for contributors.
 //
 // This file is part of AutoIt.
 //
@@ -44,10 +44,10 @@
 
 
 // Includes
-#include "StdAfx.h"								// Pre-compiled headers
+#include "StdAfx.h"                                // Pre-compiled headers
 
-#ifndef _MSC_VER								// Includes for non-MS compilers
-	#include <stdio.h>
+#ifndef _MSC_VER                                // Includes for non-MS compilers
+    #include <stdio.h>
 #endif
 
 #include "variable_list.h"
@@ -69,7 +69,7 @@ VariableList::VariableList() : m_lpRoot(NULL)
 
 VariableList::~VariableList()
 {
-	removenode(m_lpRoot);
+    removenode(m_lpRoot);
 
 } // ~VariableList()
 
@@ -81,24 +81,24 @@ VariableList::~VariableList()
 
 void VariableList::removenode(VarNode *lpRoot)
 {
-	if (lpRoot == NULL)
-		return;
+    if (lpRoot == NULL)
+        return;
 
-	if (lpRoot->lpLeft)
-		removenode(lpRoot->lpLeft);
-	if (lpRoot->lpRight)
-		removenode(lpRoot->lpRight);
+    if (lpRoot->lpLeft)
+        removenode(lpRoot->lpLeft);
+    if (lpRoot->lpRight)
+        removenode(lpRoot->lpRight);
 
-	// All children deleted, now delete this node
+    // All children deleted, now delete this node
 
-	// Do we need to free the memory for the variant, if it is a reference var then
-	// we don't have to as its owner will do it, if it is a normal variant then we
-	// must do it.
-	if (lpRoot->nType == VARTABLE_VARIANT)
-		delete lpRoot->pvVariant;			// Delete the variant
+    // Do we need to free the memory for the variant, if it is a reference var then
+    // we don't have to as its owner will do it, if it is a normal variant then we
+    // must do it.
+    if (lpRoot->nType == VARTABLE_VARIANT)
+        delete lpRoot->pvVariant;            // Delete the variant
 
-	delete [] lpRoot->szName;				// Delete the string name
-	delete lpRoot;							// Delete the node itself
+    delete [] lpRoot->szName;                // Delete the string name
+    delete lpRoot;                            // Delete the node itself
 
 } // removenode()
 
@@ -110,23 +110,23 @@ void VariableList::removenode(VarNode *lpRoot)
 
 VarNode* VariableList::findvarnode(const char *szName)
 {
-	VarNode	*lpTemp = m_lpRoot;
-	int	nRes;
+    VarNode    *lpTemp = m_lpRoot;
+    int    nRes;
 
-	while (lpTemp != NULL)
-	{
-		nRes = strcmp(lpTemp->szName, szName);
+    while (lpTemp != NULL)
+    {
+        nRes = strcmp(lpTemp->szName, szName);
 
-		if (nRes < 0)
-			lpTemp = lpTemp->lpLeft;			// Less than (left child)
-		else if (nRes > 0)
-			lpTemp = lpTemp->lpRight;			// Greater than (right child)
-		else
-			return lpTemp;						// Found
-	}
+        if (nRes < 0)
+            lpTemp = lpTemp->lpLeft;            // Less than (left child)
+        else if (nRes > 0)
+            lpTemp = lpTemp->lpRight;            // Greater than (right child)
+        else
+            return lpTemp;                        // Found
+    }
 
-	// Not found
-	return NULL;
+    // Not found
+    return NULL;
 
 } // findvarnode()
 
@@ -138,15 +138,15 @@ VarNode* VariableList::findvarnode(const char *szName)
 
 Variant* VariableList::findvar(const char *szName, bool &bConst)
 {
-	VarNode *lpTemp = findvarnode(szName);
+    VarNode *lpTemp = findvarnode(szName);
 
-	if (lpTemp)
-	{
-		bConst = lpTemp->bConst;
-		return lpTemp->pvVariant; 			// Found!  Return a pointer to it
-	}
-	else
-		return NULL;
+    if (lpTemp)
+    {
+        bConst = lpTemp->bConst;
+        return lpTemp->pvVariant;             // Found!  Return a pointer to it
+    }
+    else
+        return NULL;
 
 } // findvar()
 
@@ -158,30 +158,30 @@ Variant* VariableList::findvar(const char *szName, bool &bConst)
 
 void VariableList::addvar(const char *szName, const Variant &vVar, bool bConst)
 {
-	VarNode	*lpTemp = findvarnode(szName);
+    VarNode    *lpTemp = findvarnode(szName);
 
-	// Does this variable already exist?
-	if (lpTemp)
-	{
-		// Found, update entry
-		*(lpTemp->pvVariant) = vVar;
-		return;
-	}
+    // Does this variable already exist?
+    if (lpTemp)
+    {
+        // Found, update entry
+        *(lpTemp->pvVariant) = vVar;
+        return;
+    }
 
-	// Not found, add a new node
-	lpTemp				= new VarNode;
+    // Not found, add a new node
+    lpTemp                = new VarNode;
 
-	lpTemp->szName		= new char[strlen(szName)+1];
-	strcpy(lpTemp->szName, szName);
+    lpTemp->szName        = new char[strlen(szName)+1];
+    strcpy(lpTemp->szName, szName);
 
-	lpTemp->nType		= VARTABLE_VARIANT;
-	lpTemp->pvVariant	= new Variant;
-	*(lpTemp->pvVariant)= vVar;
-	lpTemp->bConst		= bConst;
-	lpTemp->lpLeft		= NULL;
-	lpTemp->lpRight		= NULL;
+    lpTemp->nType        = VARTABLE_VARIANT;
+    lpTemp->pvVariant    = new Variant;
+    *(lpTemp->pvVariant)= vVar;
+    lpTemp->bConst        = bConst;
+    lpTemp->lpLeft        = NULL;
+    lpTemp->lpRight        = NULL;
 
-	addnode(szName, lpTemp);
+    addnode(szName, lpTemp);
 
 } // addvar()
 
@@ -193,30 +193,30 @@ void VariableList::addvar(const char *szName, const Variant &vVar, bool bConst)
 
 void VariableList::addref(const char *szName, Variant *pvVar)
 {
-	VarNode	*lpTemp = findvarnode(szName);
+    VarNode    *lpTemp = findvarnode(szName);
 
-	// Does this variable already exist?
-	if (lpTemp)
-	{
-		// Found, update entry
-		lpTemp->pvVariant = pvVar;
-		return;
-	}
+    // Does this variable already exist?
+    if (lpTemp)
+    {
+        // Found, update entry
+        lpTemp->pvVariant = pvVar;
+        return;
+    }
 
-	// Not found, add a new node
-	lpTemp				= new VarNode;
+    // Not found, add a new node
+    lpTemp                = new VarNode;
 
-	lpTemp->szName		= new char[strlen(szName)+1];
-	strcpy(lpTemp->szName, szName);
+    lpTemp->szName        = new char[strlen(szName)+1];
+    strcpy(lpTemp->szName, szName);
 
-	lpTemp->nType		= VARTABLE_REFERENCE;
-	lpTemp->pvVariant	= pvVar;				// Instead add a reference
-	lpTemp->bConst		= false;
-	lpTemp->lpLeft		= NULL;
-	lpTemp->lpRight		= NULL;
+    lpTemp->nType        = VARTABLE_REFERENCE;
+    lpTemp->pvVariant    = pvVar;                // Instead add a reference
+    lpTemp->bConst        = false;
+    lpTemp->lpLeft        = NULL;
+    lpTemp->lpRight        = NULL;
 
-	// Add this node to the tree
-	addnode(szName, lpTemp);
+    // Add this node to the tree
+    addnode(szName, lpTemp);
 
 } // addref()
 
@@ -230,47 +230,47 @@ void VariableList::addref(const char *szName, Variant *pvVar)
 
 void VariableList::addnode(const char *szName, VarNode *lpNewNode)
 {
-	if (m_lpRoot == NULL)
-	{
-		// Very first entry
-		m_lpRoot = lpNewNode;
-		return;
-	}
+    if (m_lpRoot == NULL)
+    {
+        // Very first entry
+        m_lpRoot = lpNewNode;
+        return;
+    }
 
-	// Not the root entry, Find a place in the tree to add this node
-	// Note we only have to check for < and > because we know from above that
-	// the exact entry does NOT exist
-	VarNode	*lpCur = m_lpRoot;
-	int		nRes;
+    // Not the root entry, Find a place in the tree to add this node
+    // Note we only have to check for < and > because we know from above that
+    // the exact entry does NOT exist
+    VarNode    *lpCur = m_lpRoot;
+    int        nRes;
 
-	for (;;)
-	{
-		nRes = strcmp(lpCur->szName, szName);
+    for (;;)
+    {
+        nRes = strcmp(lpCur->szName, szName);
 
-		if (nRes < 0)
-		{
-			// Less than (left child)
-			// Another node to check or do we add the new node here?
-			if (lpCur->lpLeft)
-				lpCur = lpCur->lpLeft;			// Next node
-			else
-			{
-				lpCur->lpLeft = lpNewNode;		// Add the node here
-				break;
-			}
-		}
-		else
-		{
-			// Greater than (right child)
-			if (lpCur->lpRight)
-				lpCur = lpCur->lpRight;			// Next node
-			else
-			{
-				lpCur->lpRight = lpNewNode;		// Add the node here
-				break;
-			}
-		}
-	}
+        if (nRes < 0)
+        {
+            // Less than (left child)
+            // Another node to check or do we add the new node here?
+            if (lpCur->lpLeft)
+                lpCur = lpCur->lpLeft;            // Next node
+            else
+            {
+                lpCur->lpLeft = lpNewNode;        // Add the node here
+                break;
+            }
+        }
+        else
+        {
+            // Greater than (right child)
+            if (lpCur->lpRight)
+                lpCur = lpCur->lpRight;            // Next node
+            else
+            {
+                lpCur->lpRight = lpNewNode;        // Add the node here
+                break;
+            }
+        }
+    }
 
 } // addnode()
 

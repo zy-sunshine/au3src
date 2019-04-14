@@ -4,8 +4,8 @@
 // AutoIt v3
 //
 // Copyright (C)1999-2005:
-//		- Jonathan Bennett <jon at hiddensoft dot com>
-//		- See "AUTHORS.txt" for contributors.
+//        - Jonathan Bennett <jon at hiddensoft dot com>
+//        - See "AUTHORS.txt" for contributors.
 //
 // This file is part of AutoIt.
 //
@@ -45,10 +45,10 @@
 
 
 // Includes
-#include "StdAfx.h"								// Pre-compiled headers
+#include "StdAfx.h"                                // Pre-compiled headers
 
-#ifndef _MSC_VER								// Includes for non-MS compilers
-	#include <stdio.h>
+#ifndef _MSC_VER                                // Includes for non-MS compilers
+    #include <stdio.h>
 #endif
 
 #include "stack_int_datatype.h"
@@ -70,16 +70,16 @@ StackInt::StackInt() : m_nItems(0), m_lpTop(NULL)
 
 StackInt::~StackInt()
 {
-	StackIntNode	*lpTemp2;
+    StackIntNode    *lpTemp2;
 
-	StackIntNode *lpTemp = m_lpTop;
+    StackIntNode *lpTemp = m_lpTop;
 
-	while(lpTemp != NULL)
-	{
-		lpTemp2 = lpTemp->lpPrev;
-		delete lpTemp;
-		lpTemp = lpTemp2;
-	}
+    while(lpTemp != NULL)
+    {
+        lpTemp2 = lpTemp->lpPrev;
+        delete lpTemp;
+        lpTemp = lpTemp2;
+    }
 
 } // ~StackInt()
 
@@ -91,18 +91,18 @@ StackInt::~StackInt()
 
 void StackInt::push(const int &nItem)
 {
-	// Create a new node
-	StackIntNode *lpTemp = new StackIntNode;
-	lpTemp->nItem	= nItem;
+    // Create a new node
+    StackIntNode *lpTemp = new StackIntNode;
+    lpTemp->nItem    = nItem;
 
-	// Add it to the top
-	if (m_lpTop)
-		lpTemp->lpPrev = m_lpTop;
-	else
-		lpTemp->lpPrev = NULL;
+    // Add it to the top
+    if (m_lpTop)
+        lpTemp->lpPrev = m_lpTop;
+    else
+        lpTemp->lpPrev = NULL;
 
-	m_lpTop	= lpTemp;
-	++m_nItems;
+    m_lpTop    = lpTemp;
+    ++m_nItems;
 
 } // push()
 
@@ -114,15 +114,15 @@ void StackInt::push(const int &nItem)
 
 void StackInt::pop(void)
 {
-	if (m_lpTop)
-	{
-		StackIntNode *lpTemp = m_lpTop->lpPrev;
-		delete m_lpTop;
-		m_lpTop = lpTemp;
-		--m_nItems;
-	}
-	else
-		return;
+    if (m_lpTop)
+    {
+        StackIntNode *lpTemp = m_lpTop->lpPrev;
+        delete m_lpTop;
+        m_lpTop = lpTemp;
+        --m_nItems;
+    }
+    else
+        return;
 
 } // pop()
 
@@ -134,10 +134,10 @@ void StackInt::pop(void)
 
 bool StackInt::empty(void) const
 {
-	if (m_nItems)
-		return false;
-	else
-		return true;
+    if (m_nItems)
+        return false;
+    else
+        return true;
 
 } // empty()
 
@@ -149,13 +149,13 @@ bool StackInt::empty(void) const
 
 int& StackInt::top(void)
 {
-	if (!m_nItems)
-	{
-		m_nNull = 0;
-		return m_nNull;							// Dummy value
-	}
-	else
-		return m_lpTop->nItem;
+    if (!m_nItems)
+    {
+        m_nNull = 0;
+        return m_nNull;                            // Dummy value
+    }
+    else
+        return m_lpTop->nItem;
 
 } // top()
 

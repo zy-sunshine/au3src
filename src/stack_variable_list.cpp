@@ -4,8 +4,8 @@
 // AutoIt v3
 //
 // Copyright (C)1999-2005:
-//		- Jonathan Bennett <jon at hiddensoft dot com>
-//		- See "AUTHORS.txt" for contributors.
+//        - Jonathan Bennett <jon at hiddensoft dot com>
+//        - See "AUTHORS.txt" for contributors.
 //
 // This file is part of AutoIt.
 //
@@ -44,10 +44,10 @@
 
 
 // Includes
-#include "StdAfx.h"								// Pre-compiled headers
+#include "StdAfx.h"                                // Pre-compiled headers
 
-#ifndef _MSC_VER								// Includes for non-MS compilers
-	#include <stdio.h>
+#ifndef _MSC_VER                                // Includes for non-MS compilers
+    #include <stdio.h>
 #endif
 
 #include "stack_variable_list.h"
@@ -69,17 +69,17 @@ StackVarList::StackVarList() : m_nItems(0), m_lpTop(NULL)
 
 StackVarList::~StackVarList()
 {
-	StackVarListNode	*lpTemp, *lpTemp2;
+    StackVarListNode    *lpTemp, *lpTemp2;
 
-	lpTemp = m_lpTop;
+    lpTemp = m_lpTop;
 
-	while(lpTemp != NULL)
-	{
-		lpTemp2 = lpTemp->lpPrev;
-		delete lpTemp->lpList;					// Delete list entry
-		delete lpTemp;							// Delete the actual node
-		lpTemp = lpTemp2;
-	}
+    while(lpTemp != NULL)
+    {
+        lpTemp2 = lpTemp->lpPrev;
+        delete lpTemp->lpList;                    // Delete list entry
+        delete lpTemp;                            // Delete the actual node
+        lpTemp = lpTemp2;
+    }
 
 } // ~StackVarList()
 
@@ -91,20 +91,20 @@ StackVarList::~StackVarList()
 
 void StackVarList::push(void)
 {
-	StackVarListNode	*lpTemp;
+    StackVarListNode    *lpTemp;
 
-	// Create a new node, and a new blank list entry
-	lpTemp			= new StackVarListNode;
-	lpTemp->lpList	= new VariableList;
+    // Create a new node, and a new blank list entry
+    lpTemp            = new StackVarListNode;
+    lpTemp->lpList    = new VariableList;
 
-	// Add it to the top
-	if (m_lpTop)
-		lpTemp->lpPrev = m_lpTop;
-	else
-		lpTemp->lpPrev = NULL;					// First entry
+    // Add it to the top
+    if (m_lpTop)
+        lpTemp->lpPrev = m_lpTop;
+    else
+        lpTemp->lpPrev = NULL;                    // First entry
 
-	m_lpTop	= lpTemp;
-	m_nItems++;
+    m_lpTop    = lpTemp;
+    m_nItems++;
 
 } // push()
 
@@ -116,18 +116,18 @@ void StackVarList::push(void)
 
 void StackVarList::pop(void)
 {
-	StackVarListNode	*lpTemp;
+    StackVarListNode    *lpTemp;
 
-	if (m_lpTop)
-	{
-		lpTemp	= m_lpTop->lpPrev;
-		delete m_lpTop->lpList;					// Delete list entry
-		delete m_lpTop;							// Delete the actual node
-		m_lpTop = lpTemp;
-		m_nItems--;
-	}
-	else
-		return;
+    if (m_lpTop)
+    {
+        lpTemp    = m_lpTop->lpPrev;
+        delete m_lpTop->lpList;                    // Delete list entry
+        delete m_lpTop;                            // Delete the actual node
+        m_lpTop = lpTemp;
+        m_nItems--;
+    }
+    else
+        return;
 
 } // pop()
 
@@ -139,10 +139,10 @@ void StackVarList::pop(void)
 
 VariableList* StackVarList::top(void)
 {
-	if (!m_nItems)
-		return NULL;
-	else
-		return m_lpTop->lpList;
+    if (!m_nItems)
+        return NULL;
+    else
+        return m_lpTop->lpList;
 
 } // top()
 

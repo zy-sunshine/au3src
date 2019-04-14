@@ -20,7 +20,7 @@
             (02/11/97) added tanh intrinsic
             (09/01/98) added M_ constants
             (27/08/02) renamed MS Visual C/C++ qmath.h
-			(11/01/04) modified qmathTan() - J.Bennett <jon@hiddensoft.com>
+            (11/01/04) modified qmathTan() - J.Bennett <jon@hiddensoft.com>
 
         references       :
             ArtNouveaU Tiny Library,
@@ -44,7 +44,7 @@
 
                            double _QMATH_LINK qmathSqrt(double __x)
                            {
-	                           __asm fld        qword ptr __x
+                               __asm fld        qword ptr __x
                                __asm fsqrt
                            }
 
@@ -64,9 +64,9 @@
 #ifndef _QUICKMATH_H_INCLUDED
 #define _QUICKMATH_H_INCLUDED
 
-#ifdef _MSC_VER								// Visual C
-	#pragma warning(push)
-	#pragma warning(disable : 4244 4100 4725)	// Disable just for this file
+#ifdef _MSC_VER                                // Visual C
+    #pragma warning(push)
+    #pragma warning(disable : 4244 4100 4725)    // Disable just for this file
 #endif
 
 #ifdef __cplusplus
@@ -140,295 +140,295 @@ MOV  eax,[dword ptr i_temp]   ; eax = 16.16
 
 _QMATH_INLINE long qmathFtstNeg(float inval)
 {
-	return ((*(long *) &inval) > 0x80000000);
+    return ((*(long *) &inval) > 0x80000000);
 }
 
 
 _QMATH_INLINE long qmathFtstPos(float inval)
 {
-	return ((*(long *) &inval) < 0x80000000);
+    return ((*(long *) &inval) < 0x80000000);
 }
 
 
 _QMATH_INLINE long qmathFtstZero(float inval)
 {
-	return ((*(long *) &inval) + (*(long *) &inval));
+    return ((*(long *) &inval) + (*(long *) &inval));
 }
 
 
 _QMATH_INLINE long qmathFcompGreatThan(float invala, float invalb)
 {
-	return ((*(long *) &invala) > (*(long *) &invalb));
+    return ((*(long *) &invala) > (*(long *) &invalb));
 }
 
 
 _QMATH_INLINE long qmathFcompLessThan(float invala, float invalb)
 {
-	return ((*(long *) &invala) < (*(long *) &invalb));
+    return ((*(long *) &invala) < (*(long *) &invalb));
 }
 
 
 _QMATH_INLINE short qmathFistShort(float inval)
 {
-	float dtemp = FIST_SHORT + inval;
+    float dtemp = FIST_SHORT + inval;
 
-	return ((*(short *) &dtemp) & 0x1FFFFF);
+    return ((*(short *) &dtemp) & 0x1FFFFF);
 }
 
 
 _QMATH_INLINE long qmathFistLong(float inval)
 {
-	double dtemp = FIST_MAGIC + inval;
+    double dtemp = FIST_MAGIC + inval;
 
-	return ((*(long *) &dtemp) - 0x80000000);
+    return ((*(long *) &dtemp) - 0x80000000);
 }
 
 
 _QMATH_INLINE long qmathFist0131(float inval)
 {
-	double dtemp = FIST_M0131 + inval;
+    double dtemp = FIST_M0131 + inval;
 
-	return (*(long *) &dtemp);
+    return (*(long *) &dtemp);
 }
 
 
 _QMATH_INLINE long qmathFist0230(float inval)
 {
-	double dtemp = FIST_M0230 + inval;
+    double dtemp = FIST_M0230 + inval;
 
-	return (*(long *) &dtemp);
+    return (*(long *) &dtemp);
 }
 
 
 _QMATH_INLINE long qmathFist0329(float inval)
 {
-	double dtemp = FIST_M0329 + inval;
+    double dtemp = FIST_M0329 + inval;
 
-	return (*(long *) &dtemp);
+    return (*(long *) &dtemp);
 }
 
 
 _QMATH_INLINE long qmathFist0428(float inval)
 {
-	double dtemp = FIST_M0428 + inval;
+    double dtemp = FIST_M0428 + inval;
 
-	return (*(long *) &dtemp);
+    return (*(long *) &dtemp);
 }
 
 
 _QMATH_INLINE long qmathFist0527(float inval)
 {
-	double dtemp = FIST_M0527 + inval;
+    double dtemp = FIST_M0527 + inval;
 
-	return (*(long *) &dtemp);
+    return (*(long *) &dtemp);
 }
 
 
 _QMATH_INLINE long qmathFist0626(float inval)
 {
-	double dtemp = FIST_M0626 + inval;
+    double dtemp = FIST_M0626 + inval;
 
-	return (*(long *) &dtemp);
+    return (*(long *) &dtemp);
 }
 
 
 _QMATH_INLINE long qmathFist0725(float inval)
 {
-	double dtemp = FIST_M0725 + inval;
+    double dtemp = FIST_M0725 + inval;
 
-	return (*(long *) &dtemp);
+    return (*(long *) &dtemp);
 }
 
 
 _QMATH_INLINE long qmathFist0824(float inval)
 {
-	double dtemp = FIST_M0824 + inval;
+    double dtemp = FIST_M0824 + inval;
 
-	return (*(long *) &dtemp);
+    return (*(long *) &dtemp);
 }
 
 
 _QMATH_INLINE long qmathFist0923(float inval)
 {
-	double dtemp = FIST_M0923 + inval;
+    double dtemp = FIST_M0923 + inval;
 
-	return (*(long *) &dtemp);
+    return (*(long *) &dtemp);
 }
 
 
 _QMATH_INLINE long qmathFist1022(float inval)
 {
-	double dtemp = FIST_M1022 + inval;
+    double dtemp = FIST_M1022 + inval;
 
-	return (*(long *) &dtemp);
+    return (*(long *) &dtemp);
 }
 
 
 _QMATH_INLINE long qmathFist1121(float inval)
 {
-	double dtemp = FIST_M1121 + inval;
+    double dtemp = FIST_M1121 + inval;
 
-	return (*(long *) &dtemp);
+    return (*(long *) &dtemp);
 }
 
 
 _QMATH_INLINE long qmathFist1220(float inval)
 {
-	double dtemp = FIST_M1220 + inval;
+    double dtemp = FIST_M1220 + inval;
 
-	return (*(long *) &dtemp);
+    return (*(long *) &dtemp);
 }
 
 
 _QMATH_INLINE long qmathFist1319(float inval)
 {
-	double dtemp = FIST_M1319 + inval;
+    double dtemp = FIST_M1319 + inval;
 
-	return (*(long *) &dtemp);
+    return (*(long *) &dtemp);
 }
 
 
 _QMATH_INLINE long qmathFist1418(float inval)
 {
-	double dtemp = FIST_M1418 + inval;
+    double dtemp = FIST_M1418 + inval;
 
-	return (*(long *) &dtemp);
+    return (*(long *) &dtemp);
 }
 
 
 _QMATH_INLINE long qmathFist1517(float inval)
 {
-	double dtemp = FIST_M1517 + inval;
+    double dtemp = FIST_M1517 + inval;
 
-	return (*(long *) &dtemp);
+    return (*(long *) &dtemp);
 }
 
 
 _QMATH_INLINE long qmathFist1616(float inval)
 {
-	double dtemp = FIST_M1616 + inval;
+    double dtemp = FIST_M1616 + inval;
 
-	return (*(long *) &dtemp);
+    return (*(long *) &dtemp);
 }
 
 
 _QMATH_INLINE long qmathFist1715(float inval)
 {
-	double dtemp = FIST_M1715 + inval;
+    double dtemp = FIST_M1715 + inval;
 
-	return (*(long *) &dtemp);
+    return (*(long *) &dtemp);
 }
 
 
 _QMATH_INLINE long qmathFist1814(float inval)
 {
-	double dtemp = FIST_M1814 + inval;
+    double dtemp = FIST_M1814 + inval;
 
-	return (*(long *) &dtemp);
+    return (*(long *) &dtemp);
 }
 
 
 _QMATH_INLINE long qmathFist1913(float inval)
 {
-	double dtemp = FIST_M1913 + inval;
+    double dtemp = FIST_M1913 + inval;
 
-	return (*(long *) &dtemp);
+    return (*(long *) &dtemp);
 }
 
 
 _QMATH_INLINE long qmathFist2012(float inval)
 {
-	double dtemp = FIST_M2012 + inval;
+    double dtemp = FIST_M2012 + inval;
 
-	return (*(long *) &dtemp);
+    return (*(long *) &dtemp);
 }
 
 
 _QMATH_INLINE long qmathFist2111(float inval)
 {
-	double dtemp = FIST_M2111 + inval;
+    double dtemp = FIST_M2111 + inval;
 
-	return (*(long *) &dtemp);
+    return (*(long *) &dtemp);
 }
 
 
 _QMATH_INLINE long qmathFist2210(float inval)
 {
-	double dtemp = FIST_M2210 + inval;
+    double dtemp = FIST_M2210 + inval;
 
-	return (*(long *) &dtemp);
+    return (*(long *) &dtemp);
 }
 
 
 _QMATH_INLINE long qmathFist2309(float inval)
 {
-	double dtemp = FIST_M2309 + inval;
+    double dtemp = FIST_M2309 + inval;
 
-	return (*(long *) &dtemp);
+    return (*(long *) &dtemp);
 }
 
 
 _QMATH_INLINE long qmathFist2408(float inval)
 {
-	double dtemp = FIST_M2408 + inval;
+    double dtemp = FIST_M2408 + inval;
 
-	return (*(long *) &dtemp);
+    return (*(long *) &dtemp);
 }
 
 
 _QMATH_INLINE long qmathFist2507(float inval)
 {
-	double dtemp = FIST_M2507 + inval;
+    double dtemp = FIST_M2507 + inval;
 
-	return (*(long *) &dtemp);
+    return (*(long *) &dtemp);
 }
 
 
 _QMATH_INLINE long qmathFist2606(float inval)
 {
-	double dtemp = FIST_M2606 + inval;
+    double dtemp = FIST_M2606 + inval;
 
-	return (*(long *) &dtemp);
+    return (*(long *) &dtemp);
 }
 
 
 _QMATH_INLINE long qmathFist2705(float inval)
 {
-	double dtemp = FIST_M2705 + inval;
+    double dtemp = FIST_M2705 + inval;
 
-	return (*(long *) &dtemp);
+    return (*(long *) &dtemp);
 }
 
 
 _QMATH_INLINE long qmathFist2804(float inval)
 {
-	double dtemp = FIST_M2804 + inval;
+    double dtemp = FIST_M2804 + inval;
 
-	return (*(long *) &dtemp);
+    return (*(long *) &dtemp);
 }
 
 
 _QMATH_INLINE long qmathFist2903(float inval)
 {
-	double dtemp = FIST_M2903 + inval;
+    double dtemp = FIST_M2903 + inval;
 
-	return (*(long *) &dtemp);
+    return (*(long *) &dtemp);
 }
 
 
 _QMATH_INLINE long qmathFist3002(float inval)
 {
-	double dtemp = FIST_M3002 + inval;
+    double dtemp = FIST_M3002 + inval;
 
-	return (*(long *) &dtemp);
+    return (*(long *) &dtemp);
 }
 
 
 _QMATH_INLINE long qmathFist3101(float inval)
 {
-	double dtemp = FIST_M3101 + inval;
+    double dtemp = FIST_M3101 + inval;
 
-	return (*(long *) &dtemp);
+    return (*(long *) &dtemp);
 }
 
 
@@ -452,9 +452,9 @@ _QMATH_INLINE long qmathFist3101(float inval)
 _QMATH_NAKED _QMATH_INLINE
 double _QMATH_LINK qmathSin(double __x)
 {
-	__asm fld		qword ptr [esp + 4]
-	__asm fsin
-	__asm ret		8
+    __asm fld        qword ptr [esp + 4]
+    __asm fsin
+    __asm ret        8
 }
 
 
@@ -463,78 +463,78 @@ static double einhalb = 0.5;
 _QMATH_NAKED _QMATH_INLINE
 double _QMATH_LINK qmathAsin(double __x)
 {
-	__asm fld		qword ptr [esp + 4]
-	__asm fld		st
-	__asm fabs
-	__asm fcom		dword ptr [einhalb]
-	__asm fstsw		ax
-	__asm sahf
-	__asm jbe		asin_kleiner
-	__asm fld1
-	__asm fsubrp	st(1), st(0)
-	__asm fld		st
-	__asm fadd		st(0), st(0)
-	__asm fxch		st(1)
-	__asm fmul		st(0), st(0)
-	__asm fsubp		st(1), st(0)
-	__asm jmp		asin_exit
+    __asm fld        qword ptr [esp + 4]
+    __asm fld        st
+    __asm fabs
+    __asm fcom        dword ptr [einhalb]
+    __asm fstsw        ax
+    __asm sahf
+    __asm jbe        asin_kleiner
+    __asm fld1
+    __asm fsubrp    st(1), st(0)
+    __asm fld        st
+    __asm fadd        st(0), st(0)
+    __asm fxch        st(1)
+    __asm fmul        st(0), st(0)
+    __asm fsubp        st(1), st(0)
+    __asm jmp        asin_exit
 
 asin_kleiner:
 
-	__asm fstp		st(0)
-	__asm fld		st(0)
-	__asm fmul		st(0), st(0)
-	__asm fld1
-	__asm fsubrp	st(1), st(0)
+    __asm fstp        st(0)
+    __asm fld        st(0)
+    __asm fmul        st(0), st(0)
+    __asm fld1
+    __asm fsubrp    st(1), st(0)
 
 asin_exit:
 
-	__asm fsqrt
-	__asm fpatan
-	__asm ret		8
+    __asm fsqrt
+    __asm fpatan
+    __asm ret        8
 }
 
 
 _QMATH_NAKED _QMATH_INLINE
 double _QMATH_LINK qmathCos(double __x)
 {
-	__asm fld		qword ptr [esp + 4]
-	__asm fcos
-	__asm ret		8
+    __asm fld        qword ptr [esp + 4]
+    __asm fcos
+    __asm ret        8
 }
 
 
 _QMATH_NAKED _QMATH_INLINE
 double _QMATH_LINK qmathAcos(double __x)
 {
-	__asm fld		qword ptr [esp + 4]
-	__asm fld1
-	__asm fchs
-	__asm fcomp		st(1)
-	__asm fstsw		ax
-	__asm je		acos_suckt
+    __asm fld        qword ptr [esp + 4]
+    __asm fld1
+    __asm fchs
+    __asm fcomp        st(1)
+    __asm fstsw        ax
+    __asm je        acos_suckt
 
-	__asm fld		st(0)
-	__asm fld1
-	__asm fsubrp	st(1), st(0)
-	__asm fxch		st(1)
-	__asm fld1
-	__asm faddp		st(1), st(0)
-	__asm fdivp		st(1), st(0)
-	__asm fsqrt
-	__asm fld1
-	__asm jmp		acos_exit
+    __asm fld        st(0)
+    __asm fld1
+    __asm fsubrp    st(1), st(0)
+    __asm fxch        st(1)
+    __asm fld1
+    __asm faddp        st(1), st(0)
+    __asm fdivp        st(1), st(0)
+    __asm fsqrt
+    __asm fld1
+    __asm jmp        acos_exit
 
 acos_suckt:
 
-	__asm fld1
-	__asm fldz
+    __asm fld1
+    __asm fldz
 
 acos_exit:
 
-	__asm fpatan
-	__asm fadd		st(0), st(0)
-	__asm ret		8
+    __asm fpatan
+    __asm fadd        st(0), st(0)
+    __asm ret        8
 }
 
 
@@ -543,373 +543,373 @@ acos_exit:
 _QMATH_NAKED _QMATH_INLINE
 double _QMATH_LINK qmathTan(double __x)
 {
-	__asm fld		qword ptr [esp + 4]
-	__asm fptan
-	__asm fstp		st(0)
-	__asm ret		8
+    __asm fld        qword ptr [esp + 4]
+    __asm fptan
+    __asm fstp        st(0)
+    __asm ret        8
 }
 
 
 _QMATH_NAKED _QMATH_INLINE
 double _QMATH_LINK qmathAtan(double __x)
 {
-	__asm fld		qword ptr [esp + 4]
-	__asm fld1
-	__asm fpatan
-	__asm ret		8
+    __asm fld        qword ptr [esp + 4]
+    __asm fld1
+    __asm fpatan
+    __asm ret        8
 }
 
 
 _QMATH_NAKED _QMATH_INLINE
 double _QMATH_LINK qmathAtan2(double __y, double __x)
 {
-	__asm fld		qword ptr [esp +  4]
-	__asm fld		qword ptr [esp + 12]
-	__asm fpatan
-	__asm ret		16
+    __asm fld        qword ptr [esp +  4]
+    __asm fld        qword ptr [esp + 12]
+    __asm fpatan
+    __asm ret        16
 }
 
 
 _QMATH_NAKED _QMATH_INLINE
 double _QMATH_LINK qmathExp(double __x)
 {
-	__asm fld		qword ptr [esp + 4];
-	__asm fldl2e
-	__asm fmulp		st(1), st
-	__asm fld1
-	__asm fld		st(1)
-	__asm fprem
-	__asm f2xm1
-	__asm faddp		st(1), st
-	__asm fscale
-	__asm fxch
-	__asm fstp		st
-	__asm ret		8
+    __asm fld        qword ptr [esp + 4];
+    __asm fldl2e
+    __asm fmulp        st(1), st
+    __asm fld1
+    __asm fld        st(1)
+    __asm fprem
+    __asm f2xm1
+    __asm faddp        st(1), st
+    __asm fscale
+    __asm fxch
+    __asm fstp        st
+    __asm ret        8
 }
 
 
 _QMATH_NAKED _QMATH_INLINE
 double _QMATH_LINK qmathExp2(double __x)
 {
-	__asm fld		qword ptr [esp + 4];
-	__asm fld1
-	__asm fld		st(1)
-	__asm fprem
-	__asm f2xm1
-	__asm faddp		st(1), st
-	__asm fscale
-	__asm fxch
-	__asm fstp		st
-	__asm ret		8
+    __asm fld        qword ptr [esp + 4];
+    __asm fld1
+    __asm fld        st(1)
+    __asm fprem
+    __asm f2xm1
+    __asm faddp        st(1), st
+    __asm fscale
+    __asm fxch
+    __asm fstp        st
+    __asm ret        8
 }
 
 
 _QMATH_NAKED _QMATH_INLINE
 double _QMATH_LINK qmathExp10(double __x)
 {
-	__asm fld		qword ptr [esp + 4];
-	__asm fldl2t
-	__asm fmulp		st(1), st
-	__asm fld1
-	__asm fld		st(1)
-	__asm fprem
-	__asm f2xm1
-	__asm faddp		st(1), st
-	__asm fscale
-	__asm fxch
-	__asm fstp		st
-	__asm ret		8
+    __asm fld        qword ptr [esp + 4];
+    __asm fldl2t
+    __asm fmulp        st(1), st
+    __asm fld1
+    __asm fld        st(1)
+    __asm fprem
+    __asm f2xm1
+    __asm faddp        st(1), st
+    __asm fscale
+    __asm fxch
+    __asm fstp        st
+    __asm ret        8
 }
 
 
 _QMATH_NAKED _QMATH_INLINE
 double _QMATH_LINK qmathLog(double __x)
 {
-	__asm fld		qword ptr [esp + 4]
-	__asm fldln2
-	__asm fxch
-	__asm fyl2x
-	__asm ret		8
+    __asm fld        qword ptr [esp + 4]
+    __asm fldln2
+    __asm fxch
+    __asm fyl2x
+    __asm ret        8
 }
 
 
 _QMATH_NAKED _QMATH_INLINE
 double _QMATH_LINK qmathLog2(double __x)
 {
-	__asm fld		qword ptr [esp + 4]
-	__asm fld1
-	__asm fxch
-	__asm fyl2x
-	__asm ret		8
+    __asm fld        qword ptr [esp + 4]
+    __asm fld1
+    __asm fxch
+    __asm fyl2x
+    __asm ret        8
 }
 
 
 _QMATH_NAKED _QMATH_INLINE
 double _QMATH_LINK qmathLog10(double __x)
 {
-	__asm fld		qword ptr [esp + 4]
-	__asm fldlg2
-	__asm fxch
-	__asm fyl2x
-	__asm ret		8
+    __asm fld        qword ptr [esp + 4]
+    __asm fldlg2
+    __asm fxch
+    __asm fyl2x
+    __asm ret        8
 }
 
 
 _QMATH_NAKED _QMATH_INLINE
 double _QMATH_LINK qmathFabs(double __x)
 {
-	__asm fld		qword ptr [esp + 4]
-	__asm fabs
-	__asm ret		8
+    __asm fld        qword ptr [esp + 4]
+    __asm fabs
+    __asm ret        8
 }
 
 
 _QMATH_NAKED _QMATH_INLINE
 double _QMATH_LINK qmathPow(double __x, double __y)
 {
-	__asm fld		qword ptr [esp + 12]
-	__asm fld		qword ptr [esp +  4]
-	__asm ftst
-	__asm fstsw		ax
-	__asm sahf
-	__asm jz		pow_zero
+    __asm fld        qword ptr [esp + 12]
+    __asm fld        qword ptr [esp +  4]
+    __asm ftst
+    __asm fstsw        ax
+    __asm sahf
+    __asm jz        pow_zero
 
-	__asm fyl2x
-	__asm fld1
-	__asm fld		st(1)
-	__asm fprem
-	__asm f2xm1
-	__asm faddp		st(1), st(0)
-	__asm fscale
+    __asm fyl2x
+    __asm fld1
+    __asm fld        st(1)
+    __asm fprem
+    __asm f2xm1
+    __asm faddp        st(1), st(0)
+    __asm fscale
 
 pow_zero:
 
-	__asm fstp		st(1)
-	__asm ret		16
+    __asm fstp        st(1)
+    __asm ret        16
 }
 
 
 _QMATH_NAKED _QMATH_INLINE
 double _QMATH_LINK qmathCeil(double __x)
 {
-	__asm fld		qword ptr [esp + 4]
-	__asm fchs
-	__asm fld1
-	__asm fld		st(1)
-	__asm fprem
-	__asm sub		esp, 4
-	__asm fst		dword ptr [esp]
-	__asm fxch		st(2)
-	__asm mov		eax, [esp]
-	__asm cmp		eax, 0x80000000
-	__asm jbe		ceil_exit
-	__asm fsub		st, st(1)
+    __asm fld        qword ptr [esp + 4]
+    __asm fchs
+    __asm fld1
+    __asm fld        st(1)
+    __asm fprem
+    __asm sub        esp, 4
+    __asm fst        dword ptr [esp]
+    __asm fxch        st(2)
+    __asm mov        eax, [esp]
+    __asm cmp        eax, 0x80000000
+    __asm jbe        ceil_exit
+    __asm fsub        st, st(1)
 
 ceil_exit:
 
-	__asm fsub		st, st(2)
-	__asm fstp		st(1)
-	__asm fstp		st(1)
-	__asm fchs
-	__asm pop		eax
-	__asm ret		8
+    __asm fsub        st, st(2)
+    __asm fstp        st(1)
+    __asm fstp        st(1)
+    __asm fchs
+    __asm pop        eax
+    __asm ret        8
 }
 
 
 _QMATH_NAKED _QMATH_INLINE
 double _QMATH_LINK qmathFloor(double __x)
 {
-	__asm fld		qword ptr [esp + 4]
-	__asm fld1
-	__asm fld		st(1)
-	__asm fprem
-	__asm sub		esp, 4
-	__asm fst		dword ptr [esp]
-	__asm fxch		st(2)
-	__asm mov		eax, [esp]
-	__asm cmp		eax, 0x80000000
-	__asm jbe		floor_exit
-	__asm fsub		st, st(1)
+    __asm fld        qword ptr [esp + 4]
+    __asm fld1
+    __asm fld        st(1)
+    __asm fprem
+    __asm sub        esp, 4
+    __asm fst        dword ptr [esp]
+    __asm fxch        st(2)
+    __asm mov        eax, [esp]
+    __asm cmp        eax, 0x80000000
+    __asm jbe        floor_exit
+    __asm fsub        st, st(1)
 
 floor_exit:
 
-	__asm fsub		st, st(2)
-	__asm fstp		st(1)
-	__asm fstp		st(1)
-	__asm pop		eax
-	__asm ret		8
+    __asm fsub        st, st(2)
+    __asm fstp        st(1)
+    __asm fstp        st(1)
+    __asm pop        eax
+    __asm ret        8
 }
 
 
 _QMATH_NAKED _QMATH_INLINE
 double _QMATH_LINK qmathFmod(double __x, double __y)
 {
-	__asm fld		qword ptr [esp + 12]
-	__asm fld		qword ptr [esp +  4]
-	__asm fprem
-	__asm fxch
-	__asm fstp		st
-	__asm ret		16
+    __asm fld        qword ptr [esp + 12]
+    __asm fld        qword ptr [esp +  4]
+    __asm fprem
+    __asm fxch
+    __asm fstp        st
+    __asm ret        16
 }
 
 
 _QMATH_NAKED _QMATH_INLINE
 double _QMATH_LINK qmathSqrt(double __x)
 {
-	__asm fld		qword ptr [esp + 4]
-	__asm fsqrt
-	__asm ret		8
+    __asm fld        qword ptr [esp + 4]
+    __asm fsqrt
+    __asm ret        8
 }
 
 
 _QMATH_NAKED _QMATH_INLINE
 double _QMATH_LINK qmathHypot(double __x, double __y)
 {
-	__asm fld		qword ptr [esp + 12]
-	__asm fld		qword ptr [esp +  4]
-	__asm fmul		st, st
-	__asm fxch
-	__asm fmul		st, st
-	__asm faddp		st(1), st
-	__asm fsqrt
-	__asm ret		16
+    __asm fld        qword ptr [esp + 12]
+    __asm fld        qword ptr [esp +  4]
+    __asm fmul        st, st
+    __asm fxch
+    __asm fmul        st, st
+    __asm faddp        st(1), st
+    __asm fsqrt
+    __asm ret        16
 }
 
 
 _QMATH_NAKED _QMATH_INLINE
 double _QMATH_LINK qmathAcosh(double __x)
 {
-	__asm fld		qword ptr [esp + 4]
-	__asm fld		st
-	__asm fmul		st, st
-	__asm fld1
-	__asm fsubp		st(1), st
-	__asm fsqrt
-	__asm faddp		st(1), st
-	__asm fldln2
-	__asm fxch
-	__asm fyl2x
-	__asm ret		8
+    __asm fld        qword ptr [esp + 4]
+    __asm fld        st
+    __asm fmul        st, st
+    __asm fld1
+    __asm fsubp        st(1), st
+    __asm fsqrt
+    __asm faddp        st(1), st
+    __asm fldln2
+    __asm fxch
+    __asm fyl2x
+    __asm ret        8
 }
 
 
 _QMATH_NAKED _QMATH_INLINE
 double _QMATH_LINK qmathAsinh(double __x)
 {
-	__asm fld		qword ptr [esp + 4]
-	__asm fld		st
-	__asm fmul		st, st
-	__asm fld1
-	__asm faddp		st(1), st
-	__asm fsqrt
-	__asm faddp		st(1), st
-	__asm fldln2
-	__asm fxch
-	__asm fyl2x
-	__asm ret		8
+    __asm fld        qword ptr [esp + 4]
+    __asm fld        st
+    __asm fmul        st, st
+    __asm fld1
+    __asm faddp        st(1), st
+    __asm fsqrt
+    __asm faddp        st(1), st
+    __asm fldln2
+    __asm fxch
+    __asm fyl2x
+    __asm ret        8
 }
 
 
 _QMATH_NAKED _QMATH_INLINE
 double _QMATH_LINK qmathAtanh(double __x)
 {
-	__asm fld		qword ptr [esp + 4]
-	__asm fld1
-	__asm fsub		st, st(1)
-	__asm fld1
-	__asm faddp		st(2), st
-	__asm fdivrp	st(1), st
-	__asm fldln2
-	__asm fxch
-	__asm fyl2x
-	__asm mov		eax, 0xBF000000
-	__asm push		eax
-	__asm fld		dword ptr [esp]
-	__asm fmulp		st(1), st
-	__asm pop		eax
-	__asm ret		8
+    __asm fld        qword ptr [esp + 4]
+    __asm fld1
+    __asm fsub        st, st(1)
+    __asm fld1
+    __asm faddp        st(2), st
+    __asm fdivrp    st(1), st
+    __asm fldln2
+    __asm fxch
+    __asm fyl2x
+    __asm mov        eax, 0xBF000000
+    __asm push        eax
+    __asm fld        dword ptr [esp]
+    __asm fmulp        st(1), st
+    __asm pop        eax
+    __asm ret        8
 }
 
 
 _QMATH_NAKED _QMATH_INLINE
 double _QMATH_LINK qmathCosh(double __x)
 {
-	__asm fld		qword ptr [esp + 4]
-	__asm fldl2e
-	__asm fmulp		st(1), st
-	__asm fld1
-	__asm fld		st(1)
-	__asm fprem
-	__asm f2xm1
-	__asm faddp		st(1), st
-	__asm fscale
-	__asm fxch
-	__asm fstp		st
-	__asm fld1
-	__asm fdiv		st, st(1)
-	__asm faddp		st(1), st
-	__asm mov		eax, 0x3F000000
-	__asm push		eax
-	__asm fld		dword ptr [esp]
-	__asm fmulp		st(1), st
-	__asm pop		eax
-	__asm ret		8
+    __asm fld        qword ptr [esp + 4]
+    __asm fldl2e
+    __asm fmulp        st(1), st
+    __asm fld1
+    __asm fld        st(1)
+    __asm fprem
+    __asm f2xm1
+    __asm faddp        st(1), st
+    __asm fscale
+    __asm fxch
+    __asm fstp        st
+    __asm fld1
+    __asm fdiv        st, st(1)
+    __asm faddp        st(1), st
+    __asm mov        eax, 0x3F000000
+    __asm push        eax
+    __asm fld        dword ptr [esp]
+    __asm fmulp        st(1), st
+    __asm pop        eax
+    __asm ret        8
 }
 
 
 _QMATH_NAKED _QMATH_INLINE
 double _QMATH_LINK qmathSinh(double __x)
 {
-	__asm fld		qword ptr [esp + 4]
-	__asm fldl2e
-	__asm fmulp		st(1), st
-	__asm fld1
-	__asm fld		st(1)
-	__asm fprem
-	__asm f2xm1
-	__asm faddp		st(1), st
-	__asm fscale
-	__asm fxch
-	__asm fstp		st
-	__asm fld1
-	__asm fdiv		st, st(1)
-	__asm fsubp		st(1), st
-	__asm mov		eax, 0x3F000000
-	__asm push		eax
-	__asm fld		dword ptr [esp]
-	__asm fmulp		st(1), st
-	__asm pop		eax
-	__asm ret		8
+    __asm fld        qword ptr [esp + 4]
+    __asm fldl2e
+    __asm fmulp        st(1), st
+    __asm fld1
+    __asm fld        st(1)
+    __asm fprem
+    __asm f2xm1
+    __asm faddp        st(1), st
+    __asm fscale
+    __asm fxch
+    __asm fstp        st
+    __asm fld1
+    __asm fdiv        st, st(1)
+    __asm fsubp        st(1), st
+    __asm mov        eax, 0x3F000000
+    __asm push        eax
+    __asm fld        dword ptr [esp]
+    __asm fmulp        st(1), st
+    __asm pop        eax
+    __asm ret        8
 }
 
 
 _QMATH_NAKED _QMATH_INLINE
 double _QMATH_LINK qmathTanh(double __x)
 {
-	__asm fld		qword ptr [esp + 4]
-	__asm fld		st
-	__asm mov		eax, 0x40000000
-	__asm push		eax
-	__asm fld		dword ptr [esp]
-	__asm fmul		st, st(1)
-	__asm fldl2e
-	__asm fmulp		st(1), st
-	__asm fld1
-	__asm fld		st(1)
-	__asm fprem
-	__asm f2xm1
-	__asm faddp		st(1), st
-	__asm fscale
-	__asm fxch
-	__asm fstp		st
-	__asm fld1
-	__asm fsub		st, st(1)
-	__asm fchs
-	__asm fld1
-	__asm faddp		st(2), st
-	__asm fdivrp	st(1), st
-	__asm pop		eax
-	__asm ret		8
+    __asm fld        qword ptr [esp + 4]
+    __asm fld        st
+    __asm mov        eax, 0x40000000
+    __asm push        eax
+    __asm fld        dword ptr [esp]
+    __asm fmul        st, st(1)
+    __asm fldl2e
+    __asm fmulp        st(1), st
+    __asm fld1
+    __asm fld        st(1)
+    __asm fprem
+    __asm f2xm1
+    __asm faddp        st(1), st
+    __asm fscale
+    __asm fxch
+    __asm fstp        st
+    __asm fld1
+    __asm fsub        st, st(1)
+    __asm fchs
+    __asm fld1
+    __asm faddp        st(2), st
+    __asm fdivrp    st(1), st
+    __asm pop        eax
+    __asm ret        8
 }
 
 
@@ -918,8 +918,8 @@ double _QMATH_LINK qmathTanh(double __x)
 #endif
 
 
-#ifdef _MSC_VER								// Visual C
-	#pragma warning(pop)
+#ifdef _MSC_VER                                // Visual C
+    #pragma warning(pop)
 #endif
 
 

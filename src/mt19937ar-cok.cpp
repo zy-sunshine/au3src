@@ -43,7 +43,7 @@
    email: matumoto@math.keio.ac.jp
 */
 
-#include "StdAfx.h"								// Pre-compiled headers
+#include "StdAfx.h"                                // Pre-compiled headers
 #include <time.h>
 #include "mt19937ar-cok.h"
 
@@ -76,7 +76,7 @@ void init_genrand(unsigned long s)
         state[j] &= 0xffffffffUL;  // for >32 bit machines 
     }
     left = 1;
-	initf = 1;
+    initf = 1;
 }
 
 /* initialize by an array with array-length
@@ -88,33 +88,33 @@ void init_by_array(unsigned long init_key[], long key_length)
 
     init_genrand(19650218UL);
     i=1;
-	j=0;
+    j=0;
     k = (N>key_length ? N : key_length);  //return lesser of N and key_length
     for (; k; k--) {
         state[i] = (state[i] ^ ((state[i-1] ^ (state[i-1] >> 30)) * 1664525UL)) + init_key[j] + j; // non linear 
         state[i] &= 0xffffffffUL; // for WORDSIZE > 32 machines
         i++;
-		j++;
+        j++;
         if (i>=N) { 
-			state[0] = state[N-1];
-			i=1;
-		}
+            state[0] = state[N-1];
+            i=1;
+        }
         if (j>=key_length) 
-			j = 0;
+            j = 0;
     }
     for (k=N-1; k; k--) {
         state[i] = (state[i] ^ ((state[i-1] ^ (state[i-1] >> 30)) * 1566083941UL)) - i; // non linear 
         state[i] &= 0xffffffffUL; // for WORDSIZE > 32 machines 
         i++;
         if (i>=N) { 
-			state[0] = state[N-1];
-			i=1;
-		}
+            state[0] = state[N-1];
+            i=1;
+        }
     }
 
     state[0] = 0x80000000UL; // MSB is 1; assuring non-zero initial array 
     left = 1;
-	initf = 1;
+    initf = 1;
 }
 
 static void next_state(void)
@@ -124,7 +124,7 @@ static void next_state(void)
 
     // if init_genrand() has not been called, a default initial seed is used     
     if (initf==0) 
-		init_genrand((unsigned long)time(NULL));  // get timer value
+        init_genrand((unsigned long)time(NULL));  // get timer value
 
     left = N;
     next = state;
@@ -144,7 +144,7 @@ unsigned long genrand_int32(void)
     unsigned long y;
 
     if (--left == 0) 
-		next_state();
+        next_state();
     y = *next++;
 
     // Tempering 
@@ -162,7 +162,7 @@ long genrand_int31(void)
     unsigned long y;
 
     if (--left == 0) 
-		next_state();
+        next_state();
     y = *next++;
 
     // Tempering 
@@ -180,7 +180,7 @@ double genrand_real1(void)
     unsigned long y;
 
     if (--left == 0) 
-		next_state();
+        next_state();
     y = *next++;
 
     // Tempering 
@@ -199,7 +199,7 @@ double genrand_real2(void)
     unsigned long y;
 
     if (--left == 0) 
-		next_state();
+        next_state();
     y = *next++;
 
     // Tempering 
@@ -218,7 +218,7 @@ double genrand_real3(void)
     unsigned long y;
 
     if (--left == 0) 
-		next_state();
+        next_state();
     y = *next++;
 
     // Tempering

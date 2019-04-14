@@ -4,8 +4,8 @@
 // AutoIt v3
 //
 // Copyright (C)1999-2005:
-//		- Jonathan Bennett <jon at hiddensoft dot com>
-//		- See "AUTHORS.txt" for contributors.
+//        - Jonathan Bennett <jon at hiddensoft dot com>
+//        - See "AUTHORS.txt" for contributors.
 //
 // This file is part of AutoIt.
 //
@@ -44,11 +44,11 @@
 
 
 // Includes
-#include "StdAfx.h"								// Pre-compiled headers
+#include "StdAfx.h"                                // Pre-compiled headers
 
-#ifndef _MSC_VER								// Includes for non-MS compilers
-	#include <stdio.h>
-	#include <string.h>
+#ifndef _MSC_VER                                // Includes for non-MS compilers
+    #include <stdio.h>
+    #include <string.h>
 #endif
 
 #include "userfunction_list.h"
@@ -70,22 +70,22 @@ UserFuncList::UserFuncList() : m_lpFirst(NULL), m_lpLast(NULL), m_Index(NULL), m
 
 UserFuncList::~UserFuncList()
 {
-	// Delete the index
-	if (m_Index)
-		delete [] m_Index;
+    // Delete the index
+    if (m_Index)
+        delete [] m_Index;
 
 
-	// Delete the actual entries
-	UserFuncListNode	*lpTemp, *lpTemp2;
+    // Delete the actual entries
+    UserFuncListNode    *lpTemp, *lpTemp2;
 
-	lpTemp = m_lpFirst;
+    lpTemp = m_lpFirst;
 
-	while(lpTemp != NULL)
-	{
-		lpTemp2 = lpTemp->lpNext;
-		delete lpTemp;
-		lpTemp = lpTemp2;
-	}
+    while(lpTemp != NULL)
+    {
+        lpTemp2 = lpTemp->lpNext;
+        delete lpTemp;
+        lpTemp = lpTemp2;
+    }
 
 } // ~UserFuncList()
 
@@ -97,40 +97,40 @@ UserFuncList::~UserFuncList()
 
 void UserFuncList::add(const UserFuncDetails &uItem)
 {
-	// If there is an index then no more additions are possible
-	if (m_Index)
-		return;
+    // If there is an index then no more additions are possible
+    if (m_Index)
+        return;
 
-	UserFuncListNode	*lpTemp;
+    UserFuncListNode    *lpTemp;
 
-	// Create a new node
-	lpTemp			= new UserFuncListNode;
-	lpTemp->uItem	= uItem;
-	lpTemp->uItem.sName.toupper();				// Make sure funcname is stored as upper case
-	lpTemp->lpNext	= NULL;
+    // Create a new node
+    lpTemp            = new UserFuncListNode;
+    lpTemp->uItem    = uItem;
+    lpTemp->uItem.sName.toupper();                // Make sure funcname is stored as upper case
+    lpTemp->lpNext    = NULL;
 
 // Check that default assignment/copy constructor is indeed creating a new copy with different memory!
-//	char szText[100];
-//	sprintf(szText, "%p", &uItem.sName);
-//	MessageBox(NULL, szText, uItem.sName.c_str(), MB_OK);
-//	sprintf(szText, "%p", &lpTemp->uItem.sName);
-//	MessageBox(NULL, szText, lpTemp->uItem.sName.c_str(), MB_OK);
+//    char szText[100];
+//    sprintf(szText, "%p", &uItem.sName);
+//    MessageBox(NULL, szText, uItem.sName.c_str(), MB_OK);
+//    sprintf(szText, "%p", &lpTemp->uItem.sName);
+//    MessageBox(NULL, szText, lpTemp->uItem.sName.c_str(), MB_OK);
 
 
-	// Add it to the end of the list
-	if (m_lpLast)
-	{
-		m_lpLast->lpNext	= lpTemp;
-		m_lpLast			= lpTemp;
-	}
-	else
-	{
-		// First entry
-		m_lpFirst = m_lpLast = lpTemp;
-	}
+    // Add it to the end of the list
+    if (m_lpLast)
+    {
+        m_lpLast->lpNext    = lpTemp;
+        m_lpLast            = lpTemp;
+    }
+    else
+    {
+        // First entry
+        m_lpFirst = m_lpLast = lpTemp;
+    }
 
-	// Increase number of items
-	++m_nNumItems;
+    // Increase number of items
+    ++m_nNumItems;
 
 } // add()
 
@@ -144,54 +144,54 @@ void UserFuncList::add(const UserFuncDetails &uItem)
 
 UserFuncDetails* UserFuncList::find(AString sName)
 {
-	if (m_nNumItems == 0)
-		return NULL;							// No items to search!
+    if (m_nNumItems == 0)
+        return NULL;                            // No items to search!
 
-	// Convert the search name to upper case (everything stored as upper case)
-	sName.toupper();
+    // Convert the search name to upper case (everything stored as upper case)
+    sName.toupper();
 
-	// Make sure we have an index
-	if (m_Index == NULL)
-	{
-		// No index, slow search
-		UserFuncListNode	*lpTemp = m_lpFirst;
+    // Make sure we have an index
+    if (m_Index == NULL)
+    {
+        // No index, slow search
+        UserFuncListNode    *lpTemp = m_lpFirst;
 
-		while(lpTemp != NULL)
-		{
-			if ( lpTemp->uItem.sName == sName)
-				return &lpTemp->uItem;			// Found, return the UserFuncDetails
-			else
-				lpTemp = lpTemp->lpNext;
-		}
+        while(lpTemp != NULL)
+        {
+            if ( lpTemp->uItem.sName == sName)
+                return &lpTemp->uItem;            // Found, return the UserFuncDetails
+            else
+                lpTemp = lpTemp->lpNext;
+        }
 
-		return NULL;
-	}
+        return NULL;
+    }
 
 
-	// Has index and the index is sorted so we do a quick binary search
-	// The built-in function list is in alphabetical order so we can do a binary search :)
-	int nFirst = 0;
-	int nLast = m_nNumItems - 1;
-	int nRes, i;
+    // Has index and the index is sorted so we do a quick binary search
+    // The built-in function list is in alphabetical order so we can do a binary search :)
+    int nFirst = 0;
+    int nLast = m_nNumItems - 1;
+    int nRes, i;
 
-	while (nFirst <= nLast)
-	{
-		i = (nFirst + nLast) / 2;			// Truncated to an integer!
+    while (nFirst <= nLast)
+    {
+        i = (nFirst + nLast) / 2;            // Truncated to an integer!
 
-		nRes = strcmp( sName.c_str(), m_Index[i]->sName.c_str() );
+        nRes = strcmp( sName.c_str(), m_Index[i]->sName.c_str() );
 
-		if ( nRes < 0 )
-			nLast = i - 1;
-		else if ( nRes > 0 )
-			nFirst = i + 1;
-		else
-			break;								// nRes == 0
-	}
+        if ( nRes < 0 )
+            nLast = i - 1;
+        else if ( nRes > 0 )
+            nFirst = i + 1;
+        else
+            break;                                // nRes == 0
+    }
 
-	if ( nFirst <= nLast )
-		return m_Index[i];
-	else
-		return NULL;
+    if ( nFirst <= nLast )
+        return m_Index[i];
+    else
+        return NULL;
 
 } // find()
 
@@ -203,40 +203,40 @@ UserFuncDetails* UserFuncList::find(AString sName)
 
 void UserFuncList::createindex(void)
 {
-	if (m_nNumItems < 6)
-		return;									// Don't bother doing an index for < 6 items :)
+    if (m_nNumItems < 6)
+        return;                                    // Don't bother doing an index for < 6 items :)
 
-	int i;
+    int i;
 
-	// Create an array/index of pointers
-	m_Index = new UserFuncDetails*[m_nNumItems];
+    // Create an array/index of pointers
+    m_Index = new UserFuncDetails*[m_nNumItems];
 
-	UserFuncListNode	*lpTemp = m_lpFirst;
-	for (i = 0; i < m_nNumItems; ++i)
-	{
-		m_Index[i] = &lpTemp->uItem;			// Get direct pointer to the UserFuncDetails
-		lpTemp = lpTemp->lpNext;				// Next
-	}
+    UserFuncListNode    *lpTemp = m_lpFirst;
+    for (i = 0; i < m_nNumItems; ++i)
+    {
+        m_Index[i] = &lpTemp->uItem;            // Get direct pointer to the UserFuncDetails
+        lpTemp = lpTemp->lpNext;                // Next
+    }
 
 
-	// Bubble sort the list - yes, it is a crap sort but it is the smallest and
-	// speed is NOT really important here
-	bool bSwapOccured = true;
-	UserFuncDetails *lpFuncTemp;
+    // Bubble sort the list - yes, it is a crap sort but it is the smallest and
+    // speed is NOT really important here
+    bool bSwapOccured = true;
+    UserFuncDetails *lpFuncTemp;
 
-	while (bSwapOccured)
-	{
-		bSwapOccured = false;
-		for (i = 0; i < (m_nNumItems-1); ++i)
-		{
-			if (m_Index[i]->sName > m_Index[i+1]->sName)
-			{
-				bSwapOccured = true;
-				lpFuncTemp = m_Index[i];
-				m_Index[i] = m_Index[i+1];
-				m_Index[i+1] = lpFuncTemp;
-			}
-		}
-	}
+    while (bSwapOccured)
+    {
+        bSwapOccured = false;
+        for (i = 0; i < (m_nNumItems-1); ++i)
+        {
+            if (m_Index[i]->sName > m_Index[i+1]->sName)
+            {
+                bSwapOccured = true;
+                lpFuncTemp = m_Index[i];
+                m_Index[i] = m_Index[i+1];
+                m_Index[i+1] = lpFuncTemp;
+            }
+        }
+    }
 
 } // createindex()

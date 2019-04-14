@@ -6,8 +6,8 @@
 // AutoIt v3
 //
 // Copyright (C)1999-2005:
-//		- Jonathan Bennett <jon at hiddensoft dot com>
-//		- See "AUTHORS.txt" for contributors.
+//        - Jonathan Bennett <jon at hiddensoft dot com>
+//        - See "AUTHORS.txt" for contributors.
 //
 // This file is part of AutoIt.
 //
@@ -49,8 +49,8 @@
 // Structs for stack node
 typedef struct _StackIntNode
 {
-	int						nItem;				// The item
-	struct _StackIntNode	*lpPrev;			// Previous node (or NULL)
+    int                        nItem;                // The item
+    struct _StackIntNode    *lpPrev;            // Previous node (or NULL)
 
 } StackIntNode;
 
@@ -58,26 +58,26 @@ typedef struct _StackIntNode
 class StackInt
 {
 public:
-	// Functions
-	StackInt();									// Constructor
-	~StackInt();								// Destructor
+    // Functions
+    StackInt();                                    // Constructor
+    ~StackInt();                                // Destructor
 
-	void			push(const int &nItem);		// Push item onto stack
-	void			pop(void);					// Pop item from stack
+    void            push(const int &nItem);        // Push item onto stack
+    void            pop(void);                    // Pop item from stack
 
-	// Properties
-	int&			top(void);								// Get top item from stack
-	unsigned int	size(void) const { return m_nItems; }	// Return number of items on stack
-	bool			empty(void) const;						// Tests if stack empty
+    // Properties
+    int&            top(void);                                // Get top item from stack
+    unsigned int    size(void) const { return m_nItems; }    // Return number of items on stack
+    bool            empty(void) const;                        // Tests if stack empty
 
 
-	// Overloads
+    // Overloads
 
 private:
-	// Variables
-	unsigned int	m_nItems;					// Number of items on stack
-	StackIntNode	*m_lpTop;					// Pointer to top node
-	int				m_nNull;					// Dummy return value
+    // Variables
+    unsigned int    m_nItems;                    // Number of items on stack
+    StackIntNode    *m_lpTop;                    // Pointer to top node
+    int                m_nNull;                    // Dummy return value
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -6,8 +6,8 @@
 // AutoIt v3
 //
 // Copyright (C)1999-2005:
-//		- Jonathan Bennett <jon at hiddensoft dot com>
-//		- See "AUTHORS.txt" for contributors.
+//        - Jonathan Bennett <jon at hiddensoft dot com>
+//        - See "AUTHORS.txt" for contributors.
 //
 // This file is part of AutoIt.
 //
@@ -49,30 +49,30 @@
 #include "astring_datatype.h"
 #include "variant_datatype.h"
 
-#define VARTABLE_VARIANT		0				// Type: Variant
-#define VARTABLE_REFERENCE		1				// Type: Reference to a variant
+#define VARTABLE_VARIANT        0                // Type: Variant
+#define VARTABLE_REFERENCE        1                // Type: Reference to a variant
 
 /*
 typedef struct _VarEntry
 {
-	AString			sName;						// Name of this variable
-	int				nType;						// Variant OR reference to a variant
-	Variant			*pvVariant;					// Pointer to a variant (either a reference to another, or one we create!)
-	bool			bConst;						// True is this is a const
+    AString            sName;                        // Name of this variable
+    int                nType;                        // Variant OR reference to a variant
+    Variant            *pvVariant;                    // Pointer to a variant (either a reference to another, or one we create!)
+    bool            bConst;                        // True is this is a const
 
-	_VarEntry		*lpNext;					// Next entry in linked list (or NULL)
+    _VarEntry        *lpNext;                    // Next entry in linked list (or NULL)
 
 } VarEntry;
 */
 
 typedef struct _VarNode
 {
-	char			*szName;					// Name of this variable
-	int				nType;						// Variant OR reference to a variant
-	Variant			*pvVariant;					// Pointer to a variant (either a reference to another, or one we create!)
-	bool			bConst;						// True is this is a const
+    char            *szName;                    // Name of this variable
+    int                nType;                        // Variant OR reference to a variant
+    Variant            *pvVariant;                    // Pointer to a variant (either a reference to another, or one we create!)
+    bool            bConst;                        // True is this is a const
 
-	_VarNode		*lpLeft, *lpRight;			// Left/Right nodes, or NULL if no child
+    _VarNode        *lpLeft, *lpRight;            // Left/Right nodes, or NULL if no child
 
 } VarNode;
 
@@ -81,21 +81,21 @@ typedef struct _VarNode
 class VariableList
 {
 public:
-	// Functions
-	VariableList();								// Constructor
-	~VariableList();							// Destructor
+    // Functions
+    VariableList();                                // Constructor
+    ~VariableList();                            // Destructor
 
-	void		addvar(const char *szName, const Variant &vVar, bool bConst);	// Add/update variant to the list
-	void		addref(const char *szName, Variant *pvVar);						// Add/update variant REFERENCE to the list
-	Variant*	findvar(const char *szName, bool &bConst);						// Find a variable in the list
+    void        addvar(const char *szName, const Variant &vVar, bool bConst);    // Add/update variant to the list
+    void        addref(const char *szName, Variant *pvVar);                        // Add/update variant REFERENCE to the list
+    Variant*    findvar(const char *szName, bool &bConst);                        // Find a variable in the list
 
 private:
-	void		removenode(VarNode *lpRoot);
-	VarNode*	findvarnode(const char *szName);
-	void		addnode(const char *szName, VarNode *lpNewNode);
+    void        removenode(VarNode *lpRoot);
+    VarNode*    findvarnode(const char *szName);
+    void        addnode(const char *szName, VarNode *lpNewNode);
 
-	// Variables
-	VarNode		*m_lpRoot;						// Pointer to root node, or NULL if none yet.
+    // Variables
+    VarNode        *m_lpRoot;                        // Pointer to root node, or NULL if none yet.
 
 };
 

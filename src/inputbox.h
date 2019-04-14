@@ -6,8 +6,8 @@
 // AutoIt v3
 //
 // Copyright (C)1999-2005:
-//		- Jonathan Bennett <jon at hiddensoft dot com>
-//		- See "AUTHORS.txt" for contributors.
+//        - Jonathan Bennett <jon at hiddensoft dot com>
+//        - See "AUTHORS.txt" for contributors.
 //
 // This file is part of AutoIt.
 //
@@ -58,52 +58,52 @@ class CInputBox
 {
 // Construction
 public:
-	CInputBox(void);   // standard constructor
+    CInputBox(void);   // standard constructor
 
 // Dialog Data
-	enum { IDD = IDD_INPUTBOX, TimerConst=1034 };
-	enum InputBoxFlags {
-		ibf_none=0,
-		ibf_notnull=1
-	};
+    enum { IDD = IDD_INPUTBOX, TimerConst=1034 };
+    enum InputBoxFlags {
+        ibf_none=0,
+        ibf_notnull=1
+    };
 
-	int m_width;
-	int m_height;
-	int m_top;
-	int m_left;
-	uint m_flags;
-	int m_maxlen;
-	double m_timeout;
-	char m_password;
-	AString m_title;
-	AString	m_strInputText;
-	AString	m_strPrompt;
+    int m_width;
+    int m_height;
+    int m_top;
+    int m_left;
+    uint m_flags;
+    int m_maxlen;
+    double m_timeout;
+    char m_password;
+    AString m_title;
+    AString    m_strInputText;
+    AString    m_strPrompt;
 
 private:
-	HWND m_hWnd;
-	UINT_PTR m_timer;
+    HWND m_hWnd;
+    UINT_PTR m_timer;
 
 // Overrides
 
 // Implementation
 public:
-	UINT DoModal(HINSTANCE hInstance, HWND hWnd);
+    UINT DoModal(HINSTANCE hInstance, HWND hWnd);
 
 protected:
 
-	BOOL OnInitDialog(void);
-	void OnGetMinMaxInfo(MINMAXINFO FAR* lpMMI);
-	void OnSize(UINT nType, int cx, int cy);
-	void OnOK(void);
-	void OnCancel(void);
-	void OnTimer(UINT iIdent);
+    BOOL OnInitDialog(void);
+    void OnGetMinMaxInfo(MINMAXINFO FAR* lpMMI);
+    void OnSize(UINT nType, int cx, int cy);
+    void OnOK(void);
+    void OnCancel(void);
+    void OnTimer(UINT iIdent);
 
 private:
-	static BOOL CALLBACK ProcHandler(HWND hDlg, UINT iMsg, WPARAM wParam, LPARAM lParam);
-	BOOL ProcSubHandler(HWND hDlg, UINT iMsg, WPARAM wParam, LPARAM lParam);
+    static BOOL CALLBACK ProcHandler(HWND hDlg, UINT iMsg, WPARAM wParam, LPARAM lParam);
+    BOOL ProcSubHandler(HWND hDlg, UINT iMsg, WPARAM wParam, LPARAM lParam);
 
 protected:
-	static CInputBox* CurrInputBox;
+    static CInputBox* CurrInputBox;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

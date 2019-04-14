@@ -6,8 +6,8 @@
 // AutoIt v3
 //
 // Copyright (C)1999-2005:
-//		- Jonathan Bennett <jon at hiddensoft dot com>
-//		- See "AUTHORS.txt" for contributors.
+//        - Jonathan Bennett <jon at hiddensoft dot com>
+//        - See "AUTHORS.txt" for contributors.
 //
 // This file is part of AutoIt.
 //
@@ -47,60 +47,60 @@
 
 
 // Class and window titles
-#define AUT_APPCLASS		"AutoIt v3"
-#define AUT_APPTITLE		"AutoIt v3"
+#define AUT_APPCLASS        "AutoIt v3"
+#define AUT_APPTITLE        "AutoIt v3"
 
 // Windows timers
-#define AUT_MAIN_TIMER_ID		1
-#define AUT_MAIN_TIMER_DELAY	750				// Tray icon hiding/flashing/drawing is checked every 750ms
+#define AUT_MAIN_TIMER_ID        1
+#define AUT_MAIN_TIMER_DELAY    750                // Tray icon hiding/flashing/drawing is checked every 750ms
 
 // Tray / popup menu identifiers
-#define AUT_WM_NOTIFYICON		WM_USER+1
-#define AUT_NOTIFY_ICON_ID		1
+#define AUT_WM_NOTIFYICON        WM_USER+1
+#define AUT_NOTIFY_ICON_ID        1
 
 
 
 class AutoIt_App
 {
 public:
-	// Functions
-	AutoIt_App::AutoIt_App();					// Constructor
-	AutoIt_App::~AutoIt_App();					// Denstructor
-	void		CreateTrayIcon(void);
-	void		DestroyTrayIcon(void);
-	void		Run(void);
+    // Functions
+    AutoIt_App::AutoIt_App();                    // Constructor
+    AutoIt_App::~AutoIt_App();                    // Denstructor
+    void        CreateTrayIcon(void);
+    void        DestroyTrayIcon(void);
+    void        Run(void);
 
-	// Variables
-	HICON		m_hIcon;
-	HICON		m_hIconSmall;
-	HICON		m_hIconPause;
+    // Variables
+    HICON        m_hIcon;
+    HICON        m_hIconSmall;
+    HICON        m_hIconPause;
 
 private:
-	// Variables
+    // Variables
 
-	bool		m_bSingleCmdMode;				// TRUE=/c cmdline mode
-	AString		m_sSingleLine;					// Single line for the /c cmdline
-	char		m_szScriptFileName[_MAX_PATH+1];// FileName (fullpath) of current script
-	char		*m_szScriptFilePart;			// Just the filename (no path)
-	bool		m_bShowingPauseIcon;			// State of the flashing paused icon
+    bool        m_bSingleCmdMode;                // TRUE=/c cmdline mode
+    AString        m_sSingleLine;                    // Single line for the /c cmdline
+    char        m_szScriptFileName[_MAX_PATH+1];// FileName (fullpath) of current script
+    char        *m_szScriptFilePart;            // Just the filename (no path)
+    bool        m_bShowingPauseIcon;            // State of the flashing paused icon
 
 
-	// Functions
+    // Functions
 
-	// Main window handler messages and processing
-	static LRESULT CALLBACK WndProc (HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
-	LRESULT		WndProcHandler (HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
+    // Main window handler messages and processing
+    static LRESULT CALLBACK WndProc (HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
+    LRESULT        WndProcHandler (HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
 
-	void		HandleTimer(HWND hWnd, WPARAM wParam, LPARAM lParam);
-	bool		HandleCommand (HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
+    void        HandleTimer(HWND hWnd, WPARAM wParam, LPARAM lParam);
+    bool        HandleCommand (HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
 
-	void		RegisterClass(void);
-	void		WindowCreate(void);
-	void		ParseCmdLine(void);
+    void        RegisterClass(void);
+    void        WindowCreate(void);
+    void        ParseCmdLine(void);
 
-	// Tray icon
-	void		SetTrayIconToolTip(void);
-	void		NotifyIcon (HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
+    // Tray icon
+    void        SetTrayIconToolTip(void);
+    void        NotifyIcon (HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
 };
 
 

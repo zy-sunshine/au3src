@@ -4,8 +4,8 @@
 // AutoIt v3
 //
 // Copyright (C)1999-2005:
-//		- Jonathan Bennett <jon at hiddensoft dot com>
-//		- See "AUTHORS.txt" for contributors.
+//        - Jonathan Bennett <jon at hiddensoft dot com>
+//        - See "AUTHORS.txt" for contributors.
 //
 // This file is part of AutoIt.
 //
@@ -44,10 +44,10 @@
 
 
 // Includes
-#include "StdAfx.h"								// Pre-compiled headers
+#include "StdAfx.h"                                // Pre-compiled headers
 
-#ifndef _MSC_VER								// Includes for non-MS compilers
-	#include <windows.h>
+#ifndef _MSC_VER                                // Includes for non-MS compilers
+    #include <windows.h>
 #endif
 
 #include "variabletable.h"
@@ -59,30 +59,30 @@
 
 bool VariableTable::Assign(AString sVarName, const Variant &vVariant, bool bConst, int nReqScope)
 {
-	sVarName.toupper();							// Always use uppercase to force case insensitive operation
+    sVarName.toupper();                            // Always use uppercase to force case insensitive operation
 
-	switch (nReqScope)
-	{
-		case VARTABLE_ANY:
-			if (m_Locals.empty())
-				m_Globals.addvar(sVarName.c_str(), vVariant, bConst);
-			else
-				m_Locals.top()->addvar(sVarName.c_str(), vVariant, bConst);
-			break;
+    switch (nReqScope)
+    {
+        case VARTABLE_ANY:
+            if (m_Locals.empty())
+                m_Globals.addvar(sVarName.c_str(), vVariant, bConst);
+            else
+                m_Locals.top()->addvar(sVarName.c_str(), vVariant, bConst);
+            break;
 
-		case VARTABLE_FORCELOCAL:
-			if (m_Locals.empty())
-				m_Globals.addvar(sVarName.c_str(), vVariant, bConst);
-			else
-				m_Locals.top()->addvar(sVarName.c_str(), vVariant, bConst);
-			break;
+        case VARTABLE_FORCELOCAL:
+            if (m_Locals.empty())
+                m_Globals.addvar(sVarName.c_str(), vVariant, bConst);
+            else
+                m_Locals.top()->addvar(sVarName.c_str(), vVariant, bConst);
+            break;
 
-		case VARTABLE_FORCEGLOBAL:
-			m_Globals.addvar(sVarName.c_str(), vVariant, bConst);
-			break;
-	}
+        case VARTABLE_FORCEGLOBAL:
+            m_Globals.addvar(sVarName.c_str(), vVariant, bConst);
+            break;
+    }
 
-	return true;
+    return true;
 
 } // Assign()
 
@@ -93,37 +93,37 @@ bool VariableTable::Assign(AString sVarName, const Variant &vVariant, bool bCons
 
 bool VariableTable::GetRef(AString sVarName, Variant **pvVariant, bool &bConst, int nReqScope)
 {
-	Variant *lpVar = NULL;
+    Variant *lpVar = NULL;
 
-	sVarName.toupper();							// Always use uppercase to force case insensitive operation
+    sVarName.toupper();                            // Always use uppercase to force case insensitive operation
 
-	switch (nReqScope)
-	{
-		case VARTABLE_ANY:
-			if (!m_Locals.empty())
-				lpVar = m_Locals.top()->findvar(sVarName.c_str(), bConst);
+    switch (nReqScope)
+    {
+        case VARTABLE_ANY:
+            if (!m_Locals.empty())
+                lpVar = m_Locals.top()->findvar(sVarName.c_str(), bConst);
 
-			if (lpVar == NULL)
-				lpVar = m_Globals.findvar(sVarName.c_str(), bConst);
+            if (lpVar == NULL)
+                lpVar = m_Globals.findvar(sVarName.c_str(), bConst);
 
-			break;
+            break;
 
-		case VARTABLE_FORCELOCAL:
-			if (!m_Locals.empty())
-				lpVar = m_Locals.top()->findvar(sVarName.c_str(), bConst);
-			else
-				lpVar = m_Globals.findvar(sVarName.c_str(), bConst);
+        case VARTABLE_FORCELOCAL:
+            if (!m_Locals.empty())
+                lpVar = m_Locals.top()->findvar(sVarName.c_str(), bConst);
+            else
+                lpVar = m_Globals.findvar(sVarName.c_str(), bConst);
 
-			break;
+            break;
 
-		case VARTABLE_FORCEGLOBAL:
-			lpVar = m_Globals.findvar(sVarName.c_str(), bConst);
-			break;
-	}
+        case VARTABLE_FORCEGLOBAL:
+            lpVar = m_Globals.findvar(sVarName.c_str(), bConst);
+            break;
+    }
 
-	*pvVariant = lpVar;
+    *pvVariant = lpVar;
 
-	return (lpVar != NULL);
+    return (lpVar != NULL);
 
 } // GetRef()
 
@@ -144,15 +144,15 @@ bool VariableTable::GetRef(AString sVarName, Variant **pvVariant, bool &bConst, 
 
 bool VariableTable::CreateRef(AString sRefName, Variant *pvVariant)
 {
-	sRefName.toupper();							// Always use uppercase to force case insensitive operation
+    sRefName.toupper();                            // Always use uppercase to force case insensitive operation
 
-	// If not in a local function, then can't execute
-	if (m_Locals.empty() || pvVariant == NULL)
-		return false;
+    // If not in a local function, then can't execute
+    if (m_Locals.empty() || pvVariant == NULL)
+        return false;
 
-	m_Locals.top()->addref(sRefName.c_str(), pvVariant);
+    m_Locals.top()->addref(sRefName.c_str(), pvVariant);
 
-	return true;
+    return true;
 
 } // CreateRef()
 
@@ -163,7 +163,7 @@ bool VariableTable::CreateRef(AString sRefName, Variant *pvVariant)
 
 void VariableTable::ScopeIncrease(void)
 {
-	m_Locals.push();
+    m_Locals.push();
 
 } // ScopeIncrease()
 
@@ -174,7 +174,7 @@ void VariableTable::ScopeIncrease(void)
 
 void VariableTable::ScopeDecrease(void)
 {
-	m_Locals.pop();
+    m_Locals.pop();
 
 } // ScopeDecrease()
 
@@ -188,20 +188,20 @@ void VariableTable::ScopeDecrease(void)
 
 int VariableTable::isDeclared(AString sVarName)
 {
-	bool bConst = false;
+    bool bConst = false;
 
-	sVarName.toupper();							// Always use uppercase to force case insensitive operation
+    sVarName.toupper();                            // Always use uppercase to force case insensitive operation
 
-	// Look in local variables
-	if (!(m_Locals.empty()) && m_Locals.top()->findvar(sVarName.c_str(), bConst) != NULL)
-		return -1;								// Local
+    // Look in local variables
+    if (!(m_Locals.empty()) && m_Locals.top()->findvar(sVarName.c_str(), bConst) != NULL)
+        return -1;                                // Local
 
-	// Look in global variables
-	if (m_Globals.findvar(sVarName.c_str(), bConst) != NULL)
-		return 1;								// Global
+    // Look in global variables
+    if (m_Globals.findvar(sVarName.c_str(), bConst) != NULL)
+        return 1;                                // Global
 
-	// not found at all
-	return 0;
+    // not found at all
+    return 0;
 
 } // isDeclared()
 

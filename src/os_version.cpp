@@ -4,8 +4,8 @@
 // AutoIt v3
 //
 // Copyright (C)1999-2005:
-//		- Jonathan Bennett <jon at hiddensoft dot com>
-//		- See "AUTHORS.txt" for contributors.
+//        - Jonathan Bennett <jon at hiddensoft dot com>
+//        - See "AUTHORS.txt" for contributors.
 //
 // This file is part of AutoIt.
 //
@@ -44,10 +44,10 @@
 
 
 // Includes
-#include "StdAfx.h"								// Pre-compiled headers
+#include "StdAfx.h"                                // Pre-compiled headers
 
-#ifndef _MSC_VER								// Includes for non-MS compilers
-	#include <windows.h>
+#ifndef _MSC_VER                                // Includes for non-MS compilers
+    #include <windows.h>
 #endif
 
 #include "os_version.h"
@@ -105,103 +105,103 @@ Windows Me/98/95:  Pointer to a null-terminated string that indicates additional
 
 OS_Version::OS_Version()
 {
-	int				i;
-	OSVERSIONINFO	OSvi;						// OS Version data
+    int                i;
+    OSVERSIONINFO    OSvi;                        // OS Version data
 
-	// Get details of the OS we are running on
-	OSvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-	GetVersionEx(&OSvi);
+    // Get details of the OS we are running on
+    OSvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+    GetVersionEx(&OSvi);
 
-	// Populate Major and Minor version numbers
-	m_dwMajorVersion	= OSvi.dwMajorVersion;
-	m_dwMinorVersion	= OSvi.dwMinorVersion;
-	m_dwBuildNumber		= OSvi.dwBuildNumber;
+    // Populate Major and Minor version numbers
+    m_dwMajorVersion    = OSvi.dwMajorVersion;
+    m_dwMinorVersion    = OSvi.dwMinorVersion;
+    m_dwBuildNumber        = OSvi.dwBuildNumber;
 
-	// Get CSD information
-	int nTemp = (int)strlen(OSvi.szCSDVersion);
+    // Get CSD information
+    int nTemp = (int)strlen(OSvi.szCSDVersion);
 
-	if (nTemp > 0)
-	{
-		//	strip trailing
-		for (i=nTemp-1; i>0; i--)
-		{
-			if ((char) OSvi.szCSDVersion[i] != ' ')
-				break;
-			OSvi.szCSDVersion[i] = '\0';
-		}
+    if (nTemp > 0)
+    {
+        //    strip trailing
+        for (i=nTemp-1; i>0; i--)
+        {
+            if ((char) OSvi.szCSDVersion[i] != ' ')
+                break;
+            OSvi.szCSDVersion[i] = '\0';
+        }
 
-		//	strip leading
-		nTemp = i;
-		for (i=0; i<nTemp; i++)
-		{
-			if ((char) OSvi.szCSDVersion[i] != ' ')
-				break;
-		}
-		strcpy(m_szCSDVersion, &OSvi.szCSDVersion[i]);
-	}
-	else
-		m_szCSDVersion[0] = '\0';				// No CSD info, make it blank to avoid errors
-
-
-	// Set all options to false by default
-	m_bWinNT	= false;
-	m_bWin9x	= false;
-
-	m_bWinNT4	= false;	m_bWinNT4orLater	= false;
-	m_bWin2000	= false;	m_bWin2000orLater	= false;
-	m_bWinXP	= false;	m_bWinXPorLater		= false;
-	m_bWin2003	= false;	m_bWin2003orLater	= false;
-
-	m_bWin98	= false;	m_bWin98orLater		= false;
-	m_bWin95	= false;	m_bWin95orLater		= false;
-	m_bWinMe	= false;	m_bWinMeorLater		= false;
+        //    strip leading
+        nTemp = i;
+        for (i=0; i<nTemp; i++)
+        {
+            if ((char) OSvi.szCSDVersion[i] != ' ')
+                break;
+        }
+        strcpy(m_szCSDVersion, &OSvi.szCSDVersion[i]);
+    }
+    else
+        m_szCSDVersion[0] = '\0';                // No CSD info, make it blank to avoid errors
 
 
-	// Work out if NT or 9x
-	if (OSvi.dwPlatformId == VER_PLATFORM_WIN32_NT)
-	{
-		// Windows NT
-		m_bWinNT = true;
+    // Set all options to false by default
+    m_bWinNT    = false;
+    m_bWin9x    = false;
 
-		switch (m_dwMajorVersion)
-		{
-			case 4:								// NT 4
-				m_bWinNT4 = m_bWinNT4orLater = true;
-				break;
+    m_bWinNT4    = false;    m_bWinNT4orLater    = false;
+    m_bWin2000    = false;    m_bWin2000orLater    = false;
+    m_bWinXP    = false;    m_bWinXPorLater        = false;
+    m_bWin2003    = false;    m_bWin2003orLater    = false;
 
-			case 5:								// Win2000 / XP
-				m_bWinNT4orLater = true;
+    m_bWin98    = false;    m_bWin98orLater        = false;
+    m_bWin95    = false;    m_bWin95orLater        = false;
+    m_bWinMe    = false;    m_bWinMeorLater        = false;
 
-				if ( m_dwMinorVersion == 0 )	// Win2000
-					m_bWin2000 = m_bWin2000orLater = true;
-				else							// WinXP
-					m_bWinXP = m_bWinXPorLater = m_bWin2000orLater = true;
-				break;
 
-		} // End Switch
-	}
-	else
-	{
-		// Windows 9x -- all major versions = 4
-		m_bWin9x = true;
-		m_bWin95orLater = true;
-		m_dwBuildNumber	= (WORD) OSvi.dwBuildNumber;	// Build number in lower word on 9x
+    // Work out if NT or 9x
+    if (OSvi.dwPlatformId == VER_PLATFORM_WIN32_NT)
+    {
+        // Windows NT
+        m_bWinNT = true;
 
-		switch ( m_dwMinorVersion )
-		{
-			case 0:								// 95
-				m_bWin95 = true;
-				break;
+        switch (m_dwMajorVersion)
+        {
+            case 4:                                // NT 4
+                m_bWinNT4 = m_bWinNT4orLater = true;
+                break;
 
-			case 10:							// 98
-				m_bWin98 = m_bWin98orLater = true;
-				break;
+            case 5:                                // Win2000 / XP
+                m_bWinNT4orLater = true;
 
-			case 90:							// ME
-				m_bWinMe = 	m_bWinMeorLater = m_bWin98orLater = true;
-				break;
-		} // End Switch
-	} // End If
+                if ( m_dwMinorVersion == 0 )    // Win2000
+                    m_bWin2000 = m_bWin2000orLater = true;
+                else                            // WinXP
+                    m_bWinXP = m_bWinXPorLater = m_bWin2000orLater = true;
+                break;
+
+        } // End Switch
+    }
+    else
+    {
+        // Windows 9x -- all major versions = 4
+        m_bWin9x = true;
+        m_bWin95orLater = true;
+        m_dwBuildNumber    = (WORD) OSvi.dwBuildNumber;    // Build number in lower word on 9x
+
+        switch ( m_dwMinorVersion )
+        {
+            case 0:                                // 95
+                m_bWin95 = true;
+                break;
+
+            case 10:                            // 98
+                m_bWin98 = m_bWin98orLater = true;
+                break;
+
+            case 90:                            // ME
+                m_bWinMe =     m_bWinMeorLater = m_bWin98orLater = true;
+                break;
+        } // End Switch
+    } // End If
 
 } // Constructor()
 

@@ -4,8 +4,8 @@
 // AutoIt v3
 //
 // Copyright (C)1999-2005:
-//		- Jonathan Bennett <jon at hiddensoft dot com>
-//		- See "AUTHORS.txt" for contributors.
+//        - Jonathan Bennett <jon at hiddensoft dot com>
+//        - See "AUTHORS.txt" for contributors.
 //
 // This file is part of AutoIt.
 //
@@ -45,10 +45,10 @@
 
 
 // Includes
-#include "StdAfx.h"								// Pre-compiled headers
+#include "StdAfx.h"                                // Pre-compiled headers
 
-#ifndef _MSC_VER								// Includes for non-MS compilers
-	#include <stdio.h>
+#ifndef _MSC_VER                                // Includes for non-MS compilers
+    #include <stdio.h>
 #endif
 
 #include "vector_token_datatype.h"
@@ -70,14 +70,14 @@ VectorToken::VectorToken() : m_nItems(0), m_lpFirst(NULL), m_lpLast(NULL)
 
 VectorToken::VectorToken(const VectorToken &vSource) : m_nItems(0), m_lpFirst(NULL), m_lpLast(NULL)
 {
-	VectorTokenNode	*lpTemp;
+    VectorTokenNode    *lpTemp;
 
-	lpTemp = vSource.m_lpFirst;
-	while(lpTemp != NULL)
-	{
-		push_back(lpTemp->tItem);
-		lpTemp = lpTemp->lpNext;
-	}
+    lpTemp = vSource.m_lpFirst;
+    while(lpTemp != NULL)
+    {
+        push_back(lpTemp->tItem);
+        lpTemp = lpTemp->lpNext;
+    }
 }
 
 
@@ -87,16 +87,16 @@ VectorToken::VectorToken(const VectorToken &vSource) : m_nItems(0), m_lpFirst(NU
 
 VectorToken::~VectorToken()
 {
-	VectorTokenNode	*lpTemp, *lpTemp2;
+    VectorTokenNode    *lpTemp, *lpTemp2;
 
-	lpTemp = m_lpFirst;
+    lpTemp = m_lpFirst;
 
-	while(lpTemp != NULL)
-	{
-		lpTemp2 = lpTemp->lpNext;
-		delete lpTemp;
-		lpTemp = lpTemp2;
-	}
+    while(lpTemp != NULL)
+    {
+        lpTemp2 = lpTemp->lpNext;
+        delete lpTemp;
+        lpTemp = lpTemp2;
+    }
 
 } // ~VectorToken()
 
@@ -107,24 +107,24 @@ VectorToken::~VectorToken()
 
 Token& VectorToken::operator[](unsigned int nIndex)
 {
-	// Check bounds
-	if (nIndex >= m_nItems)
-	{
-		m_tNull.m_nType = TOK_END;
-		return m_tNull;							// return an END token
-	}
+    // Check bounds
+    if (nIndex >= m_nItems)
+    {
+        m_tNull.m_nType = TOK_END;
+        return m_tNull;                            // return an END token
+    }
 
 
-	// Loop through and return the correct token
-	unsigned int	i;
-	VectorTokenNode	*lpTemp;
+    // Loop through and return the correct token
+    unsigned int    i;
+    VectorTokenNode    *lpTemp;
 
-	lpTemp = m_lpFirst;
+    lpTemp = m_lpFirst;
 
-	for (i=0; i<nIndex; i++)
-		lpTemp = lpTemp->lpNext;
+    for (i=0; i<nIndex; i++)
+        lpTemp = lpTemp->lpNext;
 
-	return lpTemp->tItem;
+    return lpTemp->tItem;
 
 } // operator[]()
 
@@ -135,18 +135,18 @@ Token& VectorToken::operator[](unsigned int nIndex)
 
 VectorToken& VectorToken::operator=(VectorToken &vOp2)
 {
-	if ( this == &vOp2 )
-		return *this;
+    if ( this == &vOp2 )
+        return *this;
 
-	// Clear this vector
-	clear();
+    // Clear this vector
+    clear();
 
-	// Copy items
-	int nSize = vOp2.size();
-	for (int i=0; i<nSize; ++i)
-		push_back(vOp2[i]);
+    // Copy items
+    int nSize = vOp2.size();
+    for (int i=0; i<nSize; ++i)
+        push_back(vOp2[i]);
 
-	return *this;								// Return this object that generated the call
+    return *this;                                // Return this object that generated the call
 
 
 } // operator=()
@@ -159,26 +159,26 @@ VectorToken& VectorToken::operator=(VectorToken &vOp2)
 
 void VectorToken::push_back(const Token &tItem)
 {
-	VectorTokenNode	*lpTemp;
+    VectorTokenNode    *lpTemp;
 
-	// Create a new node
-	lpTemp			= new VectorTokenNode;
-	lpTemp->tItem	= tItem;
-	lpTemp->lpNext	= NULL;
+    // Create a new node
+    lpTemp            = new VectorTokenNode;
+    lpTemp->tItem    = tItem;
+    lpTemp->lpNext    = NULL;
 
-	// Add it to the end of the vector
-	if (m_lpLast)
-	{
-		m_lpLast->lpNext	= lpTemp;
-		m_lpLast			= lpTemp;
-	}
-	else
-	{
-		// First entry
-		m_lpFirst = m_lpLast = lpTemp;
-	}
+    // Add it to the end of the vector
+    if (m_lpLast)
+    {
+        m_lpLast->lpNext    = lpTemp;
+        m_lpLast            = lpTemp;
+    }
+    else
+    {
+        // First entry
+        m_lpFirst = m_lpLast = lpTemp;
+    }
 
-	m_nItems++;
+    m_nItems++;
 
 } // push_back()
 
@@ -190,10 +190,10 @@ void VectorToken::push_back(const Token &tItem)
 
 bool VectorToken::empty(void) const
 {
-	if (m_nItems)
-		return false;
-	else
-		return true;
+    if (m_nItems)
+        return false;
+    else
+        return true;
 
 } // empty()
 
@@ -205,20 +205,20 @@ bool VectorToken::empty(void) const
 
 void VectorToken::clear(void)
 {
-	VectorTokenNode	*lpTemp, *lpTemp2;
+    VectorTokenNode    *lpTemp, *lpTemp2;
 
-	lpTemp = m_lpFirst;
+    lpTemp = m_lpFirst;
 
-	while(lpTemp != NULL)
-	{
-		lpTemp2 = lpTemp->lpNext;
-		delete lpTemp;
-		lpTemp = lpTemp2;
-	}
+    while(lpTemp != NULL)
+    {
+        lpTemp2 = lpTemp->lpNext;
+        delete lpTemp;
+        lpTemp = lpTemp2;
+    }
 
-	m_nItems	= 0;
-	m_lpFirst	= NULL;
-	m_lpLast	= NULL;
+    m_nItems    = 0;
+    m_lpFirst    = NULL;
+    m_lpLast    = NULL;
 
 } // clear()
 

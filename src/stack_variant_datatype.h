@@ -6,8 +6,8 @@
 // AutoIt v3
 //
 // Copyright (C)1999-2005:
-//		- Jonathan Bennett <jon at hiddensoft dot com>
-//		- See "AUTHORS.txt" for contributors.
+//        - Jonathan Bennett <jon at hiddensoft dot com>
+//        - See "AUTHORS.txt" for contributors.
 //
 // This file is part of AutoIt.
 //
@@ -53,8 +53,8 @@
 // Structs for stack node
 typedef struct _StackVariantNode
 {
-	Variant						vItem;			// The item
-	struct _StackVariantNode	*lpPrev;		// Previous node (or NULL)
+    Variant                        vItem;            // The item
+    struct _StackVariantNode    *lpPrev;        // Previous node (or NULL)
 
 } StackVariantNode;
 
@@ -62,26 +62,26 @@ typedef struct _StackVariantNode
 class StackVariant
 {
 public:
-	// Functions
-	StackVariant();								// Constructor
-	~StackVariant();							// Destructor
+    // Functions
+    StackVariant();                                // Constructor
+    ~StackVariant();                            // Destructor
 
-	void			push(const Variant &vItem);	// Push item onto stack
-	void			pop(void);					// Pop item from stack
+    void            push(const Variant &vItem);    // Push item onto stack
+    void            pop(void);                    // Pop item from stack
 
-	// Properties
-	Variant&		top(void);								// Get top item from stack
-	unsigned int	size(void) const { return m_nItems; }	// Return number of items on stack
-	bool			empty(void) const;						// Tests if stack empty
+    // Properties
+    Variant&        top(void);                                // Get top item from stack
+    unsigned int    size(void) const { return m_nItems; }    // Return number of items on stack
+    bool            empty(void) const;                        // Tests if stack empty
 
 
-	// Overloads
+    // Overloads
 
 private:
-	// Variables
-	unsigned int		m_nItems;				// Number of items on stack
-	StackVariantNode	*m_lpTop;				// Pointer to top node
-	Variant				m_vNull;				// Dummy value to return on error
+    // Variables
+    unsigned int        m_nItems;                // Number of items on stack
+    StackVariantNode    *m_lpTop;                // Pointer to top node
+    Variant                m_vNull;                // Dummy value to return on error
 };
 
 ///////////////////////////////////////////////////////////////////////////////

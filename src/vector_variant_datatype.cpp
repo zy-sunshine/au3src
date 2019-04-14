@@ -4,8 +4,8 @@
 // AutoIt v3
 //
 // Copyright (C)1999-2005:
-//		- Jonathan Bennett <jon at hiddensoft dot com>
-//		- See "AUTHORS.txt" for contributors.
+//        - Jonathan Bennett <jon at hiddensoft dot com>
+//        - See "AUTHORS.txt" for contributors.
 //
 // This file is part of AutoIt.
 //
@@ -45,10 +45,10 @@
 
 
 // Includes
-#include "StdAfx.h"								// Pre-compiled headers
+#include "StdAfx.h"                                // Pre-compiled headers
 
-#ifndef _MSC_VER								// Includes for non-MS compilers
-	#include <stdio.h>
+#ifndef _MSC_VER                                // Includes for non-MS compilers
+    #include <stdio.h>
 #endif
 
 #include "vector_variant_datatype.h"
@@ -70,14 +70,14 @@ VectorVariant::VectorVariant() : m_nItems(0), m_lpFirst(NULL), m_lpLast(NULL)
 
 VectorVariant::VectorVariant(const VectorVariant &vSource) : m_nItems(0), m_lpFirst(NULL), m_lpLast(NULL)
 {
-	VectorVariantNode	*lpTemp;
+    VectorVariantNode    *lpTemp;
 
-	lpTemp = vSource.m_lpFirst;
-	while(lpTemp != NULL)
-	{
-		push_back(lpTemp->vItem);
-		lpTemp = lpTemp->lpNext;
-	}
+    lpTemp = vSource.m_lpFirst;
+    while(lpTemp != NULL)
+    {
+        push_back(lpTemp->vItem);
+        lpTemp = lpTemp->lpNext;
+    }
 }
 
 
@@ -87,16 +87,16 @@ VectorVariant::VectorVariant(const VectorVariant &vSource) : m_nItems(0), m_lpFi
 
 VectorVariant::~VectorVariant()
 {
-	VectorVariantNode	*lpTemp, *lpTemp2;
+    VectorVariantNode    *lpTemp, *lpTemp2;
 
-	lpTemp = m_lpFirst;
+    lpTemp = m_lpFirst;
 
-	while(lpTemp != NULL)
-	{
-		lpTemp2 = lpTemp->lpNext;
-		delete lpTemp;
-		lpTemp = lpTemp2;
-	}
+    while(lpTemp != NULL)
+    {
+        lpTemp2 = lpTemp->lpNext;
+        delete lpTemp;
+        lpTemp = lpTemp2;
+    }
 
 } // ~VectorVariant()
 
@@ -107,26 +107,26 @@ VectorVariant::~VectorVariant()
 
 Variant& VectorVariant::operator[](unsigned int nIndex)
 {
-	// Check bounds
-	if (nIndex >= m_nItems)
-	{
-//		Variant vTemp;
-//		vTemp = 0;
-//		return vTemp;							// return 0
-		return m_vNull;							// Return our dummy variant
-	}
+    // Check bounds
+    if (nIndex >= m_nItems)
+    {
+//        Variant vTemp;
+//        vTemp = 0;
+//        return vTemp;                            // return 0
+        return m_vNull;                            // Return our dummy variant
+    }
 
 
-	// Loop through and return the correct token
-	unsigned int	i;
-	VectorVariantNode	*lpTemp;
+    // Loop through and return the correct token
+    unsigned int    i;
+    VectorVariantNode    *lpTemp;
 
-	lpTemp = m_lpFirst;
+    lpTemp = m_lpFirst;
 
-	for (i=0; i<nIndex; i++)
-		lpTemp = lpTemp->lpNext;
+    for (i=0; i<nIndex; i++)
+        lpTemp = lpTemp->lpNext;
 
-	return lpTemp->vItem;
+    return lpTemp->vItem;
 
 } // operator[]()
 
@@ -138,26 +138,26 @@ Variant& VectorVariant::operator[](unsigned int nIndex)
 
 void VectorVariant::push_back(const Variant &vItem)
 {
-	VectorVariantNode	*lpTemp;
+    VectorVariantNode    *lpTemp;
 
-	// Create a new node
-	lpTemp			= new VectorVariantNode;
-	lpTemp->vItem	= vItem;
-	lpTemp->lpNext	= NULL;
+    // Create a new node
+    lpTemp            = new VectorVariantNode;
+    lpTemp->vItem    = vItem;
+    lpTemp->lpNext    = NULL;
 
-	// Add it to the end of the vector
-	if (m_lpLast)
-	{
-		m_lpLast->lpNext	= lpTemp;
-		m_lpLast			= lpTemp;
-	}
-	else
-	{
-		// First entry
-		m_lpFirst = m_lpLast = lpTemp;
-	}
+    // Add it to the end of the vector
+    if (m_lpLast)
+    {
+        m_lpLast->lpNext    = lpTemp;
+        m_lpLast            = lpTemp;
+    }
+    else
+    {
+        // First entry
+        m_lpFirst = m_lpLast = lpTemp;
+    }
 
-	m_nItems++;
+    m_nItems++;
 
 } // push_back()
 
@@ -169,10 +169,10 @@ void VectorVariant::push_back(const Variant &vItem)
 
 bool VectorVariant::empty(void) const
 {
-	if (m_nItems)
-		return false;
-	else
-		return true;
+    if (m_nItems)
+        return false;
+    else
+        return true;
 
 } // empty()
 
@@ -184,19 +184,19 @@ bool VectorVariant::empty(void) const
 
 void VectorVariant::clear(void)
 {
-	VectorVariantNode	*lpTemp, *lpTemp2;
+    VectorVariantNode    *lpTemp, *lpTemp2;
 
-	lpTemp = m_lpFirst;
+    lpTemp = m_lpFirst;
 
-	while(lpTemp != NULL)
-	{
-		lpTemp2 = lpTemp->lpNext;
-		delete lpTemp;
-		lpTemp = lpTemp2;
-	}
+    while(lpTemp != NULL)
+    {
+        lpTemp2 = lpTemp->lpNext;
+        delete lpTemp;
+        lpTemp = lpTemp2;
+    }
 
-	m_nItems	= 0;
-	m_lpFirst	= NULL;
-	m_lpLast	= NULL;
+    m_nItems    = 0;
+    m_lpFirst    = NULL;
+    m_lpLast    = NULL;
 
 } // clear()

@@ -4,8 +4,8 @@
 // AutoIt v3
 //
 // Copyright (C)1999-2005:
-//		- Jonathan Bennett <jon at hiddensoft dot com>
-//		- See "AUTHORS.txt" for contributors.
+//        - Jonathan Bennett <jon at hiddensoft dot com>
+//        - See "AUTHORS.txt" for contributors.
 //
 // This file is part of AutoIt.
 //
@@ -48,10 +48,10 @@
 
 
 // Includes
-#include "StdAfx.h"								// Pre-compiled headers
+#include "StdAfx.h"                                // Pre-compiled headers
 
-#ifndef _MSC_VER								// Includes for non-MS compilers
-	#include <stdio.h>
+#ifndef _MSC_VER                                // Includes for non-MS compilers
+    #include <stdio.h>
 #endif
 
 
@@ -74,16 +74,16 @@ StackStatement::StackStatement() : m_nItems(0), m_lpTop(NULL)
 
 StackStatement::~StackStatement()
 {
-	StackStatementNode	*lpTemp, *lpTemp2;
+    StackStatementNode    *lpTemp, *lpTemp2;
 
-	lpTemp = m_lpTop;
+    lpTemp = m_lpTop;
 
-	while(lpTemp != NULL)
-	{
-		lpTemp2 = lpTemp->lpPrev;
-		delete lpTemp;
-		lpTemp = lpTemp2;
-	}
+    while(lpTemp != NULL)
+    {
+        lpTemp2 = lpTemp->lpPrev;
+        delete lpTemp;
+        lpTemp = lpTemp2;
+    }
 
 } // ~StackStatement()
 
@@ -95,20 +95,20 @@ StackStatement::~StackStatement()
 
 void StackStatement::push(const GenStatement &Item)
 {
-	StackStatementNode	*lpTemp;
+    StackStatementNode    *lpTemp;
 
-	// Create a new node
-	lpTemp			= new StackStatementNode;
-	lpTemp->Item	= Item;
+    // Create a new node
+    lpTemp            = new StackStatementNode;
+    lpTemp->Item    = Item;
 
-	// Add it to the top
-	if (m_lpTop)
-		lpTemp->lpPrev = m_lpTop;
-	else
-		lpTemp->lpPrev = NULL;
+    // Add it to the top
+    if (m_lpTop)
+        lpTemp->lpPrev = m_lpTop;
+    else
+        lpTemp->lpPrev = NULL;
 
-	m_lpTop	= lpTemp;
-	m_nItems++;
+    m_lpTop    = lpTemp;
+    m_nItems++;
 
 } // push()
 
@@ -120,17 +120,17 @@ void StackStatement::push(const GenStatement &Item)
 
 void StackStatement::pop(void)
 {
-	StackStatementNode	*lpTemp;
+    StackStatementNode    *lpTemp;
 
-	if (m_lpTop)
-	{
-		lpTemp	= m_lpTop->lpPrev;
-		delete m_lpTop;
-		m_lpTop = lpTemp;
-		m_nItems--;
-	}
-	else
-		return;
+    if (m_lpTop)
+    {
+        lpTemp    = m_lpTop->lpPrev;
+        delete m_lpTop;
+        m_lpTop = lpTemp;
+        m_nItems--;
+    }
+    else
+        return;
 
 } // pop()
 
@@ -142,10 +142,10 @@ void StackStatement::pop(void)
 
 bool StackStatement::empty(void) const
 {
-	if (m_nItems)
-		return false;
-	else
-		return true;
+    if (m_nItems)
+        return false;
+    else
+        return true;
 
 } // empty()
 
@@ -157,11 +157,11 @@ bool StackStatement::empty(void) const
 
 GenStatement& StackStatement::top(void)
 {
-	if (!m_nItems)
-	{
-		return m_sNull;							// Dummy value
-	}
-	else
-		return m_lpTop->Item;
+    if (!m_nItems)
+    {
+        return m_sNull;                            // Dummy value
+    }
+    else
+        return m_lpTop->Item;
 
 } // top()

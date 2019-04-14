@@ -4,8 +4,8 @@
 // AutoIt v3
 //
 // Copyright (C)1999-2005:
-//		- Jonathan Bennett <jon at hiddensoft dot com>
-//		- See "AUTHORS.txt" for contributors.
+//        - Jonathan Bennett <jon at hiddensoft dot com>
+//        - See "AUTHORS.txt" for contributors.
 //
 // This file is part of AutoIt.
 //
@@ -45,10 +45,10 @@
 
 
 // Includes
-#include "StdAfx.h"								// Pre-compiled headers
+#include "StdAfx.h"                                // Pre-compiled headers
 
-#ifndef _MSC_VER								// Includes for non-MS compilers
-	#include <stdio.h>
+#ifndef _MSC_VER                                // Includes for non-MS compilers
+    #include <stdio.h>
 #endif
 
 #include "stack_variant_datatype.h"
@@ -70,16 +70,16 @@ StackVariant::StackVariant() : m_nItems(0), m_lpTop(NULL)
 
 StackVariant::~StackVariant()
 {
-	StackVariantNode	*lpTemp, *lpTemp2;
+    StackVariantNode    *lpTemp, *lpTemp2;
 
-	lpTemp = m_lpTop;
+    lpTemp = m_lpTop;
 
-	while(lpTemp != NULL)
-	{
-		lpTemp2 = lpTemp->lpPrev;
-		delete lpTemp;
-		lpTemp = lpTemp2;
-	}
+    while(lpTemp != NULL)
+    {
+        lpTemp2 = lpTemp->lpPrev;
+        delete lpTemp;
+        lpTemp = lpTemp2;
+    }
 
 } // ~StackVariant()
 
@@ -91,20 +91,20 @@ StackVariant::~StackVariant()
 
 void StackVariant::push(const Variant &vItem)
 {
-	StackVariantNode	*lpTemp;
+    StackVariantNode    *lpTemp;
 
-	// Create a new node
-	lpTemp			= new StackVariantNode;
-	lpTemp->vItem	= vItem;
+    // Create a new node
+    lpTemp            = new StackVariantNode;
+    lpTemp->vItem    = vItem;
 
-	// Add it to the top
-	if (m_lpTop)
-		lpTemp->lpPrev = m_lpTop;
-	else
-		lpTemp->lpPrev = NULL;
+    // Add it to the top
+    if (m_lpTop)
+        lpTemp->lpPrev = m_lpTop;
+    else
+        lpTemp->lpPrev = NULL;
 
-	m_lpTop	= lpTemp;
-	m_nItems++;
+    m_lpTop    = lpTemp;
+    m_nItems++;
 
 } // push()
 
@@ -116,17 +116,17 @@ void StackVariant::push(const Variant &vItem)
 
 void StackVariant::pop(void)
 {
-	StackVariantNode	*lpTemp;
+    StackVariantNode    *lpTemp;
 
-	if (m_lpTop)
-	{
-		lpTemp	= m_lpTop->lpPrev;
-		delete m_lpTop;
-		m_lpTop = lpTemp;
-		m_nItems--;
-	}
-	else
-		return;
+    if (m_lpTop)
+    {
+        lpTemp    = m_lpTop->lpPrev;
+        delete m_lpTop;
+        m_lpTop = lpTemp;
+        m_nItems--;
+    }
+    else
+        return;
 
 } // pop()
 
@@ -138,10 +138,10 @@ void StackVariant::pop(void)
 
 bool StackVariant::empty(void) const
 {
-	if (m_nItems)
-		return false;
-	else
-		return true;
+    if (m_nItems)
+        return false;
+    else
+        return true;
 
 } // empty()
 
@@ -153,10 +153,10 @@ bool StackVariant::empty(void) const
 
 Variant& StackVariant::top(void)
 {
-	if (!m_nItems)
-		return m_vNull;							// Returns a dummy variant
-	else
-		return m_lpTop->vItem;
+    if (!m_nItems)
+        return m_vNull;                            // Returns a dummy variant
+    else
+        return m_lpTop->vItem;
 
 } // top()
 

@@ -6,8 +6,8 @@
 // AutoIt v3
 //
 // Copyright (C)1999-2005:
-//		- Jonathan Bennett <jon at hiddensoft dot com>
-//		- See "AUTHORS.txt" for contributors.
+//        - Jonathan Bennett <jon at hiddensoft dot com>
+//        - See "AUTHORS.txt" for contributors.
 //
 // This file is part of AutoIt.
 //
@@ -51,18 +51,18 @@
 
 typedef struct
 {
-	AString sName;								// Name of the user defined function
-	int		nFuncLineNum;						// Line number of Func keyword (0=unused)
-	int		nNumParams;							// Number of parameters this function has
-	int		nNumParamsMin;						// Min Number of parameters this function has
-	int		nEndFuncLineNum;					// Line number of the EndFunc keyword
+    AString sName;                                // Name of the user defined function
+    int        nFuncLineNum;                        // Line number of Func keyword (0=unused)
+    int        nNumParams;                            // Number of parameters this function has
+    int        nNumParamsMin;                        // Min Number of parameters this function has
+    int        nEndFuncLineNum;                    // Line number of the EndFunc keyword
 } UserFuncDetails;
 
 
 typedef struct _UserFuncListNode
 {
-	UserFuncDetails	uItem;
-	struct _UserFuncListNode	*lpNext;		// Next node (or NULL)
+    UserFuncDetails    uItem;
+    struct _UserFuncListNode    *lpNext;        // Next node (or NULL)
 
 } UserFuncListNode;
 
@@ -70,21 +70,21 @@ typedef struct _UserFuncListNode
 class UserFuncList
 {
 public:
-	// Functions
-	UserFuncList();								// Constructor
-	~UserFuncList();							// Destructor
+    // Functions
+    UserFuncList();                                // Constructor
+    ~UserFuncList();                            // Destructor
 
-	void				add(const UserFuncDetails &uItem);	// Add item to the list
-	UserFuncDetails*	find(AString sName);
-	void				createindex(void);					// Creates the index and sorts the list - NO MORE ADDITIONS POSSIBLE
+    void                add(const UserFuncDetails &uItem);    // Add item to the list
+    UserFuncDetails*    find(AString sName);
+    void                createindex(void);                    // Creates the index and sorts the list - NO MORE ADDITIONS POSSIBLE
 
 private:
-	// Variables
-	UserFuncListNode	*m_lpFirst;				// Pointer to first node
-	UserFuncListNode	*m_lpLast;				// Pointer to last node
+    // Variables
+    UserFuncListNode    *m_lpFirst;                // Pointer to first node
+    UserFuncListNode    *m_lpLast;                // Pointer to last node
 
-	UserFuncDetails		**m_Index;
-	int					m_nNumItems;
+    UserFuncDetails        **m_Index;
+    int                    m_nNumItems;
 
 };
 

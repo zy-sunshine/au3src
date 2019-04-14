@@ -6,8 +6,8 @@
 // AutoIt v3
 //
 // Copyright (C)1999-2005:
-//		- Jonathan Bennett <jon at hiddensoft dot com>
-//		- See "AUTHORS.txt" for contributors.
+//        - Jonathan Bennett <jon at hiddensoft dot com>
+//        - See "AUTHORS.txt" for contributors.
 //
 // This file is part of AutoIt.
 //
@@ -45,35 +45,35 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 
-#define	CMDLINE_MAXPARAMS	64					// Max number of parameters
-#define CMDLINE_MAXLEN		4096				// Each parameter can be this many characters
+#define    CMDLINE_MAXPARAMS    64                    // Max number of parameters
+#define CMDLINE_MAXLEN        4096                // Each parameter can be this many characters
 
 class CmdLine
 {
 public:
-	CmdLine();									// Constructor
-	~CmdLine();									// Destructor
+    CmdLine();                                    // Constructor
+    ~CmdLine();                                    // Destructor
 
-	// Functions
-	void	SetCmdLine(char *szCmdLine);		// Call this with the full cmd line
+    // Functions
+    void    SetCmdLine(char *szCmdLine);        // Call this with the full cmd line
 
-	const char * GetCmdLine() { return m_szCmdLineRaw; }
+    const char * GetCmdLine() { return m_szCmdLineRaw; }
 
-	int		GetNumParams(void) const {return m_nNumParameters;}
-	bool	GetParam(int nParam, char *szParam) const;
-	bool	GetNextParam(char *szParam);
-	void	GetNextParamReset(void) {m_nCurrentParam = 0;}
+    int        GetNumParams(void) const {return m_nNumParameters;}
+    bool    GetParam(int nParam, char *szParam) const;
+    bool    GetNextParam(char *szParam);
+    void    GetNextParamReset(void) {m_nCurrentParam = 0;}
 
 private:
-	// Variables
-	int		m_nNumParameters;					// Number of space separated paramters on the cmdline
-	int		m_nCurrentParam;					// Current param to return for GetNextParam()
-	char	*m_szCmdLineRaw;					// The original command line
-	char	*m_szParams[CMDLINE_MAXPARAMS];		// List of pointers to each parameter
+    // Variables
+    int        m_nNumParameters;                    // Number of space separated paramters on the cmdline
+    int        m_nCurrentParam;                    // Current param to return for GetNextParam()
+    char    *m_szCmdLineRaw;                    // The original command line
+    char    *m_szParams[CMDLINE_MAXPARAMS];        // List of pointers to each parameter
 
-	// Functions
-	void	StoreParam(char *szParam);
-	void	Reset(void);						// Frees up memory ready for reuse
+    // Functions
+    void    StoreParam(char *szParam);
+    void    Reset(void);                        // Frees up memory ready for reuse
 
 };
 
