@@ -1,3 +1,4 @@
+#include "StdAfx.h"                                // Pre-compiled headers
 #include "ModuleMouse.h"
 
 ///////////////////////////////////////////////////////////////////////////////

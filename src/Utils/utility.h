@@ -1,6 +1,4 @@
-#ifndef __UTIL_H
-#define __UTIL_H
-
+#pragma once
 ///////////////////////////////////////////////////////////////////////////////
 //
 // AutoIt v3
@@ -52,7 +50,7 @@
     #include <windows.h>
 #endif
 
-#include "variant_datatype.h"
+#include "Engine/Type/Variant.h"
 
 
 // Function declarations
@@ -167,6 +165,3 @@ template<typename T> inline void Util_Variant2DArrayAssign(Variant *pvVariant, u
 
 
 ///////////////////////////////////////////////////////////////////////////////
-
-#endif // __UTIL_H
-

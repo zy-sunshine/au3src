@@ -44,6 +44,7 @@
 
 // Includes
 #include "StdAfx.h"                                // Pre-compiled headers
+#include "ModuleBuiltIn.h"
 
 #ifndef _MSC_VER                                // Includes for non-MS compilers
     #include <stdio.h>
@@ -54,12 +55,7 @@
 //    #include "qmath.h"                            // MinGW doesn't like our asm maths functions
 #endif
 
-#include "AutoIt.h"                                // Autoit values, macros and config options
-
-#include "script.h"
-#include "globaldata.h"
-#include "utility.h"
-#include "mt19937ar-cok.h"
+#include "Utils/utility.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -100,7 +96,7 @@ AUT_RESULT ModuleBuiltIn::F_Dec(VectorVariant &vParams, Variant &vResult)
     int        nTemp1;
 
     if (Util_ConvDec(vParams[0].szValue(), nTemp1) == false)
-        SetFuncErrorCode(1);            // error
+        engine->SetFuncErrorCode(1);            // error
     vResult = nTemp1;
 
     return AUT_OK;
@@ -139,7 +135,7 @@ AUT_RESULT ModuleBuiltIn::F_Int(VectorVariant &vParams, Variant &vResult)
     }
     else
     {
-        SetFuncErrorCode(1);
+        engine->SetFuncErrorCode(1);
         vResult = 0;                            // Invalid
     }
 
@@ -401,7 +397,7 @@ AUT_RESULT ModuleBuiltIn::F_Random(VectorVariant &vParams, Variant &vResult)
         case 1: // return [0, n]
             fTemp1 = vParams[0].fValue();
             if (fTemp1 <= 0.0)
-                SetFuncErrorCode(1);
+                engine->SetFuncErrorCode(1);
             else
                 vResult = genrand_real2() * fTemp1;    // return [0,1] * fTemp1
             break;
@@ -409,7 +405,7 @@ AUT_RESULT ModuleBuiltIn::F_Random(VectorVariant &vParams, Variant &vResult)
         case 2:    // return [n, m] for int and [n, m] for float
         case 3:
             if (vParams[0].isArray() || vParams[1].isArray())
-                SetFuncErrorCode(1);
+                engine->SetFuncErrorCode(1);
             else if (bInteger)
             {
                 // Integer (32 bit)
@@ -417,7 +413,7 @@ AUT_RESULT ModuleBuiltIn::F_Random(VectorVariant &vParams, Variant &vResult)
 
                 nTemp1 = vParams[0].nValue();
                 if (nTemp1 > nTemp2)
-                    SetFuncErrorCode(1);    // invalid range
+                    engine->SetFuncErrorCode(1);    // invalid range
                 else
                     vResult = (int)(genrand_int31()%(nTemp2-nTemp1+1) + nTemp1);
             }
@@ -428,7 +424,7 @@ AUT_RESULT ModuleBuiltIn::F_Random(VectorVariant &vParams, Variant &vResult)
 
                 fTemp1 = vParams[0].fValue();
                 if (fTemp1 >= fTemp2)
-                    SetFuncErrorCode(1);    // invalid range
+                    engine->SetFuncErrorCode(1);    // invalid range
                 else
                     vResult = genrand_real2()*(fTemp2-fTemp1) + fTemp1;
             }
@@ -462,18 +458,18 @@ AUT_RESULT ModuleBuiltIn::F_Random(VectorVariant &vParams, Variant &vResult)
                 case VAR_DOUBLE:
                     fTemp1 = vParams[0].fValue();
                     if (fTemp1 <= 0.0)
-                        SetFuncErrorCode(2);
+                        engine->SetFuncErrorCode(2);
                     else
                         vResult=genrand_real2()*fTemp1;    // return [0,1)
                     break;
                 default:
-                    SetFuncErrorCode(1);    // invalid argument type
+                    engine->SetFuncErrorCode(1);    // invalid argument type
             }
             break;
 
         case 2:    // return [n, m] for int and [n, m) for float
             if (vParams[0].isArray() || vParams[1].isArray())
-                SetFuncErrorCode(1);
+                engine->SetFuncErrorCode(1);
             else
             {
                 // Float
@@ -481,7 +477,7 @@ AUT_RESULT ModuleBuiltIn::F_Random(VectorVariant &vParams, Variant &vResult)
 
                 fTemp1=vParams[0].fValue();
                 if (fTemp1>=fTemp2)
-                    SetFuncErrorCode(2);    // invalid range
+                    engine->SetFuncErrorCode(2);    // invalid range
                 else
                     vResult = genrand_real2()*(fTemp2-fTemp1) + fTemp1;
             }

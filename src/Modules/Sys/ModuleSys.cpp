@@ -488,7 +488,7 @@ AUT_RESULT ModuleSys::Run(int nFunction, VectorVariant &vParams, uint iNumParams
         }
         else
         {
-            SetFuncErrorCode(1);                // Indicate an error (silently)
+            engine->SetFuncErrorCode(1);                // Indicate an error (silently)
             vResult = 0;                        // Also set result to 0 (default 1)
             return AUT_OK;                        // Nothing to tidy, so return now
         }
@@ -561,7 +561,7 @@ AUT_RESULT ModuleSys::F_ProcessSetPriority(VectorVariant &vParams, Variant &vRes
     HMODULE hInst;
     // Assume failure, we'll change for success.
     vResult = 0;
-    SetFuncErrorCode(1);
+    engine->SetFuncErrorCode(1);
 
     Util_DoesProcessExist(vParams[0].szValue(), dwPid, bRes);
     if (!bRes)
@@ -589,7 +589,7 @@ AUT_RESULT ModuleSys::F_ProcessSetPriority(VectorVariant &vParams, Variant &vRes
         break;
     case 1:
         if (g_oVersion.IsWin9x() || g_oVersion.IsWinMe())
-            SetFuncErrorCode(2);
+            engine->SetFuncErrorCode(2);
         else
             dwPriority = 0x00004000;            // BELOW_NORMAL_PRIORITY_CLASS
         break;
@@ -598,7 +598,7 @@ AUT_RESULT ModuleSys::F_ProcessSetPriority(VectorVariant &vParams, Variant &vRes
         break;
     case 3:
         if (g_oVersion.IsWin9x() || g_oVersion.IsWinMe())
-            SetFuncErrorCode(2);
+            engine->SetFuncErrorCode(2);
         else
             dwPriority = 0x00008000;            // ABOVE_NORMAL_PRIORITY_CLASS
         break;

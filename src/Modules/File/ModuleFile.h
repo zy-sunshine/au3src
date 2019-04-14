@@ -1,6 +1,9 @@
+#pragma once
 #include "AutoIt.h"
+#include "Engine/Engine.h"
 
 class ModuleFile {
+    ModuleFile(Engine* engine): engine(engine) {}
 public:
     // File related functions (script_file.cpp)
     AUT_RESULT    F_DirCopy(VectorVariant &vParams, Variant &vResult);
@@ -61,4 +64,7 @@ public:
     AUT_RESULT    F_FileRecycleEmpty(VectorVariant &vParams, Variant &vResult);
     AUT_RESULT    F_DirGetSize(VectorVariant &vParams, Variant &vResult);
     bool        GetDirSize(const char *szInputPath, __int64 &nSize, __int64 &nFiles, __int64 &nDirs, bool bExt, bool bRec);
+
+private:
+    Engine* engine;
 };

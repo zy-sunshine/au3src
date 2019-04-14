@@ -1,7 +1,10 @@
+#pragma once
 #include "AutoIt.h"
+#include "Engine/Engine.h"
 
 class ModuleBuiltIn {
 public:
+    ModuleBuiltIn(Engine* engine): engine(engine) {}
     AUT_RESULT    F_BitAND(VectorVariant &vParams, Variant &vResult);
     AUT_RESULT    F_BitOR(VectorVariant &vParams, Variant &vResult);
     AUT_RESULT    F_BitNOT(VectorVariant &vParams, Variant &vResult);
@@ -62,4 +65,7 @@ public:
     AUT_RESULT    F_IsDeclared(VectorVariant &vParams, Variant &vResult);
 
     AUT_RESULT    F_ConsoleWrite(VectorVariant &vParams, Variant &vResult);
+
+private:
+    Engine* engine;
 };

@@ -1,5 +1,10 @@
+#pragma once
+#include "AutoIt.h"
+#include "Engine/Engine.h"
+
 class ModuleGui {
 public:
+    ModuleGui(Engine* engine): engine(engine) {}
     // Gui related functions
 #ifdef AUT_CONFIG_GUI                            // Is GUI enabled?
     AUT_RESULT    F_GUICreate(VectorVariant &vParams, Variant &vResult);
@@ -67,4 +72,71 @@ public:
     AUT_RESULT    F_GUISetTrayIcon(VectorVariant &vParams, Variant &vResult);
     AUT_RESULT    F_GUIStartGroup(VectorVariant &vParams, Variant &vResult);
 #endif
+};
+
+AU3_FuncInfo funcList[] = {
+#ifdef AUT_CONFIG_GUI                            // Is GUI enabled?
+    {"GUICREATE", &Engine::F_GUICreate, 1, 8},
+    {"GUICTRLCREATEAVI", &Engine::F_GUICtrlCreateAvi, 4, 8},
+    {"GUICTRLCREATEBUTTON", &Engine::F_GUICtrlCreateButton, 3, 7},
+    {"GUICTRLCREATECHECKBOX", &Engine::F_GUICtrlCreateCheckbox, 3, 7},
+    {"GUICTRLCREATECOMBO", &Engine::F_GUICtrlCreateCombo, 3, 7},
+    {"GUICTRLCREATECONTEXTMENU", &Engine::F_GUICtrlCreateContextMenu, 0, 1},
+    {"GUICTRLCREATEDATE", &Engine::F_GUICtrlCreateDate, 3, 7},
+    {"GUICTRLCREATEDUMMY", &Engine::F_GUICtrlCreateDummy, 0, 0},
+    {"GUICTRLCREATEEDIT", &Engine::F_GUICtrlCreateEdit, 3, 7},
+    {"GUICTRLCREATEGROUP", &Engine::F_GUICtrlCreateGroup, 3, 7},
+    {"GUICTRLCREATEICON", &Engine::F_GUICtrlCreateIcon, 4, 8},
+    {"GUICTRLCREATEINPUT", &Engine::F_GUICtrlCreateInput, 3, 7},
+    {"GUICTRLCREATELABEL", &Engine::F_GUICtrlCreateLabel, 3, 7},
+    {"GUICTRLCREATELIST", &Engine::F_GUICtrlCreateList, 3, 7},
+    {"GUICTRLCREATELISTVIEW", &Engine::F_GUICtrlCreateListView, 3, 7},
+    {"GUICTRLCREATELISTVIEWITEM", &Engine::F_GUICtrlCreateListViewItem, 2, 2},
+    {"GUICTRLCREATEMENU", &Engine::F_GUICtrlCreateMenu, 1, 3},
+    {"GUICTRLCREATEMENUITEM", &Engine::F_GUICtrlCreateMenuItem, 2, 4},
+    {"GUICTRLCREATEPIC", &Engine::F_GUICtrlCreatePic, 3, 7},
+    {"GUICTRLCREATEPROGRESS", &Engine::F_GUICtrlCreateProgress, 2, 6},
+    {"GUICTRLCREATERADIO", &Engine::F_GUICtrlCreateRadio, 3, 7},
+    {"GUICTRLCREATESLIDER", &Engine::F_GUICtrlCreateSlider, 2, 6},
+    {"GUICTRLCREATETAB", &Engine::F_GUICtrlCreateTab, 2, 6},
+    {"GUICTRLCREATETABITEM", &Engine::F_GUICtrlCreateTabitem, 1, 1},
+    {"GUICTRLCREATETREEVIEW", &Engine::F_GUICtrlCreateTreeView, 2, 6},
+    {"GUICTRLCREATETREEVIEWITEM", &Engine::F_GUICtrlCreateTreeViewItem, 2, 2},
+    {"GUICTRLCREATEUPDOWN", &Engine::F_GUICtrlCreateUpdown, 1, 2},
+    {"GUICTRLDELETE", &Engine::F_GUICtrlDelete, 1, 1},
+    {"GUICTRLGETSTATE", &Engine::F_GUICtrlGetState, 0, 1},
+    {"GUICTRLREAD", &Engine::F_GUIRead, 1, 1},
+    {"GUICTRLRECVMSG", &Engine::F_GUIRecvMsg, 2, 4},
+    {"GUICTRLSENDMSG", &Engine::F_GUISendMsg, 4, 4},
+    {"GUICTRLSENDTODUMMY", &Engine::F_GUISendToDummy, 1, 2},
+    {"GUICTRLSETBKCOLOR", &Engine::F_GUICtrlSetBkColor, 2, 2},
+    {"GUICTRLSETCOLOR", &Engine::F_GUICtrlSetColor, 2, 2},
+    {"GUICTRLSETCURSOR", &Engine::F_GUICtrlSetCursor, 2, 2},
+    {"GUICTRLSETDATA", &Engine::F_GUICtrlSetData, 2, 3},
+    {"GUICTRLSETFONT", &Engine::F_GUICtrlSetFont, 2, 5},
+    {"GUICTRLSETIMAGE", &Engine::F_GUICtrlSetImage, 2, 4},
+    {"GUICTRLSETLIMIT", &Engine::F_GUICtrlSetLimit, 2, 3},
+    {"GUICTRLSETONEVENT", &Engine::F_GUICtrlSetOnEvent, 2, 2},
+    {"GUICTRLSETPOS", &Engine::F_GUICtrlSetPos, 3, 5},
+    {"GUICTRLSETRESIZING", &Engine::F_GUICtrlSetResizing, 2, 2},
+    {"GUICTRLSETSTATE", &Engine::F_GUICtrlSetState, 2, 2},
+    {"GUICTRLSETSTYLE", &Engine::F_GUICtrlSetStyle, 2, 3},
+    {"GUICTRLSETTIP", &Engine::F_GUICtrlSetTip, 2, 2},
+    {"GUIDELETE", &Engine::F_GUIDelete, 0, 1},
+    {"GUIGETCURSORINFO", &Engine::F_GUIGetCursorInfo, 0, 1},
+    {"GUIGETMSG", &Engine::F_GUIGetMsg, 0, 1},
+    {"GUISETBKCOLOR", &Engine::F_GUISetBkColor, 1, 2},
+    {"GUISETCOORD", &Engine::F_GUISetCoord, 2, 5},
+    {"GUISETCURSOR", &Engine::F_GUISetCursor, 0, 3},
+    {"GUISETFONT", &Engine::F_GUISetFont, 1, 5},
+    {"GUISETHELP", &Engine::F_GUISetHelp, 1, 2},
+    {"GUISETICON", &Engine::F_GUISetIcon, 1, 3},
+    {"GUISETONEVENT", &Engine::F_GUISetOnEvent, 2, 3},
+    {"GUISETSTATE", &Engine::F_GUISetState, 0, 2},
+    {"GUISTARTGROUP", &Engine::F_GUIStartGroup, 0, 1},
+    {"GUISWITCH", &Engine::F_GUISwitch, 1, 1},
+#endif
+
+private:
+    Engine* engine;
 };

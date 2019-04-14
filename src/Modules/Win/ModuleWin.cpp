@@ -44,6 +44,7 @@
 
 // Includes
 #include "StdAfx.h"                                // Pre-compiled headers
+#include "ModuleWin.h"
 
 #ifndef _MSC_VER                                // Includes for non-MS compilers
     #include <windows.h>
@@ -51,14 +52,7 @@
     #include <commctrl.h>
 #endif
 
-#include "AutoIt.h"                                // Autoit values, macros and config options
-
-#include "globaldata.h"
-#include "script.h"
-#include "shared_memory.h"
-#include "utility.h"
-#include "regexp.h"
-#include "resources\resource.h"
+#include "Utils/utility.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -926,7 +920,7 @@ AUT_RESULT ModuleWin::F_WinGetPos(VectorVariant &vParams, Variant &vResult)
 
     if (Win_WindowSearch() == false)
     {
-        SetFuncErrorCode(1);
+        engine->SetFuncErrorCode(1);
         return AUT_OK;                                    // Required window not found
     }
 
@@ -1079,12 +1073,12 @@ AUT_RESULT ModuleWin::F_ControlGetText(VectorVariant &vParams, Variant &vResult)
 
     if ( ControlSearch(vParams) == false )
     {
-        SetFuncErrorCode(1);
+        engine->SetFuncErrorCode(1);
         return AUT_OK;                                    // Required control not found
     }
 
     if ( !(SendMessage(m_ControlSearchHWND,WM_GETTEXT,(WPARAM)AUT_WINTEXTBUFFER, (LPARAM)szBuffer) > 0) )
-        SetFuncErrorCode(1);            // Error
+        engine->SetFuncErrorCode(1);            // Error
     else
         vResult = szBuffer;
 
@@ -1105,7 +1099,7 @@ AUT_RESULT ModuleWin::F_ControlGetPos(VectorVariant &vParams, Variant &vResult)
 
     if ( ControlSearch(vParams) == false )
     {
-        SetFuncErrorCode(1);
+        engine->SetFuncErrorCode(1);
         return AUT_OK;                                    // Required control not found
     }
 
@@ -1133,7 +1127,7 @@ AUT_RESULT ModuleWin::F_ControlGetPos(VectorVariant &vParams, Variant &vResult)
 
     }
     else
-        SetFuncErrorCode(1);            // Error
+        engine->SetFuncErrorCode(1);            // Error
 
     return AUT_OK;
 
@@ -1303,7 +1297,7 @@ AUT_RESULT ModuleWin::F_ControlCommand(VectorVariant &vParams,  Variant &vResult
 
     if ( ControlSearch(vParams) == false )
     {
-        SetFuncErrorCode(1);
+        engine->SetFuncErrorCode(1);
         return AUT_OK;                                    // Required control not found
     }
 
@@ -1355,7 +1349,7 @@ AUT_RESULT ModuleWin::F_ControlCommand(VectorVariant &vParams,  Variant &vResult
         {// must be a Tab Control
             int nTab = (int)SendMessage(m_ControlSearchHWND,TCM_GETCURSEL,vParams[4].nValue(),0);
             if ( nTab==-1 )
-                SetFuncErrorCode(1);
+                engine->SetFuncErrorCode(1);
             else
             {
                 nTab++;
@@ -1367,14 +1361,14 @@ AUT_RESULT ModuleWin::F_ControlCommand(VectorVariant &vParams,  Variant &vResult
         if ( strcmpi(szCmd,"SHOWDROPDOWN")==0 )
         {// must be a ComboBox
             if ( !(SendMessage(m_ControlSearchHWND, CB_SHOWDROPDOWN, (WPARAM)TRUE, 0)) )
-                SetFuncErrorCode(1);
+                engine->SetFuncErrorCode(1);
             break;                            // SHOWDROPDOWN performed, exit switch
         }
 
         if ( strcmpi(szCmd,"HIDEDROPDOWN")==0 )
         {// must be a ComboBox
             if ( !(SendMessage(m_ControlSearchHWND, CB_SHOWDROPDOWN, (WPARAM)FALSE, 0)) )
-                SetFuncErrorCode(1);
+                engine->SetFuncErrorCode(1);
             break;                            // HIDEDROPDOWN performed, exit switch
         }
 
@@ -1387,7 +1381,7 @@ AUT_RESULT ModuleWin::F_ControlCommand(VectorVariant &vParams,  Variant &vResult
             if ( vMsg )
             {// Must be ComboBox or ListBox
                 if ( !(SendMessage(m_ControlSearchHWND, vMsg, 0, (LPARAM)vParams[4].szValue())) )
-                    SetFuncErrorCode(1);
+                    engine->SetFuncErrorCode(1);
             }
             break;                            // ADDSTRING performed, exit switch
         }
@@ -1401,7 +1395,7 @@ AUT_RESULT ModuleWin::F_ControlCommand(VectorVariant &vParams,  Variant &vResult
             if ( vMsg )
             {// Must be ComboBox or ListBox
                 if ( !(SendMessage(m_ControlSearchHWND, vMsg, (WPARAM)vParams[4].nValue(), 0)) )
-                    SetFuncErrorCode(1);
+                    engine->SetFuncErrorCode(1);
             }
             break;                            // DELSTRING performed, exit switch
         }
@@ -1416,10 +1410,10 @@ AUT_RESULT ModuleWin::F_ControlCommand(VectorVariant &vParams,  Variant &vResult
             {// Must be ComboBox or ListBox
                 vResult = (int)SendMessage(m_ControlSearchHWND, vMsg, (WPARAM)1, (LPARAM)vParams[4].szValue());
                 if ( vResult.nValue() == -1 )
-                    SetFuncErrorCode(1);
+                    engine->SetFuncErrorCode(1);
             }
             else
-                SetFuncErrorCode(1);
+                engine->SetFuncErrorCode(1);
             break;                            // FINDSTRING performed, exit switch
         }
 
@@ -1440,7 +1434,7 @@ AUT_RESULT ModuleWin::F_ControlCommand(VectorVariant &vParams,  Variant &vResult
             if ( vMsg )
             {// Must be ComboBox or ListBox
                 if ( SendMessage(m_ControlSearchHWND, vMsg, (WPARAM)vParams[4].nValue(), 0) == -1 )
-                    SetFuncErrorCode(1);
+                    engine->SetFuncErrorCode(1);
                 else
                 {
                     SendMessage(GetParent(m_ControlSearchHWND),WM_COMMAND,(WPARAM)MAKELONG(GetDlgCtrlID(m_ControlSearchHWND),xMsg),(LPARAM)m_ControlSearchHWND);
@@ -1469,12 +1463,12 @@ AUT_RESULT ModuleWin::F_ControlCommand(VectorVariant &vParams,  Variant &vResult
                 int          nIndex, nLen;
                 nIndex = (int)SendMessage(m_ControlSearchHWND, vMsg, 0, 0);
                 if ( nIndex == -1)
-                    SetFuncErrorCode(1);
+                    engine->SetFuncErrorCode(1);
                 else
                 {
                     nLen = (int)SendMessage(m_ControlSearchHWND,xMsg,(WPARAM)nIndex,0);
                     if ( nLen == -1 )
-                        SetFuncErrorCode(1);
+                        engine->SetFuncErrorCode(1);
                     else
                     {
                         char     *pBuffer = NULL;
@@ -1482,7 +1476,7 @@ AUT_RESULT ModuleWin::F_ControlCommand(VectorVariant &vParams,  Variant &vResult
                         pBuffer=(char*)calloc(256+nLen,1);
                         nLen = (int)SendMessage(m_ControlSearchHWND,yMsg,(WPARAM)nIndex,(LPARAM)pBuffer);
                         if ( nLen == -1 )
-                                SetFuncErrorCode(1);
+                                engine->SetFuncErrorCode(1);
                         else
                                 vResult = pBuffer;
                         if(pBuffer)
@@ -1510,7 +1504,7 @@ AUT_RESULT ModuleWin::F_ControlCommand(VectorVariant &vParams,  Variant &vResult
             if ( vMsg )
             {// Must be ComboBox or ListBox
                 if ( SendMessage(m_ControlSearchHWND, vMsg, (WPARAM)1, (LPARAM)vParams[4].szValue()) == -1 )
-                    SetFuncErrorCode(1);
+                    engine->SetFuncErrorCode(1);
                 else
                 {
                     SendMessage(GetParent(m_ControlSearchHWND),WM_COMMAND,(WPARAM)MAKELONG(GetDlgCtrlID(m_ControlSearchHWND),xMsg),(LPARAM)m_ControlSearchHWND);
@@ -1579,13 +1573,13 @@ AUT_RESULT ModuleWin::F_ControlCommand(VectorVariant &vParams,  Variant &vResult
                         vResult = pBuffer+nStart;
                     }
                     else
-                        SetFuncErrorCode(1);
+                        engine->SetFuncErrorCode(1);
                 }
                 else
-                    SetFuncErrorCode(1);
+                    engine->SetFuncErrorCode(1);
             }
             else
-                SetFuncErrorCode(1);
+                engine->SetFuncErrorCode(1);
             if(pBuffer)
                 free(pBuffer);
             break;                            // GETSELECTED performed, exit switch
@@ -1645,12 +1639,12 @@ AUT_RESULT ModuleWin::F_ControlCommand(VectorVariant &vParams,  Variant &vResult
                 vResult = szBuffer;
             }
             else
-                SetFuncErrorCode(1);
+                engine->SetFuncErrorCode(1);
             break;                            // GETLINE performed, exit switch
         }
 
         // If we get to here, no command was matched, or there was an error during a commmand
-        SetFuncErrorCode(1);
+        engine->SetFuncErrorCode(1);
         break;
     }
 
@@ -1676,9 +1670,9 @@ AUT_RESULT ModuleWin::F_ControlSend(VectorVariant &vParams, Variant &vResult)
 
     // Send the keys
     if (vParams.size() >= 5 && vParams[4].nValue() != 0)
-        m_oSendKeys.SendRaw(vParams[3].szValue(), m_ControlSearchHWND);
+        engine->m_oSendKeys.SendRaw(vParams[3].szValue(), m_ControlSearchHWND);
     else
-        m_oSendKeys.Send(vParams[3].szValue(), m_ControlSearchHWND);
+        engine->m_oSendKeys.Send(vParams[3].szValue(), m_ControlSearchHWND);
 
     return AUT_OK;
 
@@ -1780,7 +1774,7 @@ AUT_RESULT ModuleWin::F_WinGetClassList(VectorVariant &vParams, Variant &vResult
 
     if (Win_WindowSearch() == false)
     {
-        SetFuncErrorCode(1);
+        engine->SetFuncErrorCode(1);
         return AUT_OK;                                    // Required window not found
     }
 
@@ -1804,7 +1798,7 @@ AUT_RESULT ModuleWin::F_WinGetClientSize(VectorVariant &vParams, Variant &vResul
 
     if (Win_WindowSearch() == false)
     {
-        SetFuncErrorCode(1);
+        engine->SetFuncErrorCode(1);
         return AUT_OK;                                    // Required window not found
     }
 
@@ -1820,7 +1814,7 @@ AUT_RESULT ModuleWin::F_WinGetClientSize(VectorVariant &vParams, Variant &vResul
         *pvTemp = (int)(rect.bottom - rect.top);    // Height
     }
     else
-        SetFuncErrorCode(1);
+        engine->SetFuncErrorCode(1);
 
     return AUT_OK;
 
@@ -1839,7 +1833,7 @@ AUT_RESULT ModuleWin::F_WinGetHandle(VectorVariant &vParams, Variant &vResult)
 
     if (Win_WindowSearch() == false)
     {
-        SetFuncErrorCode(1);
+        engine->SetFuncErrorCode(1);
         vResult = "";
         return AUT_OK;                                    // Required window not found
     }
@@ -1888,7 +1882,7 @@ void ModuleWin::ControlWithFocus(HWND hWnd, Variant &vResult)
 
     if(!m_ControlSearchHWND)
     {
-        SetFuncErrorCode(1);
+        engine->SetFuncErrorCode(1);
         return;
     }
 
@@ -1906,7 +1900,7 @@ void ModuleWin::ControlWithFocus(HWND hWnd, Variant &vResult)
         vResult=szClass;
     }
     else
-        SetFuncErrorCode(1);
+        engine->SetFuncErrorCode(1);
 
 }
 
@@ -1949,7 +1943,7 @@ AUT_RESULT ModuleWin::F_ControlGetFocus(VectorVariant &vParams, Variant &vResult
     Win_WindowSearchInit(vParams);
 
     if (Win_WindowSearch() == false)
-        SetFuncErrorCode(1);
+        engine->SetFuncErrorCode(1);
     else
         ControlWithFocus(m_WindowSearchHWND, vResult);
 
@@ -1978,7 +1972,7 @@ AUT_RESULT ModuleWin::F_WinGetCaretPos(VectorVariant &vParams, Variant &vResult)
     Util_AttachThreadInput(hWnd, true);
 
     if (GetCaretPos(&point) == FALSE)
-        SetFuncErrorCode(1);
+        engine->SetFuncErrorCode(1);
     else
     {
         // point contains the caret pos in CLIENT area coordinates, convert to screen (absolute coords)
@@ -2027,7 +2021,7 @@ AUT_RESULT ModuleWin::F_WinGetState(VectorVariant &vParams, Variant &vResult)
     if (Win_WindowSearch() == false)
     {
         vResult = 0;                            // Default is 1
-        SetFuncErrorCode(1);
+        engine->SetFuncErrorCode(1);
         return AUT_OK;
     }
 
@@ -2197,7 +2191,7 @@ AUT_RESULT ModuleWin::F_WinSetTrans(VectorVariant &vParams, Variant &vResult)
         vResult = 1;
     }
     else
-        SetFuncErrorCode(1);    // This means the OS isn't supported since the function wasn't loaded from the DLL
+        engine->SetFuncErrorCode(1);    // This means the OS isn't supported since the function wasn't loaded from the DLL
     FreeLibrary(hMod);
 
     return AUT_OK;

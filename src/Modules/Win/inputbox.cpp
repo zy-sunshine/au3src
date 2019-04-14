@@ -1,4 +1,3 @@
-
 ///////////////////////////////////////////////////////////////////////////////
 //
 // AutoIt v3
@@ -51,10 +50,7 @@
     #include <windows.h>
 #endif
 
-#include "AutoIt.h"                                // Autoit values, macros and config options
-
-#include "inputbox.h"
-#include "globaldata.h"
+#include "InputBox.h"
 
 template <class T>
 inline void swap(T &v1, T &v2) {

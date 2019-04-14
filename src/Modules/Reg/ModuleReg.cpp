@@ -174,7 +174,7 @@ AUT_RESULT ModuleReg::F_RegRead(VectorVariant &vParams, Variant &vResult)
     // Get the main key name
     if ( RegGetMainKey(sKey, hMainKey) == false)
     {
-        SetFuncErrorCode(1);                    // Default is 0
+        engine->SetFuncErrorCode(1);                    // Default is 0
         return AUT_OK;
     }
 
@@ -184,7 +184,7 @@ AUT_RESULT ModuleReg::F_RegRead(VectorVariant &vParams, Variant &vResult)
         // Remote
         if ( RegConnectRegistry(sCname.c_str(), hMainKey, &hRemoteKey) != ERROR_SUCCESS )
         {
-            SetFuncErrorCode(1);                    // Default is 0
+            engine->SetFuncErrorCode(1);                    // Default is 0
             return AUT_OK;
         }
 
@@ -198,7 +198,7 @@ AUT_RESULT ModuleReg::F_RegRead(VectorVariant &vParams, Variant &vResult)
         if (!sCname.empty())
             RegCloseKey(hRemoteKey);
 
-        SetFuncErrorCode(1);                    // Default is 0
+        engine->SetFuncErrorCode(1);                    // Default is 0
         return AUT_OK;
     }
 
@@ -206,7 +206,7 @@ AUT_RESULT ModuleReg::F_RegRead(VectorVariant &vParams, Variant &vResult)
     if ( RegQueryValueEx(hRegKey, vParams[1].szValue(), NULL, &dwType, NULL, NULL) != ERROR_SUCCESS )
     {
         // Error reading key
-        SetFuncErrorCode(-1);                    // Default is 0
+        engine->SetFuncErrorCode(-1);                    // Default is 0
         RegCloseKey(hRegKey);
         if (!sCname.empty())
             RegCloseKey(hRemoteKey);
@@ -234,7 +234,7 @@ AUT_RESULT ModuleReg::F_RegRead(VectorVariant &vParams, Variant &vResult)
                 vResult = szRegBuffer;
             }
             else
-                SetFuncErrorCode(-2);                    // Default is 0
+                engine->SetFuncErrorCode(-2);                    // Default is 0
 
             break;
 
@@ -256,7 +256,7 @@ AUT_RESULT ModuleReg::F_RegRead(VectorVariant &vParams, Variant &vResult)
                 vResult = szRegBuffer;
             }
             else
-                SetFuncErrorCode(-2);     // Default is 0
+                engine->SetFuncErrorCode(-2);     // Default is 0
 
             break;
 
@@ -287,12 +287,12 @@ AUT_RESULT ModuleReg::F_RegRead(VectorVariant &vParams, Variant &vResult)
                 delete [] szBinary;
             }
             else
-                SetFuncErrorCode(-2);                    // Default is 0
+                engine->SetFuncErrorCode(-2);                    // Default is 0
 
             break;
 
         default:
-            SetFuncErrorCode(-2);                // Default is 0
+            engine->SetFuncErrorCode(-2);                // Default is 0
             break;
     }
 
@@ -648,7 +648,7 @@ AUT_RESULT ModuleReg::F_RegEnumKey(VectorVariant &vParams, Variant &vResult)
     // Get the main key name
     if ( RegGetMainKey(sKey, hMainKey) == false)
     {
-        SetFuncErrorCode(1);                    // Default is 0
+        engine->SetFuncErrorCode(1);                    // Default is 0
         return AUT_OK;
     }
 
@@ -658,7 +658,7 @@ AUT_RESULT ModuleReg::F_RegEnumKey(VectorVariant &vParams, Variant &vResult)
         // Remote
         if ( RegConnectRegistry(sCname.c_str(), hMainKey, &hRemoteKey) != ERROR_SUCCESS )
         {
-            SetFuncErrorCode(1);                    // Default is 0
+            engine->SetFuncErrorCode(1);                    // Default is 0
             return AUT_OK;
         }
 
@@ -668,7 +668,7 @@ AUT_RESULT ModuleReg::F_RegEnumKey(VectorVariant &vParams, Variant &vResult)
     // Open the registry key
     if ( RegOpenKeyEx(hMainKey, sSubKey.c_str(), 0, KEY_READ , &hRegKey) != ERROR_SUCCESS )
     {
-        SetFuncErrorCode(1);                    // Default is 0
+        engine->SetFuncErrorCode(1);                    // Default is 0
 
         if (!sCname.empty())
             RegCloseKey(hRemoteKey);
@@ -680,7 +680,7 @@ AUT_RESULT ModuleReg::F_RegEnumKey(VectorVariant &vParams, Variant &vResult)
     if ( RegEnumKeyEx(hRegKey, vParams[1].nValue()-1, szRegBuffer, &dwBuf, NULL, NULL, NULL, &ftLastWriteTime) != ERROR_SUCCESS )
     {
         // Error reading key
-        SetFuncErrorCode(-1);                    // Default is 0
+        engine->SetFuncErrorCode(-1);                    // Default is 0
         RegCloseKey(hRegKey);
         if (!sCname.empty())
             RegCloseKey(hRemoteKey);
@@ -718,7 +718,7 @@ AUT_RESULT ModuleReg::F_RegEnumVal(VectorVariant &vParams, Variant &vResult)
     // Get the main key name
     if ( RegGetMainKey(sKey, hMainKey) == false)
     {
-        SetFuncErrorCode(1);                    // Default is 0
+        engine->SetFuncErrorCode(1);                    // Default is 0
         return AUT_OK;
     }
 
@@ -728,7 +728,7 @@ AUT_RESULT ModuleReg::F_RegEnumVal(VectorVariant &vParams, Variant &vResult)
         // Remote
         if ( RegConnectRegistry(sCname.c_str(), hMainKey, &hRemoteKey) != ERROR_SUCCESS )
         {
-            SetFuncErrorCode(1);                    // Default is 0
+            engine->SetFuncErrorCode(1);                    // Default is 0
             return AUT_OK;
         }
 
@@ -738,7 +738,7 @@ AUT_RESULT ModuleReg::F_RegEnumVal(VectorVariant &vParams, Variant &vResult)
     // Open the registry key
     if ( RegOpenKeyEx(hMainKey, sSubKey.c_str(), 0, KEY_READ , &hRegKey) != ERROR_SUCCESS )
     {
-        SetFuncErrorCode(1);                    // Default is 0
+        engine->SetFuncErrorCode(1);                    // Default is 0
         if (!sCname.empty())
             RegCloseKey(hRemoteKey);
         return AUT_OK;
@@ -748,7 +748,7 @@ AUT_RESULT ModuleReg::F_RegEnumVal(VectorVariant &vParams, Variant &vResult)
     if ( RegEnumValue(hRegKey, vParams[1].nValue()-1, szRegBuffer, &dwBuf, NULL, NULL, NULL, NULL) != ERROR_SUCCESS )
     {
         // Error reading key
-        SetFuncErrorCode(-1);                    // Default is 0
+        engine->SetFuncErrorCode(-1);                    // Default is 0
         RegCloseKey(hRegKey);
         if (!sCname.empty())
             RegCloseKey(hRemoteKey);

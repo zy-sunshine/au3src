@@ -44,6 +44,7 @@
 
 // Includes
 #include "StdAfx.h"                                // Pre-compiled headers
+#include "ModuleGui.h"
 
 #ifndef _MSC_VER                                // Includes for non-MS compilers
     #include <stdio.h>
@@ -54,9 +55,7 @@
 
 #ifdef AUT_CONFIG_GUI                            // Is GUI enabled?
 
-#include "ModuleGui.h"
-#include "globaldata.h"
-#include "utility.h"
+#include "Utils/utility.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -100,7 +99,7 @@ AUT_RESULT AutoIt_Script::F_GUIGetMsg(VectorVariant &vParams, Variant &vResult)
         Event.nCursorY    = 0;
     }
     if ( g_oGUI.m_bGuiEventEnabled == true)
-        SetFuncErrorCode(1);
+        engine->SetFuncErrorCode(1);
 
     if (vParams.size() > 0 && vParams[0].nValue() == 1)
     {
@@ -164,7 +163,7 @@ AUT_RESULT AutoIt_Script::F_GUICreate(VectorVariant &vParams, Variant &vResult)
 
     if (hWnd == NULL)
     {
-        SetFuncErrorCode(1);
+        engine->SetFuncErrorCode(1);
         vResult = (HWND)NULL;                    // window can not be created
     }
     else
@@ -204,7 +203,7 @@ AUT_RESULT AutoIt_Script::F_GUISetOnEvent(VectorVariant &vParams, Variant &vResu
     int        nTemp1, nTemp2, nTemp3, nTemp4;
 
     // Check that this user function exists
-    if (Parser_FindUserFunction(vParams[1].szValue(), nTemp1, nTemp2, nTemp3, nTemp4) == false)
+    if (engine->parser->FindUserFunction(vParams[1].szValue(), nTemp1, nTemp2, nTemp3, nTemp4) == false)
     {
         FatalError(IDS_AUT_E_UNKNOWNUSERFUNC);
         return AUT_ERR;
@@ -369,7 +368,7 @@ AUT_RESULT AutoIt_Script::F_GUICtrlSetOnEvent(VectorVariant &vParams, Variant &v
     int        nTemp1, nTemp2, nTemp3, nTemp4;
 
     // Check that this user function exists
-    if (Parser_FindUserFunction(vParams[1].szValue(), nTemp1, nTemp2, nTemp3, nTemp4) == false)
+    if (engine->parser->FindUserFunction(vParams[1].szValue(), nTemp1, nTemp2, nTemp3, nTemp4) == false)
     {
         FatalError(IDS_AUT_E_UNKNOWNUSERFUNC);
         return AUT_ERR;
@@ -520,7 +519,7 @@ AUT_RESULT AutoIt_Script::GUICtrlCreate(int nType, VectorVariant &vParams, Varia
     vResult = g_oGUI.CtrlCreate(nType, szText, X, Y, W, H, Style, exStyle, id, nSubType);
 
     if (vResult.nValue() == 0)
-        SetFuncErrorCode(1);
+        engine->SetFuncErrorCode(1);
 
     delete [] szText;
     return AUT_OK;
@@ -746,7 +745,7 @@ AUT_RESULT AutoIt_Script::F_GUISetTrayBalloon(VectorVariant &vParams, Variant &v
     if (g_oGUI.m_bShowTrayIcon == false)
     {
         vResult = 0;
-        SetFuncErrorCode(1);
+        engine->SetFuncErrorCode(1);
         return AUT_OK;
     }
 
@@ -1089,7 +1088,7 @@ AUT_RESULT AutoIt_Script::F_GUIRecvMsg(VectorVariant &vParams, Variant &vResult)
     if (nTemp == 0)
     {    // bad return from SendMessage
         vResult = 0;
-        SetFuncErrorCode(1);
+        engine->SetFuncErrorCode(1);
         return AUT_OK;
     }
 
@@ -1181,7 +1180,7 @@ AUT_RESULT AutoIt_Script::F_GUIGetCursorInfo(VectorVariant &vParams, Variant &vR
         *pvTemp = nGlobalID;            // Ctrl ID that cursor is over
     }
     else
-        SetFuncErrorCode(1);
+        engine->SetFuncErrorCode(1);
 
     return AUT_OK;
 

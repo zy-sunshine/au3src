@@ -1,11 +1,15 @@
+#include "StdAfx.h"                                // Pre-compiled headers
 #include "WinUtil.h"
+#include "AutoIt.h"
+#include "Engine/Engine.h"
+
 //////////////////////////////////////////////////////////////////////////
 // ConvertCoords()
 //
 // Helps convert coordinates to screen, active window and client relative
 //////////////////////////////////////////////////////////////////////////
 
-void AutoIt_Script::ConvertCoords(int nCoordMode, POINT &pt)
+void WinUtil::ConvertCoords(int nCoordMode, POINT &pt)
 {
     HWND    hFore = GetForegroundWindow();
     RECT    rect;
@@ -30,4 +34,3 @@ void AutoIt_Script::ConvertCoords(int nCoordMode, POINT &pt)
     }
 
 }    // ConvertCoords()
-

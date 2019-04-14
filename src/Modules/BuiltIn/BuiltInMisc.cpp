@@ -1,17 +1,18 @@
+#include "StdAfx.h"                                // Pre-compiled headers
 #include "ModuleBuiltIn.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Call()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_Call(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleBuiltIn::F_Call(VectorVariant &vParams, Variant &vResult)
 {
     int nTemp1, nTemp2, nTemp3, nTemp4;
 
     // Check that this user function exists
-    if (Parser_FindUserFunction(vParams[0].szValue(), nTemp1, nTemp2, nTemp3, nTemp4) == false)
+    if (engine->parser->FindUserFunction(vParams[0].szValue(), nTemp1, nTemp2, nTemp3, nTemp4) == false)
     {
-        SetFuncErrorCode(1);                // Silent error even though function not valid
+        engine->SetFuncErrorCode(1);                // Silent error even though function not valid
         return AUT_OK;                        // As will probably be used this way
     }
     else
@@ -29,7 +30,7 @@ AUT_RESULT AutoIt_Script::F_Call(VectorVariant &vParams, Variant &vResult)
 // Eval()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_Eval(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleBuiltIn::F_Eval(VectorVariant &vParams, Variant &vResult)
 {
     bool    bConst = false;
 
@@ -42,7 +43,7 @@ AUT_RESULT AutoIt_Script::F_Eval(VectorVariant &vParams, Variant &vResult)
      }
      else
      {
-         SetFuncErrorCode(1);            // Silent error even though variable not valid
+         engine->SetFuncErrorCode(1);            // Silent error even though variable not valid
          vResult = "";
          return AUT_OK;
      }
@@ -61,7 +62,7 @@ AUT_RESULT AutoIt_Script::F_Eval(VectorVariant &vParams, Variant &vResult)
 // This is a compliment to Eval()
 //////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_Assign(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleBuiltIn::F_Assign(VectorVariant &vParams, Variant &vResult)
 {
     Variant *pvTemp;
     int     nReqScope = VARTABLE_ANY;
@@ -99,7 +100,7 @@ AUT_RESULT AutoIt_Script::F_Assign(VectorVariant &vParams, Variant &vResult)
 // IsDeclared
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_IsDeclared(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleBuiltIn::F_IsDeclared(VectorVariant &vParams, Variant &vResult)
 {
      vResult = g_oVarTable.isDeclared(vParams[0].szValue());
      return AUT_OK;
@@ -113,7 +114,7 @@ AUT_RESULT AutoIt_Script::F_IsDeclared(VectorVariant &vParams, Variant &vResult)
 // read the data
 //////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_ConsoleWrite(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleBuiltIn::F_ConsoleWrite(VectorVariant &vParams, Variant &vResult)
 {
     printf("%s", vParams[0].szValue());
     fflush(stdout);

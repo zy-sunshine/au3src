@@ -60,7 +60,7 @@
     #include <ctype.h>
 #endif
 
-#include "globaldata.h"
+#include "Engine/globaldata.h"
 #include "utility.h"
 #include "mt19937ar-cok.h"                        // Custom rand()
 #include "astring_datatype.h"

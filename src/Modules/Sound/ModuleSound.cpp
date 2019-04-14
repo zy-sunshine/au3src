@@ -1,3 +1,4 @@
+#include "StdAfx.h"                                // Pre-compiled headers
 #include "ModuleSound.h"
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -27,7 +28,7 @@ AUT_RESULT AutoIt_Script::F_SoundSetWaveVolume(VectorVariant &vParams, Variant &
         waveOutSetVolume(0,MAKELONG(wVolume,wVolume));
     }
     else
-        SetFuncErrorCode(1);
+        engine->SetFuncErrorCode(1);
 
     return AUT_OK;
 

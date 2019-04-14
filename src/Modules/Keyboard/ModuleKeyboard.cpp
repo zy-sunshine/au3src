@@ -1,4 +1,6 @@
+#include "StdAfx.h"                                // Pre-compiled headers
 #include "ModuleKeyboard.h"
+
 ///////////////////////////////////////////////////////////////////////////////
 // Send()
 ///////////////////////////////////////////////////////////////////////////////
@@ -8,12 +10,12 @@ AUT_RESULT AutoIt_Script::F_Send(VectorVariant &vParams, Variant &vResult)
     if (vParams.size() == 2)
     {
         if (vParams[1].nValue() == 0)
-            m_oSendKeys.Send(vParams[0].szValue());        // Normal send
+            engine->m_oSendKeys.Send(vParams[0].szValue());        // Normal send
         else
-            m_oSendKeys.SendRaw(vParams[0].szValue());    // Raw send
+            engine->m_oSendKeys.SendRaw(vParams[0].szValue());    // Raw send
     }
     else
-        m_oSendKeys.Send(vParams[0].szValue());    // Normal send
+        engine->m_oSendKeys.Send(vParams[0].szValue());    // Normal send
 
     return AUT_OK;
 
@@ -37,7 +39,7 @@ AUT_RESULT AutoIt_Script::F_HotKeySet(VectorVariant &vParams, Variant &vResult)
 
 
     // Unless blank, check that the requested user function exists
-    if (iNumParams >= 2 && Parser_FindUserFunction(vParams[1].szValue(), nTemp1, nTemp2, nTemp3, nTemp4) == false)
+    if (iNumParams >= 2 && engine->parser->FindUserFunction(vParams[1].szValue(), nTemp1, nTemp2, nTemp3, nTemp4) == false)
     {
         FatalError(IDS_AUT_E_UNKNOWNUSERFUNC);
         return AUT_ERR;
@@ -45,7 +47,7 @@ AUT_RESULT AutoIt_Script::F_HotKeySet(VectorVariant &vParams, Variant &vResult)
 
 
     // Get the virtual key code and modifiers
-    if (m_oSendKeys.GetSingleVKandMods(vParams[0].szValue(), vk, bShift, bControl, bAlt, bWin) == false)
+    if (engine->m_oSendKeys.GetSingleVKandMods(vParams[0].szValue(), vk, bShift, bControl, bAlt, bWin) == false)
     {
         vResult = 0;                            // Error, default is 1
         return AUT_OK;

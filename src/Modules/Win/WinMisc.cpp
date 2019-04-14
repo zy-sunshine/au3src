@@ -1,4 +1,6 @@
+#include "StdAfx.h"                                // Pre-compiled headers
 #include "ModuleWin.h"
+
 ///////////////////////////////////////////////////////////////////////////////
 // MsgBox( type, "title", "text" [,timeout] )
 ///////////////////////////////////////////////////////////////////////////////
@@ -203,7 +205,7 @@ AUT_RESULT AutoIt_Script::F_PixelSearch (VectorVariant &vParams, Variant &vResul
     }
     ReleaseDC(NULL,hdc);
 
-    SetFuncErrorCode(1);            // Not found
+    engine->SetFuncErrorCode(1);            // Not found
     return AUT_OK;
 
 } // PixelSearch()
@@ -309,7 +311,7 @@ AUT_RESULT AutoIt_Script::F_PixelGetColor(VectorVariant &vParams, Variant &vResu
         ReleaseDC(NULL,hdc);
     }
     else
-        SetFuncErrorCode(1);
+        engine->SetFuncErrorCode(1);
 
     return AUT_OK;
 
@@ -711,7 +713,7 @@ AUT_RESULT AutoIt_Script::F_InputBox(VectorVariant &vParams, Variant &vResult)
                          aDlg.m_maxlen=iTmp;
                         break;
                     default:
-                        SetFuncErrorCode(3);
+                        engine->SetFuncErrorCode(3);
                         return AUT_OK;
                     } // switch cTmp
                 } // for i
@@ -727,13 +729,13 @@ AUT_RESULT AutoIt_Script::F_InputBox(VectorVariant &vParams, Variant &vResult)
             if (iRetVal==IDOK)
                 vResult = aDlg.m_strInputText.c_str();
             else if (iRetVal == IDCANCEL) {
-                SetFuncErrorCode(1);    // cancel pressed
+                engine->SetFuncErrorCode(1);    // cancel pressed
                 vResult = "";
             } else if (iRetVal == IDABORT) { // timeout
-                 SetFuncErrorCode(2);
+                 engine->SetFuncErrorCode(2);
                  vResult = "";
             } else {
-                SetFuncErrorCode(3);    // error creating dialog
+                engine->SetFuncErrorCode(3);    // error creating dialog
                 vResult = "";
             }
             return AUT_OK;

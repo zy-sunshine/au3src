@@ -60,6 +60,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <AdditionalIncludeDirectories>$(ProjectDir)\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalDependencies>wsock32.lib;version.lib;winmm.lib;comctl32.lib;mpr.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -107,81 +108,6 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\application.cpp" />
-    <ClCompile Include="src\astring_datatype.cpp" />
-    <ClCompile Include="src\AutoIt.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="src\cmdline.cpp" />
-    <ClCompile Include="src\globaldata.cpp" />
-    <ClCompile Include="src\guibox.cpp" />
-    <ClCompile Include="src\inputbox.cpp" />
-    <ClCompile Include="src\mt19937ar-cok.cpp" />
-    <ClCompile Include="src\os_version.cpp" />
-    <ClCompile Include="src\regexp.cpp" />
-    <ClCompile Include="src\script.cpp" />
-    <ClCompile Include="src\scriptfile.cpp" />
-    <ClCompile Include="src\script_file.cpp" />
-    <ClCompile Include="src\script_gui.cpp" />
-    <ClCompile Include="src\script_lexer.cpp" />
-    <ClCompile Include="src\script_math.cpp" />
-    <ClCompile Include="src\script_misc.cpp" />
-    <ClCompile Include="src\script_parser.cpp" />
-    <ClCompile Include="src\script_parser_exp.cpp" />
-    <ClCompile Include="src\script_process.cpp" />
-    <ClCompile Include="src\script_registry.cpp" />
-    <ClCompile Include="src\script_string.cpp" />
-    <ClCompile Include="src\script_win.cpp" />
-    <ClCompile Include="src\sendkeys.cpp" />
-    <ClCompile Include="src\setforegroundwinex.cpp" />
-    <ClCompile Include="src\shared_memory.cpp" />
-    <ClCompile Include="src\stack_int_datatype.cpp" />
-    <ClCompile Include="src\stack_statement_datatype.cpp" />
-    <ClCompile Include="src\stack_variable_list.cpp" />
-    <ClCompile Include="src\stack_variant_datatype.cpp" />
-    <ClCompile Include="src\token_datatype.cpp" />
-    <ClCompile Include="src\userfunction_list.cpp" />
-    <ClCompile Include="src\utility.cpp" />
-    <ClCompile Include="src\variabletable.cpp" />
-    <ClCompile Include="src\variable_list.cpp" />
-    <ClCompile Include="src\variant_datatype.cpp" />
-    <ClCompile Include="src\vector_token_datatype.cpp" />
-    <ClCompile Include="src\vector_variant_datatype.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="src\application.h" />
-    <ClInclude Include="src\astring_datatype.h" />
-    <ClInclude Include="src\AutoIt.h" />
-    <ClInclude Include="src\cmdline.h" />
-    <ClInclude Include="src\globaldata.h" />
-    <ClInclude Include="src\guibox.h" />
-    <ClInclude Include="src\inputbox.h" />
-    <ClInclude Include="src\mt19937ar-cok.h" />
-    <ClInclude Include="src\os_version.h" />
-    <ClInclude Include="src\qmath.h" />
-    <ClInclude Include="src\regexp.h" />
-    <ClInclude Include="src\resources\resource.h" />
-    <ClInclude Include="src\script.h" />
-    <ClInclude Include="src\scriptfile.h" />
-    <ClInclude Include="src\sendkeys.h" />
-    <ClInclude Include="src\setforegroundwinex.h" />
-    <ClInclude Include="src\shared_memory.h" />
-    <ClInclude Include="src\stack_int_datatype.h" />
-    <ClInclude Include="src\stack_statement_datatype.h" />
-    <ClInclude Include="src\stack_variable_list.h" />
-    <ClInclude Include="src\stack_variant_datatype.h" />
-    <ClInclude Include="src\StdAfx.h" />
-    <ClInclude Include="src\token_datatype.h" />
-    <ClInclude Include="src\userfunction_list.h" />
-    <ClInclude Include="src\utility.h" />
-    <ClInclude Include="src\variabletable.h" />
-    <ClInclude Include="src\variable_list.h" />
-    <ClInclude Include="src\variant_datatype.h" />
-    <ClInclude Include="src\vector_token_datatype.h" />
-    <ClInclude Include="src\vector_variant_datatype.h" />
-  </ItemGroup>
-  <ItemGroup>
     <ResourceCompile Include="src\resources\AutoIt.rc" />
   </ItemGroup>
   <ItemGroup>
@@ -197,6 +123,95 @@
     <Text Include="LICENSE.txt" />
     <Text Include="README.txt" />
     <Text Include="TODO.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\AutoIt.cpp" />
+    <ClCompile Include="src\Engine\Application.cpp" />
+    <ClCompile Include="src\Engine\CmdLine.cpp" />
+    <ClCompile Include="src\Engine\Engine.cpp" />
+    <ClCompile Include="src\Engine\globaldata.cpp" />
+    <ClCompile Include="src\Engine\Parser\Lexer.cpp" />
+    <ClCompile Include="src\Engine\Parser\Parser.cpp" />
+    <ClCompile Include="src\Engine\Parser\ParserExp.cpp" />
+    <ClCompile Include="src\Engine\Parser\StackInt.cpp" />
+    <ClCompile Include="src\Engine\Parser\StackVariant.cpp" />
+    <ClCompile Include="src\Engine\Parser\Token.cpp" />
+    <ClCompile Include="src\Engine\Parser\VectorToken.cpp" />
+    <ClCompile Include="src\Engine\ScriptFile.cpp" />
+    <ClCompile Include="src\Engine\StackStatement.cpp" />
+    <ClCompile Include="src\Engine\StackVarList.cpp" />
+    <ClCompile Include="src\Engine\Type\AString.cpp" />
+    <ClCompile Include="src\Engine\Type\Variant.cpp" />
+    <ClCompile Include="src\Engine\Type\VectorVariant.cpp" />
+    <ClCompile Include="src\Engine\UserFuncList.cpp" />
+    <ClCompile Include="src\Engine\VariableList.cpp" />
+    <ClCompile Include="src\Engine\VariableTable.cpp" />
+    <ClCompile Include="src\Modules\BuiltIn\BuiltInArray.cpp" />
+    <ClCompile Include="src\Modules\BuiltIn\BuiltInMisc.cpp" />
+    <ClCompile Include="src\Modules\BuiltIn\BuiltInString.cpp" />
+    <ClCompile Include="src\Modules\BuiltIn\ModuleBuiltIn.c" />
+    <ClCompile Include="src\Modules\BuiltIn\ModuleBuiltIn.cpp" />
+    <ClCompile Include="src\Modules\File\ModuleFile.cpp" />
+    <ClCompile Include="src\Modules\Gui\ModuleGui.cpp" />
+    <ClCompile Include="src\Modules\Keyboard\ModuleKeyboard.cpp" />
+    <ClCompile Include="src\Modules\Math\ModuleMath.cpp" />
+    <ClCompile Include="src\Modules\Mouse\ModuleMouse.cpp" />
+    <ClCompile Include="src\Modules\Net\ModuleNet.cpp" />
+    <ClCompile Include="src\Modules\Reg\ModuleReg.cpp" />
+    <ClCompile Include="src\Modules\Sound\ModuleSound.cpp" />
+    <ClCompile Include="src\Modules\Sys\ModuleSys.cpp" />
+    <ClCompile Include="src\Modules\Sys\SysMisc.cpp" />
+    <ClCompile Include="src\Modules\Win\InputBox.cpp" />
+    <ClCompile Include="src\Modules\Win\ModuleWin.cpp" />
+    <ClCompile Include="src\Modules\Win\WinMisc.cpp" />
+    <ClCompile Include="src\Utils\mt19937ar-cok.cpp" />
+    <ClCompile Include="src\Utils\OSVersion.cpp" />
+    <ClCompile Include="src\Utils\SendKeys.cpp" />
+    <ClCompile Include="src\Utils\SetForegroundWinEx.cpp" />
+    <ClCompile Include="src\Utils\utility.cpp" />
+    <ClCompile Include="src\Utils\WinUtil.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\AutoIt.h" />
+    <ClInclude Include="src\Engine\Application.h" />
+    <ClInclude Include="src\Engine\CmdLine.h" />
+    <ClInclude Include="src\Engine\Engine.h" />
+    <ClInclude Include="src\Engine\globaldata.h" />
+    <ClInclude Include="src\Engine\Parser\Lexer.h" />
+    <ClInclude Include="src\Engine\Parser\Parser.h" />
+    <ClInclude Include="src\Engine\Parser\ParserExp.h" />
+    <ClInclude Include="src\Engine\Parser\StackInt.h" />
+    <ClInclude Include="src\Engine\Parser\StackVariant.h" />
+    <ClInclude Include="src\Engine\Parser\Token.h" />
+    <ClInclude Include="src\Engine\Parser\VectorToken.h" />
+    <ClInclude Include="src\Engine\ScriptFile.h" />
+    <ClInclude Include="src\Engine\StackStatement.h" />
+    <ClInclude Include="src\Engine\StackVarList.h" />
+    <ClInclude Include="src\Engine\Type\AString.h" />
+    <ClInclude Include="src\Engine\Type\Variant.h" />
+    <ClInclude Include="src\Engine\Type\VectorVariant.h" />
+    <ClInclude Include="src\Engine\UserFuncList.h" />
+    <ClInclude Include="src\Engine\VariableList.h" />
+    <ClInclude Include="src\Engine\VariableTable.h" />
+    <ClInclude Include="src\Modules\BuiltIn\ModuleBuiltIn.h" />
+    <ClInclude Include="src\Modules\File\ModuleFile.h" />
+    <ClInclude Include="src\Modules\Gui\ModuleGui.h" />
+    <ClInclude Include="src\Modules\Keyboard\ModuleKeyboard.h" />
+    <ClInclude Include="src\Modules\Math\ModuleMath.h" />
+    <ClInclude Include="src\Modules\Mouse\ModuleMouse.h" />
+    <ClInclude Include="src\Modules\Net\ModuleNet.h" />
+    <ClInclude Include="src\Modules\Reg\ModuleReg.h" />
+    <ClInclude Include="src\Modules\Sound\ModuleSound.h" />
+    <ClInclude Include="src\Modules\Sys\ModuleSys.h" />
+    <ClInclude Include="src\Modules\Win\InputBox.h" />
+    <ClInclude Include="src\Modules\Win\ModuleWin.h" />
+    <ClInclude Include="src\StdAfx.h" />
+    <ClInclude Include="src\Utils\mt19937ar-cok.h" />
+    <ClInclude Include="src\Utils\OSVersion.h" />
+    <ClInclude Include="src\Utils\SendKeys.h" />
+    <ClInclude Include="src\Utils\SetForegroundWinEx.h" />
+    <ClInclude Include="src\Utils\utility.h" />
+    <ClInclude Include="src\Utils\WinUtil.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,3 +1,4 @@
+#include "StdAfx.h"                                // Pre-compiled headers
 #include "ModuleBuiltIn.h"
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -12,7 +13,7 @@ AUT_RESULT ModuleBuiltIn::F_UBound(VectorVariant &vParams, Variant &vResult)
     if (vParams[0].isArray() == false)
     {
         vResult=0;
-        SetFuncErrorCode(1);
+        engine->SetFuncErrorCode(1);
     }
     else if (vParams.size() == 1)
     {
@@ -21,8 +22,9 @@ AUT_RESULT ModuleBuiltIn::F_UBound(VectorVariant &vParams, Variant &vResult)
     else
     { // vParams.size() == 2
         vResult = vParams[0].ArrayGetBound(vParams[1].nValue());
-        if (vResult.nValue() == 0)
-            SetFuncErrorCode(2);
+        if (vResult.nValue() == 0) {
+            engine->SetFuncErrorCode(2);
+        }
     }
     return AUT_OK;
 

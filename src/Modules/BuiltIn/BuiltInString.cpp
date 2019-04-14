@@ -44,6 +44,7 @@
 
 // Includes
 #include "StdAfx.h"                                // Pre-compiled headers
+#include "ModuleBuiltIn.h"
 
 #ifndef _MSC_VER                                // Includes for non-MS compilers
     #include <stdio.h>
@@ -51,16 +52,13 @@
     #include <ctype.h>
 #endif
 
-#include "AutoIt.h"                                // Autoit values, macros and config options
-
-#include "BuiltInString.h"
-#include "utility.h"
+#include "Utils/utility.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // StringLen()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_StringLen(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleBuiltIn::F_StringLen(VectorVariant &vParams, Variant &vResult)
 {
     // $var = StringLen(<string>)
     vResult = (int)strlen(vParams[0].szValue());
@@ -73,7 +71,7 @@ AUT_RESULT AutoIt_Script::F_StringLen(VectorVariant &vParams, Variant &vResult)
 // StringLeft()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_StringLeft(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleBuiltIn::F_StringLeft(VectorVariant &vParams, Variant &vResult)
 {
     // $var = StringLeft(<string>, <count>)
 
@@ -96,7 +94,7 @@ AUT_RESULT AutoIt_Script::F_StringLeft(VectorVariant &vParams, Variant &vResult)
 // StringRight()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_StringRight(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleBuiltIn::F_StringRight(VectorVariant &vParams, Variant &vResult)
 {
     // $var = StringRight(<string>, <count>)
 
@@ -119,7 +117,7 @@ AUT_RESULT AutoIt_Script::F_StringRight(VectorVariant &vParams, Variant &vResult
 // StringMid()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_StringMid(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleBuiltIn::F_StringMid(VectorVariant &vParams, Variant &vResult)
 {
     // $var = StringMid(<string>, <start> [, <count>])
 
@@ -146,7 +144,7 @@ AUT_RESULT AutoIt_Script::F_StringMid(VectorVariant &vParams, Variant &vResult)
 // StringTrimLeft()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_StringTrimLeft(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleBuiltIn::F_StringTrimLeft(VectorVariant &vParams, Variant &vResult)
 {
     // $var = StringTrimLeft(<string>, <count>)
 
@@ -173,7 +171,7 @@ AUT_RESULT AutoIt_Script::F_StringTrimLeft(VectorVariant &vParams, Variant &vRes
 // StringTrimRight()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_StringTrimRight(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleBuiltIn::F_StringTrimRight(VectorVariant &vParams, Variant &vResult)
 {
     // $var = StringTrimRight(<string>, <count>)
 
@@ -201,7 +199,7 @@ AUT_RESULT AutoIt_Script::F_StringTrimRight(VectorVariant &vParams, Variant &vRe
 // StringInStr()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_StringInStr(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleBuiltIn::F_StringInStr(VectorVariant &vParams, Variant &vResult)
 {
     // $var = StringInStr(<string>, <substring> [,casesense] [,occurance])
 
@@ -219,7 +217,7 @@ AUT_RESULT AutoIt_Script::F_StringInStr(VectorVariant &vParams, Variant &vResult
         if (vParams[3].nValue() == 0) // not valid
         {
             vResult = 0;
-            SetFuncErrorCode(1);
+            engine->SetFuncErrorCode(1);
             return AUT_OK;
         }
         else
@@ -248,7 +246,7 @@ AUT_RESULT AutoIt_Script::F_StringInStr(VectorVariant &vParams, Variant &vResult
 // StringLower()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_StringLower(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleBuiltIn::F_StringLower(VectorVariant &vParams, Variant &vResult)
 {
     // $var = StringLower(<string>)
 
@@ -266,7 +264,7 @@ AUT_RESULT AutoIt_Script::F_StringLower(VectorVariant &vParams, Variant &vResult
 // StringUpper()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_StringUpper(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleBuiltIn::F_StringUpper(VectorVariant &vParams, Variant &vResult)
 {
     // $var = StringUpper(<string>)
 
@@ -284,7 +282,7 @@ AUT_RESULT AutoIt_Script::F_StringUpper(VectorVariant &vParams, Variant &vResult
 // StringStripCR()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_StringStripCR(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleBuiltIn::F_StringStripCR(VectorVariant &vParams, Variant &vResult)
 {
     // $var = StringStripCR(<string>)
     char    *szString;
@@ -309,7 +307,7 @@ AUT_RESULT AutoIt_Script::F_StringStripCR(VectorVariant &vParams, Variant &vResu
 // StringAddCR()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_StringAddCR(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleBuiltIn::F_StringAddCR(VectorVariant &vParams, Variant &vResult)
 {
     // $var = StringAddCR(<string>)
     char    *szOut;
@@ -338,7 +336,7 @@ AUT_RESULT AutoIt_Script::F_StringAddCR(VectorVariant &vParams, Variant &vResult
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_StringReplace(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleBuiltIn::F_StringReplace(VectorVariant &vParams, Variant &vResult)
 {
     AString sOutput;
     AString sTemp;
@@ -355,7 +353,7 @@ AUT_RESULT AutoIt_Script::F_StringReplace(VectorVariant &vParams, Variant &vResu
                 nPos + strlen(vParams[2].szValue()) > strlen(vParams[0].szValue()) )
         {
             vResult = "";
-            SetFuncErrorCode(1);
+            engine->SetFuncErrorCode(1);
             return AUT_OK;
         }
 
@@ -447,7 +445,7 @@ AUT_RESULT AutoIt_Script::F_StringReplace(VectorVariant &vParams, Variant &vResu
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_StringSplit(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleBuiltIn::F_StringSplit(VectorVariant &vParams, Variant &vResult)
 {
     int            iCount, iElements, iIndex;
     int            nPos, nFlag;
@@ -526,7 +524,7 @@ AUT_RESULT AutoIt_Script::F_StringSplit(VectorVariant &vParams, Variant &vResult
         pvTemp = Util_VariantArrayGetRef(&vResult, 1);    //Second element
         *pvTemp = pcSearch;
 
-        SetFuncErrorCode(-iCount+1);    // 1 for no delimiters, 2 for bad flag
+        engine->SetFuncErrorCode(-iCount+1);    // 1 for no delimiters, 2 for bad flag
         return AUT_OK;
     }
 
@@ -605,7 +603,7 @@ AUT_RESULT AutoIt_Script::F_StringSplit(VectorVariant &vParams, Variant &vResult
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_StringStripWS(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleBuiltIn::F_StringStripWS(VectorVariant &vParams, Variant &vResult)
 {
     int                i, flags=vParams[1].nValue();
     register char    *pszTmp;
@@ -615,7 +613,7 @@ AUT_RESULT AutoIt_Script::F_StringStripWS(VectorVariant &vParams, Variant &vResu
         vResult = vParams[0];
         return AUT_OK;
     } else if (vParams[0].isArray()) {
-        SetFuncErrorCode(1);    // invalid type
+        engine->SetFuncErrorCode(1);    // invalid type
         return AUT_OK;
     }
 
@@ -675,7 +673,7 @@ AUT_RESULT AutoIt_Script::F_StringStripWS(VectorVariant &vParams, Variant &vResu
 // StringIsFloat()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_StringIsFloat(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleBuiltIn::F_StringIsFloat(VectorVariant &vParams, Variant &vResult)
 {
     vResult = (int)StringIsFloat(vParams[0]);
     return AUT_OK;
@@ -690,7 +688,7 @@ AUT_RESULT AutoIt_Script::F_StringIsFloat(VectorVariant &vParams, Variant &vResu
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-bool AutoIt_Script::StringIsFloat(Variant &vValue)
+bool ModuleBuiltIn::StringIsFloat(Variant &vValue)
 {
     int pos=0;
     const char *pszValue = vValue.szValue();
@@ -751,7 +749,7 @@ bool AutoIt_Script::StringIsFloat(Variant &vValue)
 // StringIsInt()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_StringIsInt(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleBuiltIn::F_StringIsInt(VectorVariant &vParams, Variant &vResult)
 {
     vResult = (int)StringIsInt(vParams[0]);
     return AUT_OK;
@@ -766,7 +764,7 @@ AUT_RESULT AutoIt_Script::F_StringIsInt(VectorVariant &vParams, Variant &vResult
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-bool AutoIt_Script::StringIsInt(Variant &vValue)
+bool ModuleBuiltIn::StringIsInt(Variant &vValue)
 {
     int            pos = 0;
     const char *pszValue = vValue.szValue();
@@ -813,7 +811,7 @@ bool AutoIt_Script::StringIsInt(Variant &vValue)
 // String variables are limited to 65535 as part of the buffer overrun protection
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_StringFormat(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleBuiltIn::F_StringFormat(VectorVariant &vParams, Variant &vResult)
 {
     uint        iNumParam = vParams.size();
     AString        sOutput(1024);                    // Pre-allocated string for final output (pre-allocated 1KB - enough for most operations)
@@ -938,7 +936,7 @@ AUT_RESULT AutoIt_Script::F_StringFormat(VectorVariant &vParams, Variant &vResul
 // StringIsAlpha()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_StringIsAlpha(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleBuiltIn::F_StringIsAlpha(VectorVariant &vParams, Variant &vResult)
 {
     uchar *pChar;
 
@@ -961,7 +959,7 @@ AUT_RESULT AutoIt_Script::F_StringIsAlpha(VectorVariant &vParams, Variant &vResu
 // StringIsAlnum()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_StringIsAlnum(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleBuiltIn::F_StringIsAlnum(VectorVariant &vParams, Variant &vResult)
 {
     uchar *pChar;
 
@@ -983,7 +981,7 @@ AUT_RESULT AutoIt_Script::F_StringIsAlnum(VectorVariant &vParams, Variant &vResu
 // StringIsDigit()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_StringIsDigit(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleBuiltIn::F_StringIsDigit(VectorVariant &vParams, Variant &vResult)
 {
     uchar *pChar;
 
@@ -1005,7 +1003,7 @@ AUT_RESULT AutoIt_Script::F_StringIsDigit(VectorVariant &vParams, Variant &vResu
 // StringIsXDigit()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_StringIsXDigit(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleBuiltIn::F_StringIsXDigit(VectorVariant &vParams, Variant &vResult)
 {
     uchar *pChar;
 
@@ -1027,7 +1025,7 @@ AUT_RESULT AutoIt_Script::F_StringIsXDigit(VectorVariant &vParams, Variant &vRes
 // StringIsLower()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_StringIsLower(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleBuiltIn::F_StringIsLower(VectorVariant &vParams, Variant &vResult)
 {
     uchar *pChar;
 
@@ -1049,7 +1047,7 @@ AUT_RESULT AutoIt_Script::F_StringIsLower(VectorVariant &vParams, Variant &vResu
 // StringIsUpper()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_StringIsUpper(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleBuiltIn::F_StringIsUpper(VectorVariant &vParams, Variant &vResult)
 {
     uchar *pChar;
 
@@ -1071,7 +1069,7 @@ AUT_RESULT AutoIt_Script::F_StringIsUpper(VectorVariant &vParams, Variant &vResu
 // StringIsSpace()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_StringIsSpace(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleBuiltIn::F_StringIsSpace(VectorVariant &vParams, Variant &vResult)
 {
     uchar *pChar;
 
@@ -1093,7 +1091,7 @@ AUT_RESULT AutoIt_Script::F_StringIsSpace(VectorVariant &vParams, Variant &vResu
 // StringIsASCII()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_StringIsASCII(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleBuiltIn::F_StringIsASCII(VectorVariant &vParams, Variant &vResult)
 {
     uchar *pChar;
 

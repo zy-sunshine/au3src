@@ -5,237 +5,62 @@
       <UniqueIdentifier>{4db8ecd8-cbc7-4154-ae83-7f412e722aad}</UniqueIdentifier>
       <Extensions>cpp;c;cxx;def;odl;idl;hpj;bat;asm</Extensions>
     </Filter>
-    <Filter Include="Source Files\Datatypes">
-      <UniqueIdentifier>{c236d0ad-8a67-43bd-a9e0-65e0433cdb1a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Script_cpp">
-      <UniqueIdentifier>{714561be-3f13-4711-ace1-3e97def5e3b7}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Misc">
-      <UniqueIdentifier>{27d62863-6f94-409c-9049-aeed69fe9530}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files">
       <UniqueIdentifier>{66c61c46-6dbe-42c8-a9c9-bc5c6db83184}</UniqueIdentifier>
       <Extensions>h;hpp;hxx;hm;inl;inc</Extensions>
-    </Filter>
-    <Filter Include="Header Files\Datatypes">
-      <UniqueIdentifier>{c932d09c-9965-4296-ae48-c4b4325e2a8b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Misc">
-      <UniqueIdentifier>{08e5b1fc-af28-4550-93f3-7a2248e0f48c}</UniqueIdentifier>
     </Filter>
     <Filter Include="Resource Files">
       <UniqueIdentifier>{5deab667-9130-4b47-b3fa-128ae7b0b634}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe</Extensions>
     </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="src\application.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\AutoIt.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\cmdline.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\globaldata.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\guibox.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\inputbox.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\os_version.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\regexp.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\scriptfile.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\sendkeys.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\setforegroundwinex.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\shared_memory.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\userfunction_list.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\utility.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\variabletable.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\astring_datatype.cpp">
-      <Filter>Source Files\Datatypes</Filter>
-    </ClCompile>
-    <ClCompile Include="src\stack_int_datatype.cpp">
-      <Filter>Source Files\Datatypes</Filter>
-    </ClCompile>
-    <ClCompile Include="src\stack_statement_datatype.cpp">
-      <Filter>Source Files\Datatypes</Filter>
-    </ClCompile>
-    <ClCompile Include="src\stack_variable_list.cpp">
-      <Filter>Source Files\Datatypes</Filter>
-    </ClCompile>
-    <ClCompile Include="src\stack_variant_datatype.cpp">
-      <Filter>Source Files\Datatypes</Filter>
-    </ClCompile>
-    <ClCompile Include="src\token_datatype.cpp">
-      <Filter>Source Files\Datatypes</Filter>
-    </ClCompile>
-    <ClCompile Include="src\variable_list.cpp">
-      <Filter>Source Files\Datatypes</Filter>
-    </ClCompile>
-    <ClCompile Include="src\variant_datatype.cpp">
-      <Filter>Source Files\Datatypes</Filter>
-    </ClCompile>
-    <ClCompile Include="src\vector_token_datatype.cpp">
-      <Filter>Source Files\Datatypes</Filter>
-    </ClCompile>
-    <ClCompile Include="src\vector_variant_datatype.cpp">
-      <Filter>Source Files\Datatypes</Filter>
-    </ClCompile>
-    <ClCompile Include="src\script.cpp">
-      <Filter>Source Files\Script_cpp</Filter>
-    </ClCompile>
-    <ClCompile Include="src\script_file.cpp">
-      <Filter>Source Files\Script_cpp</Filter>
-    </ClCompile>
-    <ClCompile Include="src\script_gui.cpp">
-      <Filter>Source Files\Script_cpp</Filter>
-    </ClCompile>
-    <ClCompile Include="src\script_lexer.cpp">
-      <Filter>Source Files\Script_cpp</Filter>
-    </ClCompile>
-    <ClCompile Include="src\script_math.cpp">
-      <Filter>Source Files\Script_cpp</Filter>
-    </ClCompile>
-    <ClCompile Include="src\script_misc.cpp">
-      <Filter>Source Files\Script_cpp</Filter>
-    </ClCompile>
-    <ClCompile Include="src\script_parser.cpp">
-      <Filter>Source Files\Script_cpp</Filter>
-    </ClCompile>
-    <ClCompile Include="src\script_parser_exp.cpp">
-      <Filter>Source Files\Script_cpp</Filter>
-    </ClCompile>
-    <ClCompile Include="src\script_process.cpp">
-      <Filter>Source Files\Script_cpp</Filter>
-    </ClCompile>
-    <ClCompile Include="src\script_registry.cpp">
-      <Filter>Source Files\Script_cpp</Filter>
-    </ClCompile>
-    <ClCompile Include="src\script_string.cpp">
-      <Filter>Source Files\Script_cpp</Filter>
-    </ClCompile>
-    <ClCompile Include="src\script_win.cpp">
-      <Filter>Source Files\Script_cpp</Filter>
-    </ClCompile>
-    <ClCompile Include="src\mt19937ar-cok.cpp">
-      <Filter>Source Files\Misc</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="src\application.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\AutoIt.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\cmdline.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\globaldata.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\guibox.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\inputbox.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\os_version.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\regexp.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\resources\resource.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\script.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\scriptfile.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\sendkeys.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\setforegroundwinex.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\shared_memory.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\StdAfx.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\userfunction_list.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\utility.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\variabletable.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\astring_datatype.h">
-      <Filter>Header Files\Datatypes</Filter>
-    </ClInclude>
-    <ClInclude Include="src\stack_int_datatype.h">
-      <Filter>Header Files\Datatypes</Filter>
-    </ClInclude>
-    <ClInclude Include="src\stack_statement_datatype.h">
-      <Filter>Header Files\Datatypes</Filter>
-    </ClInclude>
-    <ClInclude Include="src\stack_variable_list.h">
-      <Filter>Header Files\Datatypes</Filter>
-    </ClInclude>
-    <ClInclude Include="src\stack_variant_datatype.h">
-      <Filter>Header Files\Datatypes</Filter>
-    </ClInclude>
-    <ClInclude Include="src\token_datatype.h">
-      <Filter>Header Files\Datatypes</Filter>
-    </ClInclude>
-    <ClInclude Include="src\variable_list.h">
-      <Filter>Header Files\Datatypes</Filter>
-    </ClInclude>
-    <ClInclude Include="src\variant_datatype.h">
-      <Filter>Header Files\Datatypes</Filter>
-    </ClInclude>
-    <ClInclude Include="src\vector_token_datatype.h">
-      <Filter>Header Files\Datatypes</Filter>
-    </ClInclude>
-    <ClInclude Include="src\vector_variant_datatype.h">
-      <Filter>Header Files\Datatypes</Filter>
-    </ClInclude>
-    <ClInclude Include="src\mt19937ar-cok.h">
-      <Filter>Header Files\Misc</Filter>
-    </ClInclude>
-    <ClInclude Include="src\qmath.h">
-      <Filter>Header Files\Misc</Filter>
-    </ClInclude>
+    <Filter Include="Source Files\Modules">
+      <UniqueIdentifier>{d60e90bd-689d-4e60-8a54-9bd0ba306936}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Modules\BuiltIn">
+      <UniqueIdentifier>{6c58c0f2-aff9-4b8c-bee3-ab47b9266aac}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Modules\File">
+      <UniqueIdentifier>{a03b81db-6773-473e-81e4-c91beddd8fa1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Modules\Gui">
+      <UniqueIdentifier>{66607129-66ab-4d1f-8129-3453343f18b2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Modules\Keyboard">
+      <UniqueIdentifier>{2a5de39d-e4ae-44df-bd8d-dda829a2704b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Modules\Math">
+      <UniqueIdentifier>{e93ccf3c-c87d-4d6b-ab6d-f52ec00028ef}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Modules\Mouse">
+      <UniqueIdentifier>{06aca62d-881f-460d-9a5d-c31e8b38b75b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Modules\Net">
+      <UniqueIdentifier>{ad848648-fcf6-4956-9421-e3d8ad49aa15}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Modules\Reg">
+      <UniqueIdentifier>{44a30b21-8b0a-4d9f-adec-9255fb6759ba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Modules\Sound">
+      <UniqueIdentifier>{c46ec6b1-a89d-4d1f-b599-99429fc24128}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Modules\Sys">
+      <UniqueIdentifier>{599a3c96-c784-4898-a3cb-51fd9e174bcb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Modules\Win">
+      <UniqueIdentifier>{6dec2a0b-1825-4160-b394-1d4bae903e53}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Utils">
+      <UniqueIdentifier>{99b660df-6b81-4e5f-bddf-5aed0333928b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Engine">
+      <UniqueIdentifier>{6f98df46-17c7-4126-9d67-89a1d97bd123}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Engine\Parser">
+      <UniqueIdentifier>{686a31bf-f5ea-4fc8-a895-c2edebfffd58}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Engine\Type">
+      <UniqueIdentifier>{c3f0bd05-52a1-4bdd-936d-02d4c98a4404}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="src\resources\AutoIt.rc">
@@ -261,5 +86,264 @@
     <Text Include="LICENSE.txt" />
     <Text Include="README.txt" />
     <Text Include="TODO.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\Modules\BuiltIn\BuiltInArray.cpp">
+      <Filter>Source Files\Modules\BuiltIn</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Modules\BuiltIn\BuiltInMisc.cpp">
+      <Filter>Source Files\Modules\BuiltIn</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Modules\BuiltIn\BuiltInString.cpp">
+      <Filter>Source Files\Modules\BuiltIn</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Modules\BuiltIn\ModuleBuiltIn.c">
+      <Filter>Source Files\Modules\BuiltIn</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Modules\BuiltIn\ModuleBuiltIn.cpp">
+      <Filter>Source Files\Modules\BuiltIn</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Modules\File\ModuleFile.cpp">
+      <Filter>Source Files\Modules\File</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Modules\Gui\ModuleGui.cpp">
+      <Filter>Source Files\Modules\Gui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Modules\Keyboard\ModuleKeyboard.cpp">
+      <Filter>Source Files\Modules\Keyboard</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Modules\Math\ModuleMath.cpp">
+      <Filter>Source Files\Modules\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Modules\Mouse\ModuleMouse.cpp">
+      <Filter>Source Files\Modules\Mouse</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Modules\Net\ModuleNet.cpp">
+      <Filter>Source Files\Modules\Net</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Modules\Reg\ModuleReg.cpp">
+      <Filter>Source Files\Modules\Reg</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Modules\Sound\ModuleSound.cpp">
+      <Filter>Source Files\Modules\Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Modules\Sys\ModuleSys.cpp">
+      <Filter>Source Files\Modules\Sys</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Modules\Sys\SysMisc.cpp">
+      <Filter>Source Files\Modules\Sys</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Modules\Win\InputBox.cpp">
+      <Filter>Source Files\Modules\Win</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Modules\Win\ModuleWin.cpp">
+      <Filter>Source Files\Modules\Win</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Modules\Win\WinMisc.cpp">
+      <Filter>Source Files\Modules\Win</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Utils\mt19937ar-cok.cpp">
+      <Filter>Source Files\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Utils\OSVersion.cpp">
+      <Filter>Source Files\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Utils\SendKeys.cpp">
+      <Filter>Source Files\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Utils\SetForegroundWinEx.cpp">
+      <Filter>Source Files\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Utils\utility.cpp">
+      <Filter>Source Files\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Utils\WinUtil.cpp">
+      <Filter>Source Files\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AutoIt.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\Type\AString.cpp">
+      <Filter>Source Files\Engine\Type</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\Type\Variant.cpp">
+      <Filter>Source Files\Engine\Type</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\Type\VectorVariant.cpp">
+      <Filter>Source Files\Engine\Type</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\Parser\Lexer.cpp">
+      <Filter>Source Files\Engine\Parser</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\Parser\Parser.cpp">
+      <Filter>Source Files\Engine\Parser</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\Parser\ParserExp.cpp">
+      <Filter>Source Files\Engine\Parser</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\Parser\StackInt.cpp">
+      <Filter>Source Files\Engine\Parser</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\Parser\StackVariant.cpp">
+      <Filter>Source Files\Engine\Parser</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\Parser\Token.cpp">
+      <Filter>Source Files\Engine\Parser</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\Parser\VectorToken.cpp">
+      <Filter>Source Files\Engine\Parser</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\Application.cpp">
+      <Filter>Source Files\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\CmdLine.cpp">
+      <Filter>Source Files\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\Engine.cpp">
+      <Filter>Source Files\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\globaldata.cpp">
+      <Filter>Source Files\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\ScriptFile.cpp">
+      <Filter>Source Files\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\StackStatement.cpp">
+      <Filter>Source Files\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\StackVarList.cpp">
+      <Filter>Source Files\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\UserFuncList.cpp">
+      <Filter>Source Files\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\VariableList.cpp">
+      <Filter>Source Files\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\VariableTable.cpp">
+      <Filter>Source Files\Engine</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\Modules\BuiltIn\ModuleBuiltIn.h">
+      <Filter>Source Files\Modules\BuiltIn</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Modules\File\ModuleFile.h">
+      <Filter>Source Files\Modules\File</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Modules\Gui\ModuleGui.h">
+      <Filter>Source Files\Modules\Gui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Modules\Keyboard\ModuleKeyboard.h">
+      <Filter>Source Files\Modules\Keyboard</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Modules\Math\ModuleMath.h">
+      <Filter>Source Files\Modules\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Modules\Mouse\ModuleMouse.h">
+      <Filter>Source Files\Modules\Mouse</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Modules\Net\ModuleNet.h">
+      <Filter>Source Files\Modules\Net</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Modules\Reg\ModuleReg.h">
+      <Filter>Source Files\Modules\Reg</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Modules\Sound\ModuleSound.h">
+      <Filter>Source Files\Modules\Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Modules\Sys\ModuleSys.h">
+      <Filter>Source Files\Modules\Sys</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Modules\Win\InputBox.h">
+      <Filter>Source Files\Modules\Win</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Modules\Win\ModuleWin.h">
+      <Filter>Source Files\Modules\Win</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Utils\mt19937ar-cok.h">
+      <Filter>Source Files\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Utils\OSVersion.h">
+      <Filter>Source Files\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Utils\SendKeys.h">
+      <Filter>Source Files\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Utils\SetForegroundWinEx.h">
+      <Filter>Source Files\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Utils\utility.h">
+      <Filter>Source Files\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Utils\WinUtil.h">
+      <Filter>Source Files\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src\AutoIt.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\StdAfx.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\Type\AString.h">
+      <Filter>Source Files\Engine\Type</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\Type\Variant.h">
+      <Filter>Source Files\Engine\Type</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\Type\VectorVariant.h">
+      <Filter>Source Files\Engine\Type</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\Parser\Lexer.h">
+      <Filter>Source Files\Engine\Parser</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\Parser\Parser.h">
+      <Filter>Source Files\Engine\Parser</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\Parser\ParserExp.h">
+      <Filter>Source Files\Engine\Parser</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\Parser\StackInt.h">
+      <Filter>Source Files\Engine\Parser</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\Parser\StackVariant.h">
+      <Filter>Source Files\Engine\Parser</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\Parser\Token.h">
+      <Filter>Source Files\Engine\Parser</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\Parser\VectorToken.h">
+      <Filter>Source Files\Engine\Parser</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\Application.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\CmdLine.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\Engine.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\globaldata.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\ScriptFile.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\StackStatement.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\StackVarList.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\UserFuncList.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\VariableList.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\VariableTable.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -1,7 +1,11 @@
+#pragma once
 #include "AutoIt.h"
+#include "Engine/Engine.h"
 
 class ModuleSys {
 public:
+    ModuleSys(Engine* engine): engine(engine) {}
+
     // Process related functions (script_process.cpp)
     AUT_RESULT    F_Run(VectorVariant &vParams, Variant &vResult);
     AUT_RESULT    F_RunWait(VectorVariant &vParams, Variant &vResult);
@@ -45,4 +49,7 @@ public:
     AUT_RESULT    F_TimerDiff(VectorVariant &vParams, Variant &vResult);
 
     AUT_RESULT    F_MemGetStats(VectorVariant &vParams, Variant &vResult);
+
+private:
+    Engine* engine;
 };

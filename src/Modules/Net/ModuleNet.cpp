@@ -1,3 +1,6 @@
+#include "StdAfx.h"                                // Pre-compiled headers
+#include "ModuleNet.h"
+
 ///////////////////////////////////////////////////////////////////////////////
 // HttpSetProxy()
 //

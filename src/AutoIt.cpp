@@ -46,14 +46,14 @@
 
 // Includes
 #include "StdAfx.h"                                // Pre-compiled headers
+#include "AutoIt.h"                                // Autoit values, macros and config options
 
 #ifndef _MSC_VER                                // Includes for non-MS compilers
     #include <windef.h>
 #endif
 
-#include "AutoIt.h"                                // Autoit values, macros and config options
-#include "globaldata.h"
-#include "utility.h"
+#include "Engine/globaldata.h"
+#include "Utils/utility.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////

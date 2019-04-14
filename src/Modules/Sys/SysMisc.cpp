@@ -1,3 +1,4 @@
+#include "StdAfx.h"                                // Pre-compiled headers
 #include "ModuleSys.h"
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -43,7 +44,7 @@ AUT_RESULT AutoIt_Script::F_EnvUpdate(VectorVariant &vParams, Variant &vResult)
 
     if(SendMessageTimeout(HWND_BROADCAST, WM_SETTINGCHANGE, 0, (LPARAM)"Environment",
             SMTO_BLOCK, 15000, &nResult)==0)
-        SetFuncErrorCode(1);
+        engine->SetFuncErrorCode(1);
 
     return AUT_OK;
 
@@ -128,7 +129,7 @@ AUT_RESULT AutoIt_Script::F_AdlibEnable(VectorVariant &vParams, Variant &vResult
     m_bAdlibEnabled    = false;            // Disable by default in case of error
 
     // Check that this user function exists
-    if (Parser_FindUserFunction(vParams[0].szValue(), nTemp1, nTemp2, nTemp3, nTemp4) == false)
+    if (engine->parser->FindUserFunction(vParams[0].szValue(), nTemp1, nTemp2, nTemp3, nTemp4) == false)
     {
         FatalError(IDS_AUT_E_UNKNOWNUSERFUNC);
         return AUT_ERR;
@@ -164,7 +165,7 @@ AUT_RESULT AutoIt_Script::F_ClipGet(VectorVariant &vParams, Variant &vResult)
         HGLOBAL hClipMem = GetClipboardData(CF_TEXT);
         if (hClipMem == NULL)
         {
-            SetFuncErrorCode(1);                // Default is 0
+            engine->SetFuncErrorCode(1);                // Default is 0
             return AUT_OK;
         }
 
@@ -172,7 +173,7 @@ AUT_RESULT AutoIt_Script::F_ClipGet(VectorVariant &vParams, Variant &vResult)
         if (pClipMem == NULL)
         {
             CloseClipboard();
-            SetFuncErrorCode(1);                // Default is 0
+            engine->SetFuncErrorCode(1);                // Default is 0
             return AUT_OK;
         }
 
@@ -181,7 +182,7 @@ AUT_RESULT AutoIt_Script::F_ClipGet(VectorVariant &vParams, Variant &vResult)
         CloseClipboard();
     }
     else
-        SetFuncErrorCode(1);                    // Default is 0
+        engine->SetFuncErrorCode(1);                    // Default is 0
 
     return AUT_OK;
 
@@ -268,7 +269,7 @@ AUT_RESULT AutoIt_Script::F_IsAdmin(VectorVariant &vParams, Variant &vResult)
 
 AUT_RESULT AutoIt_Script::F_SetError(VectorVariant &vParams, Variant &vResult)
 {
-    SetFuncErrorCode(vParams[0].nValue());
+    engine->SetFuncErrorCode(vParams[0].nValue());
     return AUT_OK;
 
 } // SetError()
@@ -482,35 +483,35 @@ AUT_RESULT AutoIt_Script::F_AutoItSetOption(VectorVariant &vParams, Variant &vRe
     }
     else if ( !stricmp(szOption, "SendAttachMode") )        // SendAttachMode
     {
-        vResult = (int)m_oSendKeys.m_bAttachMode;    // Store current value
+        vResult = (int)engine->m_oSendKeys.m_bAttachMode;    // Store current value
 
         if (nValue == 0)
-            m_oSendKeys.SetAttachMode(false);
+            engine->m_oSendKeys.SetAttachMode(false);
         else
-            m_oSendKeys.SetAttachMode(true);
+            engine->m_oSendKeys.SetAttachMode(true);
     }
     else if ( !stricmp(szOption, "SendCapslockMode") )        // SendCapslockMode
     {
-        vResult = (int)m_oSendKeys.m_bStoreCapslockMode;    // Store current value
+        vResult = (int)engine->m_oSendKeys.m_bStoreCapslockMode;    // Store current value
 
         if (nValue == 0)
-            m_oSendKeys.SetStoreCapslockMode(false);
+            engine->m_oSendKeys.SetStoreCapslockMode(false);
         else
-            m_oSendKeys.SetStoreCapslockMode(true);
+            engine->m_oSendKeys.SetStoreCapslockMode(true);
     }
     else if ( !stricmp(szOption, "SendKeyDelay") )            // SendKeyDelay
     {
-        vResult = (int)m_oSendKeys.m_nKeyDelay;    // Store current value
+        vResult = (int)engine->m_oSendKeys.m_nKeyDelay;    // Store current value
 
         if (nValue >= -1)
-            m_oSendKeys.SetKeyDelay( nValue );
+            engine->m_oSendKeys.SetKeyDelay( nValue );
     }
     else if ( !stricmp(szOption, "SendKeyDownDelay") )        // SendKeyDownDelay
     {
-        vResult = (int)m_oSendKeys.m_nKeyDownDelay;    // Store current value
+        vResult = (int)engine->m_oSendKeys.m_nKeyDownDelay;    // Store current value
 
         if (nValue >= -1)
-            m_oSendKeys.SetKeyDownDelay( nValue );
+            engine->m_oSendKeys.SetKeyDownDelay( nValue );
     }
     else if ( !stricmp(szOption, "TrayIconDebug") )            // TrayIconDebug
     {

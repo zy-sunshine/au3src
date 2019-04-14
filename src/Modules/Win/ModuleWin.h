@@ -1,7 +1,11 @@
+#pragma once
 #include "AutoIt.h"
+#include "Engine/Engine.h"
 
 class ModuleWin {
 public:
+    ModuleWin(Engine* engine): engine(engine) {}
+
     // Window-related functions (script_win.cpp)
     AUT_RESULT    F_WinExists(VectorVariant &vParams, Variant &vResult);
     AUT_RESULT    F_WinActive(VectorVariant &vParams, Variant &vResult);
@@ -97,4 +101,7 @@ public:
     AUT_RESULT    F_ProgressSet(VectorVariant &vParams, Variant &vResult);
     AUT_RESULT    Progress(VectorVariant &vParams, uint iNumParams, int nFlag);
     AUT_RESULT    F_InputBox(VectorVariant &vParams, Variant &vResult);
+
+private:
+    Engine* engine;
 };

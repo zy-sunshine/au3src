@@ -44,17 +44,14 @@
 
 // Includes
 #include "StdAfx.h"                                // Pre-compiled headers
+#include "ModuleFile.h"
 
 #ifndef _MSC_VER                                // Includes for non-MS compilers
     #include <stdio.h>
     #include <shlobj.h>
 #endif
 
-#include "AutoIt.h"                                // Autoit values, macros and config options
-
-#include "globaldata.h"
-#include "ModuleFile.h"
-#include "utility.h"
+#include "Utils/utility.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -164,7 +161,7 @@ AUT_RESULT ModuleFile::F_IniReadSection(VectorVariant &vParams, Variant &vResult
     int        iRes = GetPrivateProfileSection(vParams[1].szValue(), szBuffer, 32767, szFileTemp);
 
     if (!iRes)
-        SetFuncErrorCode(1);
+        engine->SetFuncErrorCode(1);
     else
     {
         KeyValue *pStart = new KeyValue;    // Store the key/value start/end positions
@@ -214,7 +211,7 @@ AUT_RESULT ModuleFile::F_IniReadSection(VectorVariant &vParams, Variant &vResult
         }
 
         if (!count)
-            SetFuncErrorCode(2);
+            engine->SetFuncErrorCode(2);
         else
         {
             // Dim the array
@@ -277,7 +274,7 @@ AUT_RESULT ModuleFile::F_IniReadSectionNames(VectorVariant &vParams, Variant &vR
     int        iRes = GetPrivateProfileSectionNames(szBuffer, 65535, szFileTemp);
 
     if (!iRes)
-        SetFuncErrorCode(1);
+        engine->SetFuncErrorCode(1);
     else
     {
         Section *pStart = new Section;    // Store the section start/end positions
@@ -476,7 +473,7 @@ AUT_RESULT ModuleFile::F_FileReadLine(VectorVariant &vParams, Variant &vResult)
         fptr = fopen(vParams[0].szValue(), "rb");    // Open in read mode (binary)
         if (fptr == NULL)
         {
-            SetFuncErrorCode(1);                    // Not open for reading
+            engine->SetFuncErrorCode(1);                    // Not open for reading
             return AUT_OK;
         }
     }
@@ -487,7 +484,7 @@ AUT_RESULT ModuleFile::F_FileReadLine(VectorVariant &vParams, Variant &vResult)
 
         if (nHandle < 0)
         {
-            SetFuncErrorCode(1);
+            engine->SetFuncErrorCode(1);
             return AUT_OK;
         }
 
@@ -511,7 +508,7 @@ AUT_RESULT ModuleFile::F_FileReadLine(VectorVariant &vParams, Variant &vResult)
         // Is the file open for reading?
         if (m_FileHandleDetails[nHandle]->nMode != 0)
         {
-            SetFuncErrorCode(1);                    // Not open for reading
+            engine->SetFuncErrorCode(1);                    // Not open for reading
             return AUT_OK;
         }
     }
@@ -529,7 +526,7 @@ AUT_RESULT ModuleFile::F_FileReadLine(VectorVariant &vParams, Variant &vResult)
         {
             if ( Util_fgetsb(szBuffer, 65535, fptr) == NULL )
             {
-                SetFuncErrorCode(-1);                // EOF reached
+                engine->SetFuncErrorCode(-1);                // EOF reached
                 bError = true;
                 //return AUT_OK;
             }
@@ -540,7 +537,7 @@ AUT_RESULT ModuleFile::F_FileReadLine(VectorVariant &vParams, Variant &vResult)
         // Read next line
         if (Util_fgetsb(szBuffer, 65535, fptr) == NULL)
         {
-            SetFuncErrorCode(-1);                // EOF reached
+            engine->SetFuncErrorCode(-1);                // EOF reached
             bError = true;
             //return AUT_OK;
         }
@@ -593,7 +590,7 @@ AUT_RESULT ModuleFile::F_FileRead(VectorVariant &vParams, Variant &vResult)
         fptr = fopen(vParams[0].szValue(), "rb");    // Open in read mode (binary)
         if (fptr == NULL)
         {
-            SetFuncErrorCode(1);                    // Not open for reading
+            engine->SetFuncErrorCode(1);                    // Not open for reading
             return AUT_OK;
         }
     }
@@ -604,7 +601,7 @@ AUT_RESULT ModuleFile::F_FileRead(VectorVariant &vParams, Variant &vResult)
 
         if (nHandle < 0)
         {
-            SetFuncErrorCode(1);
+            engine->SetFuncErrorCode(1);
             return AUT_OK;
         }
 
@@ -628,7 +625,7 @@ AUT_RESULT ModuleFile::F_FileRead(VectorVariant &vParams, Variant &vResult)
         // Is the file open for reading?
         if (m_FileHandleDetails[nHandle]->nMode != 0)
         {
-            SetFuncErrorCode(1);                    // Not open for reading
+            engine->SetFuncErrorCode(1);                    // Not open for reading
             return AUT_OK;
         }
     }
@@ -639,7 +636,7 @@ AUT_RESULT ModuleFile::F_FileRead(VectorVariant &vParams, Variant &vResult)
 
     Len = fread(szBuffer, 1, vParams[1].nValue(), fptr);
     if (Len == 0)
-        SetFuncErrorCode(-1);                    // EOF, or error...
+        engine->SetFuncErrorCode(-1);                    // EOF, or error...
     else
     {
         szBuffer[Len] = '\0';                    // Terminate
@@ -854,13 +851,13 @@ AUT_RESULT ModuleFile::F_FileGetTime(VectorVariant &vParams, Variant &vResult)
             }
         }
         else
-            SetFuncErrorCode(1);                // Default is 0
+            engine->SetFuncErrorCode(1);                // Default is 0
 
         // Close the file
         CloseHandle(fileIn);
     }
     else
-        SetFuncErrorCode(1);                    // Default is 0
+        engine->SetFuncErrorCode(1);                    // Default is 0
 
     return AUT_OK;
 
@@ -896,7 +893,7 @@ AUT_RESULT ModuleFile::F_FileGetTime(VectorVariant &vParams, Variant &vResult)
     }
     else
     {
-        SetFuncErrorCode(1);                    // Default is 0
+        engine->SetFuncErrorCode(1);                    // Default is 0
         return AUT_OK;
     }
 
@@ -1156,7 +1153,7 @@ AUT_RESULT ModuleFile::F_FileGetSize(VectorVariant &vParams, Variant &vResult)
     if (hSearch == INVALID_HANDLE_VALUE)
     {
         vResult = 0;
-        SetFuncErrorCode(1);
+        engine->SetFuncErrorCode(1);
     }
     else
     {
@@ -1308,14 +1305,14 @@ AUT_RESULT ModuleFile::FileDialog(VectorVariant &vParams, Variant &vResult, uint
                 vResult = ofn.lpstrFile;
         }
         else
-            SetFuncErrorCode(1);                    // Default is 0
+            engine->SetFuncErrorCode(1);                    // Default is 0
     }
     else
     {
         if(GetSaveFileName(&ofn))
             vResult = ofn.lpstrFile;
         else
-            SetFuncErrorCode(1);                // Default is 0
+            engine->SetFuncErrorCode(1);                // Default is 0
     }
 
     return AUT_OK;
@@ -1406,7 +1403,7 @@ AUT_RESULT ModuleFile::F_FileSelectFolder (VectorVariant &vParams, Variant &vRes
     }
     else
     {
-        SetFuncErrorCode(1);                    // Folder Is NOT Chosen
+        engine->SetFuncErrorCode(1);                    // Folder Is NOT Chosen
         vResult = "";
     }
 
@@ -1499,17 +1496,17 @@ AUT_RESULT ModuleFile::F_DriveMapAdd(VectorVariant &vParams, Variant &vResult)
 
         // Use @error for extended information
         if (res == ERROR_ACCESS_DENIED)
-            SetFuncErrorCode(2);                // Access denied
+            engine->SetFuncErrorCode(2);                // Access denied
         else if (res == ERROR_ALREADY_ASSIGNED || res == ERROR_DEVICE_ALREADY_REMEMBERED)
-            SetFuncErrorCode(3);                // Already assigned
+            engine->SetFuncErrorCode(3);                // Already assigned
         else if (res == ERROR_BAD_DEVICE)
-            SetFuncErrorCode(4);                // Bad local device name
+            engine->SetFuncErrorCode(4);                // Bad local device name
         else if (res == ERROR_BAD_NET_NAME)
-            SetFuncErrorCode(5);                // Bad remote name
+            engine->SetFuncErrorCode(5);                // Bad remote name
         else if (res == ERROR_INVALID_PASSWORD)
-            SetFuncErrorCode(6);                // Bad password
+            engine->SetFuncErrorCode(6);                // Bad password
         else
-            SetFuncErrorCode(1);                // General error
+            engine->SetFuncErrorCode(1);                // General error
     }
 
     // Return the drive mapped or "" if * was specified
@@ -1570,7 +1567,7 @@ AUT_RESULT ModuleFile::F_DriveMapGet(VectorVariant &vParams, Variant &vResult)
     if(res != NO_ERROR)
     {
         vResult = "";                            // Default is 1
-        SetFuncErrorCode(1);
+        engine->SetFuncErrorCode(1);
     }
     else
         vResult = szBuffer;
@@ -1612,7 +1609,7 @@ AUT_RESULT ModuleFile::F_DriveGetDrive(VectorVariant &vParams, Variant &vResult)
         uiFlag = DRIVE_UNKNOWN;
     else
     {
-        SetFuncErrorCode(1);
+        engine->SetFuncErrorCode(1);
         return AUT_OK;
     }
 
@@ -1643,7 +1640,7 @@ AUT_RESULT ModuleFile::F_DriveGetDrive(VectorVariant &vParams, Variant &vResult)
         }
     }
     else
-        SetFuncErrorCode(1);
+        engine->SetFuncErrorCode(1);
 
     return AUT_OK;
 
@@ -1733,7 +1730,7 @@ AUT_RESULT ModuleFile::F_DriveGetType(VectorVariant &vParams, Variant &vResult)
         }
     }
     else
-        SetFuncErrorCode(1);
+        engine->SetFuncErrorCode(1);
 
     return AUT_OK;
 
@@ -1763,14 +1760,14 @@ AUT_RESULT ModuleFile::F_DriveSpaceTotal(VectorVariant &vParams, Variant &vResul
         if ( lpfnGetDiskFreeSpaceEx(sTemp.c_str(),&uiFree,&uiTotal,&uiUsed) )
             vResult = double((__int64)(uiTotal.QuadPart))/(1024.*1024.);
         else
-            SetFuncErrorCode(1);
+            engine->SetFuncErrorCode(1);
     }
     else
     {
         if ( GetDiskFreeSpace(sTemp.c_str(), &dwSectPerClust, &dwBytesPerSect, &dwFreeClusters, &dwTotalClusters) )
             vResult = double((__int64)(dwTotalClusters * dwSectPerClust * dwBytesPerSect))/(1024.*1024.);
         else
-            SetFuncErrorCode(1);
+            engine->SetFuncErrorCode(1);
     }
 
     return AUT_OK;
@@ -1802,14 +1799,14 @@ AUT_RESULT ModuleFile::F_DriveSpaceFree(VectorVariant &vParams, Variant &vResult
         if ( lpfnGetDiskFreeSpaceEx(sTemp.c_str(),&uiFree,&uiTotal,&uiUsed) )
             vResult = double((__int64)(uiFree.QuadPart))/(1024.*1024.);
         else
-            SetFuncErrorCode(1);
+            engine->SetFuncErrorCode(1);
     }
     else
     {
         if ( GetDiskFreeSpace(sTemp.c_str(), &dwSectPerClust, &dwBytesPerSect, &dwFreeClusters, &dwTotalClusters) )
             vResult = double((__int64)(dwFreeClusters * dwSectPerClust * dwBytesPerSect))/(1024.*1024.);
         else
-            SetFuncErrorCode(1);
+            engine->SetFuncErrorCode(1);
     }
 
     return AUT_OK;
@@ -1855,7 +1852,7 @@ AUT_RESULT ModuleFile::F_DriveStatus(VectorVariant &vParams, Variant &vResult)
     }
 
     if ( test>0 )
-            SetFuncErrorCode(1);
+            engine->SetFuncErrorCode(1);
 
     return AUT_OK;
 
@@ -1882,7 +1879,7 @@ AUT_RESULT ModuleFile::F_DriveGetFileSystem(VectorVariant &vParams, Variant &vRe
     if ( GetVolumeInformation(sTemp.c_str(),szBuffer,255,&dwVolumeSerial,&dwMaxCL,&dwFSFlags,szFileSystem,255) )
         vResult = szFileSystem;
     else
-        SetFuncErrorCode(1);
+        engine->SetFuncErrorCode(1);
 
     return AUT_OK;
 
@@ -1912,7 +1909,7 @@ AUT_RESULT ModuleFile::F_DriveGetSerial(VectorVariant &vParams, Variant &vResult
         vResult = szBuffer;
     }
     else
-        SetFuncErrorCode(1);
+        engine->SetFuncErrorCode(1);
 
     return AUT_OK;
 
@@ -1939,7 +1936,7 @@ AUT_RESULT ModuleFile::F_DriveGetLabel(VectorVariant &vParams, Variant &vResult)
     if ( GetVolumeInformation(sTemp.c_str(),szBuffer,255,&dwVolumeSerial,&dwMaxCL,&dwFSFlags,szFileSystem,255) )
         vResult = szBuffer;
     else
-        SetFuncErrorCode(1);
+        engine->SetFuncErrorCode(1);
 
     return AUT_OK;
 
@@ -2007,7 +2004,7 @@ AUT_RESULT ModuleFile::F_FileCreateShortcut(VectorVariant &vParams, Variant &vRe
         if ( iNumParams > 6 && vParams[6].isTrue())        // Hotkey may be blank
         {
             // Get the virtual key code and modifiers
-            if (m_oSendKeys.GetSingleVKandMods(vParams[6].szValue(), vk, bShift, bControl, bAlt, bWin) == true)
+            if (engine->m_oSendKeys.GetSingleVKandMods(vParams[6].szValue(), vk, bShift, bControl, bAlt, bWin) == true)
             {
                 if (bShift)
                     mods |= HOTKEYF_SHIFT;
@@ -2067,7 +2064,7 @@ AUT_RESULT ModuleFile::F_FileGetShortcut(VectorVariant &vParams, Variant &vResul
     if (sLink.find_str(".lnk", false) == sLink.length())
         sLink += ".lnk";
 
-    SetFuncErrorCode(1);
+    engine->SetFuncErrorCode(1);
     if (Util_DoesFileExist(sLink.c_str()))
     {
         CoInitialize(NULL);
@@ -2105,7 +2102,7 @@ AUT_RESULT ModuleFile::F_FileGetShortcut(VectorVariant &vParams, Variant &vResul
                     psl->GetShowCmd(&nShowCmd);
                     pvTemp = Util_VariantArrayGetRef(&vResult,6);
                     *pvTemp = nShowCmd;
-                    SetFuncErrorCode(0);
+                    engine->SetFuncErrorCode(0);
                 }
                 ppf->Release();
             }
@@ -2335,7 +2332,7 @@ AUT_RESULT ModuleFile::F_FileGetAttrib (VectorVariant &vParams, Variant &vResult
             aRet += "T";
     }
     else
-        SetFuncErrorCode(1);
+        engine->SetFuncErrorCode(1);
 
     vResult = aRet.c_str();
     return AUT_OK;
@@ -2562,7 +2559,7 @@ AUT_RESULT ModuleFile::F_FileGetVersion (VectorVariant &vParams, Variant &vResul
     else
     {
         vResult = "0.0.0.0";
-        SetFuncErrorCode(1);
+        engine->SetFuncErrorCode(1);
     }
 
     delete [] szFile;
@@ -2659,7 +2656,7 @@ AUT_RESULT    ModuleFile::F_FileFindNextFile(VectorVariant &vParams, Variant &vR
     // Get the next file
     if ( !FindNextFile(m_FileHandleDetails[nHandle]->hFind, &wfd) )
     {
-        SetFuncErrorCode(1);                    // No more files
+        engine->SetFuncErrorCode(1);                    // No more files
         vResult = "";
     }
     else
@@ -2683,7 +2680,7 @@ AUT_RESULT ModuleFile::F_FileGetLongName(VectorVariant &vParams, Variant &vResul
     else
     {
         vResult = vParams[0].szValue();
-        SetFuncErrorCode(1);                    // Error
+        engine->SetFuncErrorCode(1);                    // Error
     }
 
     return AUT_OK;
@@ -2703,7 +2700,7 @@ AUT_RESULT ModuleFile::F_FileGetShortName(VectorVariant &vParams, Variant &vResu
         vResult = szBuffer;
     else
     {
-        SetFuncErrorCode(1);
+        engine->SetFuncErrorCode(1);
         vResult = vParams[0].szValue();
     }
 
@@ -2885,7 +2882,7 @@ AUT_RESULT ModuleFile::F_DirGetSize(VectorVariant &vParams, Variant &vResult)
     if (!Util_IsDir(sInputPath.c_str()))
     {
         vResult = -1;
-        SetFuncErrorCode(1);
+        engine->SetFuncErrorCode(1);
         return AUT_OK;
     }
 
