@@ -1,0 +1,2 @@
+nnoremap tb :AsyncRun -auto=nmake
+set path+=src
