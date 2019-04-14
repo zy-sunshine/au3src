@@ -106,6 +106,10 @@ typedef unsigned long         ulong;
     #define AUT_DEBUGMESSAGEBOX(szText)
 #endif
 
+// Extra @SW_ macros used by AutoIt
+#define SW_ENABLE            64
+#define SW_DISABLE            65
+
 
 ///////////////////////////////////////////////////////////////////////////////
 

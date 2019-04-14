@@ -39,11 +39,8 @@ SOURCES = \
     src/script.cpp \
     src/script_file.cpp \
     src/script_gui.cpp \
-    src/script_lexer.cpp \
     src/script_math.cpp \
     src/script_misc.cpp \
-    src/script_parser.cpp \
-    src/script_parser_exp.cpp \
     src/script_process.cpp \
     src/script_registry.cpp \
     src/script_string.cpp \
@@ -68,6 +65,9 @@ SOURCES = \
 # application.cpp
 # AutoIt.cpp
 # cmdline.cpp
+# src/script_parser.cpp
+# src/script_parser_exp.cpp
+# src/script_lexer.cpp
 
 HEADERS = \
     src/astring_datatype.h \

@@ -1,8 +1,7 @@
 /AutoIt_*.db
 /AutoIt_*.vcxproj.user
 /AutoIt_*.opendb
-*.swp
-*.swo
+*.sw*
 .vs
 /debug/
 /release/
