@@ -1,5 +1,6 @@
 AutoIt_*.db
 AutoIt_*.vcxproj.filters
+AutoIt_*.opendb
 *.swp
 .vs
 debug/
