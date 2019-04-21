@@ -3,6 +3,8 @@
 #include "AutoIt.h"
 #include "Engine/Engine.h"
 
+WinUtil WinUtil::instance = WinUtil();
+
 //////////////////////////////////////////////////////////////////////////
 // ConvertCoords()
 //
@@ -34,3 +36,23 @@ void WinUtil::ConvertCoords(int nCoordMode, POINT &pt)
     }
 
 }    // ConvertCoords()
+
+///////////////////////////////////////////////////////////////////////////////
+// FormatWinError()
+//
+// This function retrieves the error text for the given windows error.
+///////////////////////////////////////////////////////////////////////////////
+
+const char * WinUtil::FormatWinError(DWORD dwCode)
+{
+    static char szBuffer[AUT_STRBUFFER+1];
+
+    if (dwCode == 0xffffffff)
+        FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, GetLastError(), 0, szBuffer, AUT_STRBUFFER, NULL);
+    else
+        FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, dwCode, 0, szBuffer, AUT_STRBUFFER, NULL);
+
+    return szBuffer;
+
+} // FormatWinError()
+

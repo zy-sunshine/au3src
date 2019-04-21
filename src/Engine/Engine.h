@@ -63,19 +63,26 @@
 #include "Engine/Parser/Parser.h"
 #include "Engine/VariableTable.h"
 #include "Engine/UserFuncList.h"
+#include "Engine/ScriptFile.h"
 
 #include "Utils/OSVersion.h"
 #include "Utils/SendKeys.h"
+#include "Utils/SetForegroundWinEx.h"
 
 // Possible states of the script
 enum
 {
     AUT_RUN, AUT_QUIT,
     AUT_SLEEP,
-    AUT_WINWAIT, AUT_WINWAITCLOSE,
-    AUT_WINWAITACTIVE, AUT_WINWAITNOTACTIVE,
+
+    AUT_WINWAIT,
+    AUT_WINWAITCLOSE,
+    AUT_WINWAITACTIVE,
+    AUT_WINWAITNOTACTIVE,
     AUT_RUNWAIT,
-    AUT_PROCESSWAIT, AUT_PROCESSWAITCLOSE,
+    AUT_PROCESSWAIT,
+    AUT_PROCESSWAITCLOSE,
+
     AUT_INETGET,
     AUT_PAUSED                                    // Not actually used except for a ProcessMessages() return value
 };
@@ -279,6 +286,8 @@ typedef struct _WinListNode
     struct _WinListNode    *lpNext;                // next node (or NULL)
 } WinListNode;
 
+typedef bool        (*HandleFunc)(void);
+
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -295,17 +304,15 @@ public:
 
     AUT_RESULT        InitScript(char *szFile);    // Perform setup of a loaded script
     int                ProcessMessages();
-//    AUT_RESULT        Execute(int nScriptLine=0);    // Run script at this line number
+    AUT_RESULT        Execute(int nScriptLine=0);    // Run script at this line number
     int             GetCurLineNumber (void) const { return m_nErrorLine; }  // Return current line number for TrayTip debugging
 
-public:
+private:
     // Variables
     HS_SendKeys     m_oSendKeys;                // SendKeys object
     AString         m_sScriptName;                // Filename of script
     AString         m_sScriptFullPath;            // Full pathname of script
     AString         m_sScriptDir;                // Directory the script is in
-
-    HWND            m_hWndTip;                    // ToolTip window
 
     int             m_nExecuteRecursionLevel;    // Keeps track of the recursive calls of Execute()
     int             m_nErrorLine;                // Line number used to generate error messages
@@ -320,23 +327,59 @@ public:
     bool            m_bExpandEnvStrings;        // Determines if %Env% are expanded in strings
     bool            m_bExpandVarStrings;        // Determines if $Env$ @Env@ are expanded in strings
     bool            m_bMustDeclareVars;            // Must declare variables efore use
-    int             m_nMouseClickDelay;            // Time between mouse clicks
-    int             m_nMouseClickDownDelay;        // Time the click is held down
-    int             m_nMouseClickDragDelay;        // The delay at the start and end of a drag operation
     bool            m_bColorModeBGR;            // True if using the old BGR (rather than RGB) colour mode
     AString         m_sOnExitFunc;                // Name of our OnExit function
     bool            m_bFtpBinaryMode;            // True if binary mode ftp is required
 
-    // Proxy Settings
-    int             m_nHttpProxyMode;
-    AString         m_sHttpProxy;
-    AString         m_sHttpProxyUser;
-    AString         m_sHttpProxyPwd;
-    int             m_nFtpProxyMode;
-    AString         m_sFtpProxy;
-    AString         m_sFtpProxyUser;
-    AString         m_sFtpProxyPwd;
+    // mouse
+    int             m_nMouseClickDelay;            // Time between mouse clicks
+    int             m_nMouseClickDownDelay;        // Time the click is held down
+    int             m_nMouseClickDragDelay;        // The delay at the start and end of a drag operation
 
+public:
+    // TODO: these vars as modules option, can use format like json to save, not
+    // depend on engine.
+    // options setter getter
+    inline int nCoordMouseMode() { return m_nCoordMouseMode; }
+    inline void setCoordMouseMode(int mode) { m_nCoordMouseMode = mode; }
+
+    inline int nCoordPixelMode() { return m_nCoordPixelMode; }
+    inline void setCoordPixelMode(int mode) { m_nCoordPixelMode = mode; }
+
+    inline int nCoordCaretMode() { return m_nCoordCaretMode; }
+    inline void setCoordCaretMode(int mode) { m_nCoordCaretMode = mode; }
+
+    inline bool bRunErrorsFatal() { return m_bRunErrorsFatal; }
+    inline void setRunErrorsFatal(bool opt) { m_bRunErrorsFatal = opt; }
+
+    inline bool bExpandEnvStrings() { return m_bExpandEnvStrings; }
+    inline void setExpandEnvStrings(bool opt) { m_bExpandEnvStrings = opt; }
+
+    inline bool bExpandVarStrings() { return m_bExpandVarStrings; }
+    inline void setExpandVarStrings(bool opt) { m_bExpandVarStrings = opt; }
+
+    inline bool bMustDeclareVars() { return m_bMustDeclareVars; }
+    inline void setMustDeclareVars(bool opt) { m_bMustDeclareVars = opt; }
+
+    inline bool bColorModeBGR() { return m_bColorModeBGR; }
+    inline void setColorModeBGR(bool opt) {m_bColorModeBGR = opt; }
+
+    inline AString sOnExitFunc() { return m_sOnExitFunc; }
+    inline void setOnExitFunc(const AString &func) { m_sOnExitFunc = func; }
+
+    inline bool bFtpBinaryMode() { return m_bFtpBinaryMode; }
+    inline void setFtpBinaryMode(bool opt) { m_bFtpBinaryMode = opt; } 
+
+    int nMouseClickDelay() { return m_nMouseClickDelay; }
+    void setMouseClickDelay(int opt) { m_nMouseClickDelay = opt; }
+
+    int nMouseClickDownDelay() { return m_nMouseClickDownDelay; }
+    void setMouseClickDownDelay(int opt) { m_nMouseClickDownDelay = opt; }
+
+    int nMouseClickDragDelay() { return m_nMouseClickDragDelay; }
+    void setMouseClickDragDelay(int opt) { m_nMouseClickDragDelay = opt; }
+
+private:
     // Net download details
     InetGetDetails  m_InetGetDetails;
 
@@ -356,18 +399,8 @@ public:
     // Statement stacks
     StackStatement    m_StatementStack;            // Stack for tracking If/Func/Select/Loop statements
 
-
-    // File variables
-    int                    m_nNumFileHandles;                        // Number of file handles in use
-    FileHandleDetails    *m_FileHandleDetails[AUT_MAXOPENFILES];    // Array contains file handles for File functions
-
     // DLL variables
     HINSTANCE            m_DLLHandleDetails[AUT_MAXOPENFILES];
-
-    // HotKey stuff
-    HotKeyDetails    *m_HotKeyDetails[AUT_MAXHOTKEYS];    // Array for tracking hotkey details
-    int                m_nHotKeyQueuePos;                    // Position in the global hotkey queue
-
 
     // Lexing and parsing vars
 #ifdef AUT_CONFIG_LEXERCACHE
@@ -379,50 +412,20 @@ public:
     AU3_FuncInfo       *m_FuncList;                // List of functions and details for each
     int                m_nFuncListSize;            // Number of functions
 
-    // Window related vars
-    Variant            m_vWindowSearchTitle;        // Title/text used for win searches
-    Variant            m_vWindowSearchText;        // Title/text used for win searches
-//    bool            m_bWinSearchFoundFlag;        // Temp var used in Window searches
-    HWND               m_WindowSearchHWND;            // Temp var used in Window searches
     int                m_nWindowSearchMatchMode;    // Window title substring match mode
     int                m_nWindowSearchTextMode;    // Window title substring match mode
-    WinListNode        *m_lpWinListFirst;            // First entry in window list
-    WinListNode        *m_lpWinListLast;            // First entry in window list
-    int                m_nWinListCount;            // Number of entries
+
     bool            m_bDetectHiddenText;        // Detect hidden window text in window searches?
     bool            m_bWinSearchChildren;        // Search just top level windows or children too?
-    bool            m_bWindowSearchFirstOnly;    // When true will only find the first matching window (otherwise all)
 
-    DWORD            m_nWinWaitTimeout;            // Time (ms) left before timeout (0=no timeout)
     int                m_nWinWaitDelay;            // 500 = default (wait this long after a window is matched)
-    DWORD            m_tWinTimerStarted;            // Time in millis that timer was started
-
-    int                m_nControlSearchMethod;        // Temp variable used in the search functions
-    Variant            m_vControlSearchValue;        // The ID, classname or text to search for
-    uint            m_iControlSearchInstance;    // Variable to keep track of class instance during search
-    bool            m_bControlSearchFoundFlag;    // Temp variable used in the search functions
-    HWND            m_ControlSearchHWND;        // Contains HWND of a successful control search
-
-
-    // Process related vars
-    AString            m_sProcessSearchTitle;        // Name of process to wait for
-    DWORD            m_nProcessWaitTimeout;        // Time (ms) left before timeout (0=no timeout)
-    DWORD            m_tProcessTimerStarted;        // Time in millis that timer was started
-    HANDLE            m_piRunProcess;                // Used in RunWait command
-
-    bool            m_bRunAsSet;                // Flag if we want to use RunAs user/password in the Run function
-    DWORD            m_dwRunAsLogonFlags;        // RunAs logon flags
-    wchar_t            *m_wszRunUser;                // User name for RunAs (wide char)
-    wchar_t            *m_wszRunDom;                // Domain name for RunAs (wide char)
-    wchar_t            *m_wszRunPwd;                // Password for RunAs (wide char)
-
 
     // ADLIB related vars
-    AString            m_sAdlibFuncName;            // The name of the current adlib function
+    AString         m_sAdlibFuncName;            // The name of the current adlib function
     bool            m_bAdlibEnabled;            // True if an adlib function is specified
     bool            m_bAdlibInProgress;            // True if we are currently running adlib function
-    DWORD            m_tAdlibTimerStarted;        // Time in millis that timer was started
-    DWORD            m_nAdlibTimeout;            // Time (ms) left before timeout (0=no timeout)
+    DWORD           m_tAdlibTimerStarted;        // Time in millis that timer was started
+    DWORD           m_nAdlibTimeout;            // Time (ms) left before timeout (0=no timeout)
 
 
     // GUI related vars
@@ -431,18 +434,68 @@ public:
 
     // WinList() structs and vars
 
+    HandleFunc *_handleAdlib;
+    HandleFunc *_handleHotkey;
+    HandleFunc *_handleGuiEvent;
+
 public:
-    Parser*      parser;
+    int nWindowSearchMatchMode() { return m_nWindowSearchMatchMode; }
+    void setWindowSearchMatchMode(int mode) { m_nWindowSearchMatchMode = mode; }
+
+    int nWindowSearchTextMode() { return m_nWindowSearchTextMode; }
+    void setWindowSearchTextMode(int mode) { m_nWindowSearchTextMode = mode; }
+
+    bool bDetectHiddenText() { return m_bDetectHiddenText; }
+    void setDetectHiddenText(bool opt) { m_bDetectHiddenText = opt; }
+
+    int nWinWaitDelay() { return m_nWinWaitDelay; }
+    void setWinWaitDelay(int opt) { m_nWinWaitDelay = opt; }
+
+    bool bWinSearchChildren() { return m_bWinSearchChildren; }
+    void setWinSearchChildren(bool opt) { m_bWinSearchChildren = opt; }
+
+    AString sAdlibFuncName() { return m_sAdlibFuncName; }
+    void setAdlibFuncName(const AString &name) { m_sAdlibFuncName = name; }
+
+    DWORD tAdlibTimerStarted() { return m_tAdlibTimerStarted; }
+    void setAdlibTimerStarted(DWORD val) { m_tAdlibTimerStarted = val; }
+
+    bool bAdlibEnabled() { return m_bAdlibEnabled; }
+    void setAdlibEnabled(bool opt) { m_bAdlibEnabled = opt; }
+
+    DWORD nAdlibTimeout() { return m_nAdlibTimeout; }
+    void setAdlibTimeout(DWORD timeout) { m_nAdlibTimeout = timeout; }
+
+private:
+    Parser*      _parser;
+
+public:
+    inline Parser* parser() { return _parser; }
+    inline void quit() { m_nCurrentOperation = AUT_QUIT; }
+    //inline void setUserRetVal(Variant &v) { m_vUserRetVal = v; }
+    //inline Variant userRetVal() { return m_vUserRetVal; }
+    AUT_RESULT call(const char* szName, Variant &vResult);
+
+    AUT_RESULT interruptCall(const char* szName, Variant &vResult);
+
+    AUT_RESULT eval(const char* szName, Variant &vResult);
+
+    AUT_RESULT assign(const char* szName, Variant &vValue, int nReqScope, bool bCreate, Variant &vResult);
+
+    int isDeclared(const char* szName);
+
+    HS_SendKeys& oSendKeys() { return m_oSendKeys; }
 
 public:
     // Functions
     void        SaveExecute(int nScriptLine, bool bRaiseScope, bool bRestoreErrorCode);        // Save state and then Execute()
     void        FatalError(int iErr, int nCol = -1);                // Output an error and signal quit (String resource errors)
     void        FatalError(int iErr, const char *szText2);            // Output an error and signal quit (passed text errors)
-    const char * FormatWinError(DWORD dwCode = 0xffffffff);            // Gets the string output for a Windows error code
 
     void        SetFuncErrorCode(int nCode)
-                    {m_nFuncErrorCode = nCode;};                    // Set script error info (@error code)
+                    {m_nFuncErrorCode = nCode;}                    // Set script error info (@error code)
+    inline int nFuncErrorCode() { return m_nFuncErrorCode; }
+
     void        SetFuncExtCode(int nCode)
                     {m_nFuncExtCode = nCode;};                        // Set script extended info (@extended code)
 
@@ -453,10 +506,58 @@ public:
 
     AUT_RESULT    StorePluginFuncs(void);                                // Get all plugin function details
 
-    bool        HandleDelayedFunctions(void);                        // Handle delayed commands
-    bool        HandleAdlib(void);
-    bool        HandleHotKey(void);
-    bool        HandleGuiEvent(void);
+    //bool        HandleDelayedFunctions(void);                        // Handle delayed commands
+
+    int         processEvents(void);
+
+    void setHandleAdlib(HandleFunc *func) { _handleAdlib = func; }
+    void sethandleHotkey(HandleFunc *func) { _handleHotkey = func; }
+    void setHandleGuiEvent(HandleFunc *func) { _handleGuiEvent = func; }
+
+public:
+    // Global data
+    HINSTANCE               g_hInstance;            // Main application instance
+    
+    HWND                    g_hWnd;                 // Main window handle
+    HWND                    g_hWndEdit;             // Main window edit control handle
+    HWND                    g_hWndProgress;         // Progress window handle
+    HWND                    g_hWndProgBar;          // Progress progressbar control handle
+    HWND                    g_hWndProgLblA;         // Progress Top label control handle
+    HWND                    g_hWndProgLblB;         // Progress Bottom label control handle
+    
+    HWND                    g_hWndSplash;           // Splash window handle
+    HBITMAP                 g_hSplashBitmap;        // Splash window bitmap
+
+    #ifdef AUT_CONFIG_GUI                           // Is GUI enabled?
+    CGuiBox                 g_oGUI;                 // GUI object
+    #endif
+    
+    int                     g_nExitCode;            // Windows exit code
+    int                     g_nExitMethod;          // The way AutoIt finished
+    
+    OS_Version              g_oVersion;             // Version object
+    
+    //AutoIt_App            g_oApplication;         // Main application object
+    //AutoIt_Script         g_oScript;              // The scripting engine object
+    
+    SetForegroundWinEx      g_oSetForeWinEx;        // Foreground window hack object
+    
+    //VariableTable         g_oVarTable;            // Object for accessing autoit variables
+    ScriptFile              g_oScriptFile;          // The script file object
+    
+    
+    // Script/main window comms
+    bool                    g_bScriptPaused;        // True when script is paused
+    bool                    g_bBreakEnabled;        // True when user is allowed to quit script
+    bool                    g_bTrayIcon;            // True when tray icon is displayed
+    bool                    g_bTrayIconInitial;     // Initial state of tray icon
+    bool                    g_bTrayIconDebug;       // True when TrayIcon debugng is allowed
+    bool                    g_bStdOut;              // True when /ErrorStdOut used on the command line
+    bool                    g_bTrayExitClicked;     // True when the user clicks "exit"
+    bool                    g_bKillWorkerThreads;   // True when requesting all thread finish up (script is about to die)
+    
+    WPARAM                  g_HotKeyQueue[AUT_HOTKEYQUEUESIZE];    // Queue for hotkeys pressed
+    int                     g_HotKeyNext;           // Next free hotkey position in queue
 };
 
 ///////////////////////////////////////////////////////////////////////////////

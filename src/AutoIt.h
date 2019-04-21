@@ -108,5 +108,17 @@ typedef unsigned long         ulong;
 #define SW_ENABLE            64
 #define SW_DISABLE            65
 
+// Class and window titles
+#define AUT_APPCLASS        "AutoIt v3"
+#define AUT_APPTITLE        "AutoIt v3"
 
+// Windows timers
+#define AUT_MAIN_TIMER_ID        1
+#define AUT_MAIN_TIMER_DELAY    750                // Tray icon hiding/flashing/drawing is checked every 750ms
+
+// Tray / popup menu identifiers
+#define AUT_WM_NOTIFYICON        WM_USER+1
+#define AUT_NOTIFY_ICON_ID        1
+
+#include "resources/resource.h"
 ///////////////////////////////////////////////////////////////////////////////

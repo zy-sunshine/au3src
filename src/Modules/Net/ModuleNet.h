@@ -4,7 +4,7 @@
 
 class ModuleNet {
 public:
-    ModuleNet(Engine* engine): engine(engine) {}
+    ModuleNet(Engine* engine);
 
     AUT_RESULT    F_HttpSetProxy(VectorVariant &vParams, Variant &vResult);
     AUT_RESULT    F_FtpSetProxy(VectorVariant &vParams, Variant &vResult);
@@ -18,4 +18,14 @@ public:
 
 private:
     Engine* engine;
+
+    // Proxy Settings
+    int             m_nHttpProxyMode;
+    AString         m_sHttpProxy;
+    AString         m_sHttpProxyUser;
+    AString         m_sHttpProxyPwd;
+    int             m_nFtpProxyMode;
+    AString         m_sFtpProxy;
+    AString         m_sFtpProxyUser;
+    AString         m_sFtpProxyPwd;
 };

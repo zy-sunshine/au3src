@@ -44,6 +44,7 @@
 
 // Includes
 #include "StdAfx.h"                                // Pre-compiled headers
+#include "Engine.h"
 
 #ifndef _MSC_VER                                // Includes for non-MS compilers
     #include <stdio.h>
@@ -53,11 +54,6 @@
 //    #include "qmath.h"                            // MinGW doesn't like our asm maths functions
 #endif
 
-#include "AutoIt.h"                                // Autoit values, macros and config options
-
-#include "Engine/globaldata.h"
-#include "Engine.h"
-#include "resources/resource.h"
 #include "Utils/utility.h"
 
 
@@ -94,12 +90,31 @@ Engine::Engine()
 {
     int i;
 
+    // Store initial values and zero important variables (the splash and progress functions
+    // in particular rely on these being NULL to work out their status)
+    g_hWnd                = NULL;                    // Main window
+    g_hWndEdit            = NULL;                    // Edit window
+    g_hWndSplash        = NULL;                    // Splash window handle
+    g_hSplashBitmap        = NULL;                    // Splash window bitmap
+    g_hWndProgress        = NULL;                    // Progress window handle
+    g_hWndProgBar        = NULL;                    // Progress progressbar control handle
+    g_hWndProgLblA        = NULL;                    // Progress Top label control handle
+    g_hWndProgLblB        = NULL;                    // Progress Bottom label control handle
+    g_bTrayIcon            = false;                // Icon not initially visible
+    g_bTrayIconInitial    = true;                    // Usually we want the tray icon to be displayed at start
+    // Script/win communication defaults
+    g_bScriptPaused            = false;
+    g_bBreakEnabled            = true;
+    g_bTrayIconDebug        = false;
+    g_bStdOut                = false;
+    g_bTrayExitClicked        = false;
+    g_bKillWorkerThreads    = false;
+    g_HotKeyNext        = 0;                    // Initial position in hot key buffer
+
     m_bWinQuitProcessed            = false;
 
     m_nCurrentOperation            = AUT_RUN;        // Current operation is to run the script
     m_nExecuteRecursionLevel    = 0;            // Reset our recursion tracker for the Execute() function
-
-    m_hWndTip                    = NULL;            // ToolTip window
 
     m_nErrorLine                = 0;            // Set last line read as 0 by default (application.cpp may try reading it)
     m_nNumParams                = 0;            // Number of UDF parameters initially 0
@@ -115,31 +130,21 @@ Engine::Engine()
     m_sOnExitFunc                = "OnAutoItExit";
     m_bFtpBinaryMode            = true;            // Use binary ftp transfers by default
 
-    m_WindowSearchHWND            = NULL;            // Last window found set to NULL
-    m_bDetectHiddenText            = false;        // Don't detect hidden text by default
-    m_bWinSearchChildren        = false;        // Only search top level windows by default
-    m_nWindowSearchMatchMode    = 1;            // Title match mode default is 1
-    m_nWindowSearchTextMode        = 1;            // Text match mode default is 1
     m_nWinWaitDelay                = 250;            // Wait 250 ms after a window wait operation
-    m_lpWinListFirst            = NULL;            // First entry in window list
-    m_lpWinListLast                = NULL;            // First entry in window list
-    m_nWinListCount                = 0;            // Number of entries
+
+    m_nWindowSearchMatchMode    = 1;           // Title match mode default is 1
+    m_nWindowSearchTextMode     = 1;           // Text match mode default is 1
 
     m_bAdlibEnabled                = false;        // True if an adlib function is specified
     m_bAdlibInProgress            = false;        // True if we are currently running adlib function
 
     m_bGuiEventInProgress        = false;        // True if we are currently running event function
 
-    m_oSendKeys.Init();                            // Init sendkeys to defaults
-
     m_nMouseClickDelay            = 10;            // Time between mouse clicks
     m_nMouseClickDownDelay        = 10;            // Time the click is held down
     m_nMouseClickDragDelay        = 250;            // The delay at the start and end of a drag operation
 
-    // RunAsSet stuff
-    m_bRunAsSet                    = false;        // Don't use RunAs by default
-    m_wszRunUser = m_wszRunDom = m_wszRunPwd = NULL;    // Strings are empty
-
+    m_oSendKeys.Init();                            // Init sendkeys to defaults
 
     // Make sure our lexer cache is set to empty defaults
     for (i=0; i<AUT_LEXER_CACHESIZE; ++i)
@@ -153,17 +158,7 @@ Engine::Engine()
     // Initialise DLL handles to NULL
     for (i=0; i<AUT_MAXOPENFILES; ++i)
         m_DLLHandleDetails[i] = NULL;
-
-    // Initialise hotkeys to NULL 
-    for (i=0; i<AUT_MAXHOTKEYS; ++i)
-        m_HotKeyDetails[i] = NULL;
-    m_nHotKeyQueuePos    = 0;
-
     
-    // Proxy stuff
-    m_nHttpProxyMode = AUT_PROXY_REGISTRY;        // Use whatever IE defaults have been set to
-    m_nFtpProxyMode = AUT_PROXY_REGISTRY;        // Use whatever IE defaults have been set to
-
     // Internet download/upload defaults
     m_InetGetDetails.bInProgress    = false;
     m_InetGetDetails.nBytesRead        = -1;
@@ -445,18 +440,6 @@ Engine::~Engine()
 
     // Free up any thing
 
-    // RunAsSet stuff
-    delete [] m_wszRunUser;                        // NULL if not used, which is OK
-    delete [] m_wszRunDom;
-    delete [] m_wszRunPwd;
-
-    // Clear any WindowSearch() lists
-    Win_WindowSearchDeleteList();
-
-    // Destroy the ToolTip window if required
-    if (m_hWndTip)
-        DestroyWindow(m_hWndTip);
-
     // close SoundPlay handle
 //    char    szBuffer[256] = "";
 //    mciSendString("status PlayMe mode",szBuffer,sizeof(szBuffer),NULL);
@@ -464,18 +447,6 @@ Engine::~Engine()
 //        mciSendString("close PlayMe",NULL,0,NULL);
 // NOTE: The above code was causing hanging in rare cases when SoundPlay wasn't even used
     mciSendString("close all", NULL, 0, NULL);
-
-
-    // Free memory for hotkeys and unregister hotkeys if required
-    for (i=0; i<AUT_MAXHOTKEYS; ++i)
-    {
-        if (m_HotKeyDetails[i] != NULL)
-        {
-            UnregisterHotKey(g_hWnd, (int)m_HotKeyDetails[i]->wParam);
-            delete m_HotKeyDetails[i];            // Delete memory
-        }
-    }
-
 
     // Close any file handles that script writer has not closed (naughty!)
     for (i=0; i<AUT_MAXOPENFILES; ++i)
@@ -618,27 +589,6 @@ void Engine::FatalError(int iErr, const char *szText2)
 
 } // FatalError()
 
-
-///////////////////////////////////////////////////////////////////////////////
-// FormatWinError()
-//
-// This function retrieves the error text for the given windows error.
-///////////////////////////////////////////////////////////////////////////////
-
-const char * Engine::FormatWinError(DWORD dwCode)
-{
-    static char szBuffer[AUT_STRBUFFER+1];
-
-    if (dwCode == 0xffffffff)
-        FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, GetLastError(), 0, szBuffer, AUT_STRBUFFER, NULL);
-    else
-        FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, dwCode, 0, szBuffer, AUT_STRBUFFER, NULL);
-
-    return szBuffer;
-
-} // FormatWinError()
-
-
 ///////////////////////////////////////////////////////////////////////////////
 // InitScript()
 //
@@ -746,135 +696,160 @@ int    Engine::ProcessMessages()
 // user function calls.
 ///////////////////////////////////////////////////////////////////////////////
 
-//AUT_RESULT Engine::Execute(int nScriptLine)
-//{
-//    MSG            msg;
-//    VectorToken    LineTokens;                        // Vector (array) of tokens for a line of script
-//    const char    *szScriptLine;
-//
-//    // Increase the recursion level of this function and check that we've not gone too far
-//    if (m_nExecuteRecursionLevel >= AUT_MAXEXECUTERECURSE)
-//    {
-//        FatalError(IDS_AUT_E_MAXRECURSE);
-//        return AUT_ERR;
-//    }
-//    else
-//        ++m_nExecuteRecursionLevel;
-//
-//    // Is this recursion level 1 (starts as 0 and +1 above)?  If so, we have just started the script so run
-//    // our OnAutoItStart() function if defined
-//    if (m_nExecuteRecursionLevel == 1)
-//    {
-//        int    nTemp1, nTemp2, nTemp3, nTemp4;
-//
-//        if (parser->FindUserFunction("OnAutoItStart", nTemp1, nTemp2, nTemp3, nTemp4) == true)
-//            SaveExecute(nTemp1+1, true, false);    // Run the user function (line after the Func declaration)
-//    }
-//
-//
-//    m_bUserFuncReturned = false;                // When this becomes true, a user function (or winwait
-//                                                // operation has requested to return (or EndFunc encountered)
-//
-//    // Run our Execute() loop
-//    while(m_bWinQuitProcessed == false && m_bUserFuncReturned == false)
-//    {
-//        // Run the windows message loop and handle quit conditions
-//        ProcessMessages();
-//
-//        // If script is in a quit state then don't execute any more code
-//        if (m_nCurrentOperation == AUT_QUIT)
-//            break;                                // Exit while loop
-//
-//        // If we are waiting for something (winwait, sleep, paused, etc) then loop again
-//        if (HandleDelayedFunctions() == true)
-//            continue;
-//
-//        // Get the next line, or quit if none left
-//        m_nErrorLine = nScriptLine;                // Keep track for errors
-//        szScriptLine = g_oScriptFile.GetLine(nScriptLine++);
-//        if ( szScriptLine == NULL )
-//        {
-//            m_nCurrentOperation = AUT_QUIT;
-//            continue;                            // Back to the start of the while loop
-//        }
-//
-//        // Do the lexing (convert the line into tokens) - stored in LineTokens
-//        Lexer(nScriptLine-1, szScriptLine, LineTokens);                // No need to check for errors, already lexed in InitScript()
-//
-//        // Parse and execute the line
-//        Parser(LineTokens, nScriptLine);
-//
-//    } // End While
-//
-//
-//    // Reset the UserFunction flag before returning (in case Execute() was called recursively)
-//    m_bUserFuncReturned = false;
-//
-//    // Is this the final call of Execute() - Level = 1 when finishing completely
-//    if (m_nExecuteRecursionLevel != 1)
-//    {
-//        --m_nExecuteRecursionLevel;
-//        return AUT_OK;                            // Not completely finishing, just return normally
-//    }
-//
-//    //
-//    // If we are here then we are completely finishing
-//    //
-//
-//    // Ask worker threads to close
-//    g_bKillWorkerThreads = true;
-//
-//    while (m_InetGetDetails.bInProgress)        // Wait for the thread to finish nicely
-//        Sleep(AUT_IDLE);
-//
-//
-//    // Destroy GUI (no longer always a child of the main window so we clean up manually...)
-//#ifdef AUT_CONFIG_GUI                            // Is GUI enabled?
-//    g_oGUI.DeleteAll();
-//#endif
-//
-//    // Did we recieve a WM_QUIT message above?  If so the message loop and windows are dead
-//    // so we might as well quit now (any attempt to call an exit function would fail with no windows...)
-//    // NOTE: WM_QUIT is only EVER posted by the main window's WM_DESTROY code so it is safe to assume
-//    // that if WM_QUIT then the main window has already run WM_DESTROY
-//    if (m_bWinQuitProcessed == true)
-//        return AUT_OK;
-//
-//
-//    // Run our OnExit function if it exists
-//    int    nTemp1, nTemp2, nTemp3, nTemp4;
-//
-//    if (parser->FindUserFunction(m_sOnExitFunc.c_str(), nTemp1, nTemp2, nTemp3, nTemp4) == true)
-//    {
-//        // Set global vars for @ExitCode and @ExitMethod - Note these names CANNOT usually
-//        // exist because they start with @ :)
-//        Variant        vTemp;
-//
-//        vTemp = g_nExitCode;
-//        g_oVarTable.Assign("@ExitCode", vTemp, true, VARTABLE_FORCEGLOBAL);
-//        vTemp = g_nExitMethod;
-//        g_oVarTable.Assign("@ExitMethod", vTemp, true, VARTABLE_FORCEGLOBAL);
-//
-//        m_nCurrentOperation = AUT_RUN;        // Get back into a run state for the final push :)
-//        SaveExecute(nTemp1+1, true, false);    // Run the user function (line after the Func declaration)
-//        m_nCurrentOperation = AUT_QUIT;
-//    }
-//
-//
-//    // Destroy our main window (Calls WM_DESTROY on our and any child windows)
-//    DestroyWindow(g_hWnd);
-//
-//    // Get all remaining window messages until the quit WM_QUIT message is received as a result
-//    // of the DestroyWindow and WM_DESTROY processing
-//    while (GetMessage(&msg, NULL, 0, 0))
-//    {
-//        TranslateMessage(&msg);
-//        DispatchMessage(&msg);
-//    }
-//
-//    return AUT_OK;
-//
-//} // Execute()
+AUT_RESULT Engine::Execute(int nScriptLine)
+{
+    MSG            msg;
+    VectorToken    LineTokens;                        // Vector (array) of tokens for a line of script
+    const char    *szScriptLine;
+
+    // Increase the recursion level of this function and check that we've not gone too far
+    if (m_nExecuteRecursionLevel >= AUT_MAXEXECUTERECURSE)
+    {
+        FatalError(IDS_AUT_E_MAXRECURSE);
+        return AUT_ERR;
+    }
+    else
+        ++m_nExecuteRecursionLevel;
+
+    // Is this recursion level 1 (starts as 0 and +1 above)?  If so, we have just started the script so run
+    // our OnAutoItStart() function if defined
+    if (m_nExecuteRecursionLevel == 1)
+    {
+        int    nTemp1, nTemp2, nTemp3, nTemp4;
+
+        if (_parser->FindUserFunction("OnAutoItStart", nTemp1, nTemp2, nTemp3, nTemp4) == true)
+            SaveExecute(nTemp1+1, true, false);    // Run the user function (line after the Func declaration)
+    }
+
+
+    m_bUserFuncReturned = false;                // When this becomes true, a user function (or winwait
+                                                // operation has requested to return (or EndFunc encountered)
+
+    // Run our Execute() loop
+    while(m_bWinQuitProcessed == false && m_bUserFuncReturned == false)
+    {
+        processEvents();
+
+        // Get the next line, or quit if none left
+        m_nErrorLine = nScriptLine;                // Keep track for errors
+        szScriptLine = g_oScriptFile.GetLine(nScriptLine++);
+        if ( szScriptLine == NULL )
+        {
+            m_nCurrentOperation = AUT_QUIT;
+            continue;                            // Back to the start of the while loop
+        }
+
+        // Do the lexing (convert the line into tokens) - stored in LineTokens
+        Lexer(nScriptLine-1, szScriptLine, LineTokens);                // No need to check for errors, already lexed in InitScript()
+
+        // Parse and execute the line
+        Parser(LineTokens, nScriptLine);
+
+    } // End While
+
+
+    // Reset the UserFunction flag before returning (in case Execute() was called recursively)
+    m_bUserFuncReturned = false;
+
+    // Is this the final call of Execute() - Level = 1 when finishing completely
+    if (m_nExecuteRecursionLevel != 1)
+    {
+        --m_nExecuteRecursionLevel;
+        return AUT_OK;                            // Not completely finishing, just return normally
+    }
+
+    //
+    // If we are here then we are completely finishing
+    //
+
+    // Ask worker threads to close
+    g_bKillWorkerThreads = true;
+
+    while (m_InetGetDetails.bInProgress)        // Wait for the thread to finish nicely
+        Sleep(AUT_IDLE);
+
+
+    // Destroy GUI (no longer always a child of the main window so we clean up manually...)
+#ifdef AUT_CONFIG_GUI                            // Is GUI enabled?
+    g_oGUI.DeleteAll();
+#endif
+
+    // Did we recieve a WM_QUIT message above?  If so the message loop and windows are dead
+    // so we might as well quit now (any attempt to call an exit function would fail with no windows...)
+    // NOTE: WM_QUIT is only EVER posted by the main window's WM_DESTROY code so it is safe to assume
+    // that if WM_QUIT then the main window has already run WM_DESTROY
+    if (m_bWinQuitProcessed == true)
+        return AUT_OK;
+
+
+    // Run our OnExit function if it exists
+    int    nTemp1, nTemp2, nTemp3, nTemp4;
+
+    if (_parser->FindUserFunction(m_sOnExitFunc.c_str(), nTemp1, nTemp2, nTemp3, nTemp4) == true)
+    {
+        // Set global vars for @ExitCode and @ExitMethod - Note these names CANNOT usually
+        // exist because they start with @ :)
+        Variant        vTemp;
+
+        vTemp = g_nExitCode;
+        g_oVarTable.Assign("@ExitCode", vTemp, true, VARTABLE_FORCEGLOBAL);
+        vTemp = g_nExitMethod;
+        g_oVarTable.Assign("@ExitMethod", vTemp, true, VARTABLE_FORCEGLOBAL);
+
+        m_nCurrentOperation = AUT_RUN;        // Get back into a run state for the final push :)
+        SaveExecute(nTemp1+1, true, false);    // Run the user function (line after the Func declaration)
+        m_nCurrentOperation = AUT_QUIT;
+    }
+
+
+    // Destroy our main window (Calls WM_DESTROY on our and any child windows)
+    DestroyWindow(g_hWnd);
+
+    // Get all remaining window messages until the quit WM_QUIT message is received as a result
+    // of the DestroyWindow and WM_DESTROY processing
+    while (GetMessage(&msg, NULL, 0, 0))
+    {
+        TranslateMessage(&msg);
+        DispatchMessage(&msg);
+    }
+
+    return AUT_OK;
+
+} // Execute()
+
+
+int Engine::processEvents()
+{
+    // Run the windows message loop and handle quit conditions
+    int msg = ProcessMessages();
+
+    // If script is in a quit state then don't execute any more code
+    if (msg == AUT_QUIT) {
+        return AUT_QUIT;
+    }
+
+    // Handle hotkeys first (even if paused - eventually we will and an unpause function to make this useful)
+    if (_handleHotKey && _handleHotKey() == true) {
+        return msg;
+    }
+
+    // If the script is paused, sleep then loop again
+    if (g_bScriptPaused == true)
+    {
+        Sleep(AUT_IDLE);                    // Quick sleep to reduce CPU load
+        return msg;
+    }
+
+    // If we need to, run an adlib section
+    if (_handleAdlib && _handleAdlib() == true) {
+        return msg;
+    }
+
+    // If we need to, run a GUI event function
+    if (_handleGuiEvent && _handleGuiEvent() == true) {
+        return msg;
+    }
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -883,55 +858,13 @@ int    Engine::ProcessMessages()
 // Handles the processing of delayed commands, Sleep, WinWait, RunWait, etc.
 ///////////////////////////////////////////////////////////////////////////////
 
-bool Engine::HandleDelayedFunctions(void)
-{
-    // Handle hotkeys first (even if paused - eventually we will and an unpause function to make this useful)
-    if (HandleHotKey() == true)
-        return true;
-
-    // If the script is paused, sleep then loop again
-    if (g_bScriptPaused == true)
-    {
-        Sleep(AUT_IDLE);                    // Quick sleep to reduce CPU load
-        return true;
-    }
-
-    // If we need to, run an adlib section
-    if (HandleAdlib() == true)
-        return true;
-
-    // If we need to, run a GUI event function
-    if (HandleGuiEvent() == true)
-        return true;
-
-    // Check for RunWait commands to finish
-    if (m_nCurrentOperation == AUT_RUNWAIT)
-    {
-        DWORD dwexitcode;
-        GetExitCodeProcess(m_piRunProcess, &dwexitcode);
-
-        if (dwexitcode != STILL_ACTIVE)
-        {
-            CloseHandle(m_piRunProcess);    // Close handle
-            m_vUserRetVal = (int)dwexitcode;// Set exit code
-            m_bUserFuncReturned = true;        // Request exit from Execute()
-            m_nCurrentOperation = AUT_RUN;    // Continue script
-        }
-        else
-            Sleep(AUT_IDLE);                // Quick sleep to reduce CPU load
-
-        return true;                        // Next loop
-    }
-
-    // If required, process any processwait style commands
-    if (HandleProcessWait())
-        return true;
-
-
-    // If required, process any winwait style commands
-    return Win_HandleWinWait();
-
-} // HandleDelayedFunctions()
+// TODO: delete
+//bool Engine::HandleDelayedFunctions(void)
+//{
+//    // If required, process any winwait style commands
+//    return Win_HandleWinWait();
+//
+//} // HandleDelayedFunctions()
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1240,7 +1173,7 @@ AUT_RESULT Engine::VerifyUserFuncCalls(void)
         {
             if (LineTokens[ivPos].m_nType == TOK_USERFUNCTION)
             {
-                if (parser->FindUserFunction(LineTokens[ivPos].szValue, nLineNum, nNumParams, nNumParamsMin, nEndLineNum) == false)
+                if (_parser->FindUserFunction(LineTokens[ivPos].szValue, nLineNum, nNumParams, nNumParamsMin, nEndLineNum) == false)
                 {
                     FatalError(IDS_AUT_E_UNKNOWNUSERFUNC, LineTokens[ivPos].m_nCol);
                     return AUT_ERR;
@@ -1320,7 +1253,7 @@ bool Engine::HandleAdlib(void)
     // exists)
     int        nLineNum, nNumParams, nNumParamsMin, nEndLineNum;
 
-    parser->FindUserFunction(m_sAdlibFuncName.c_str(), nLineNum, nNumParams, nNumParamsMin, nEndLineNum);
+    _parser->FindUserFunction(m_sAdlibFuncName.c_str(), nLineNum, nNumParams, nNumParamsMin, nEndLineNum);
     ++nLineNum;                                    // Skip function declaration
 
     // Save current operation (may be waiting)
@@ -1345,60 +1278,6 @@ bool Engine::HandleAdlib(void)
                                                 // progress in Execute() and restart the loop
 } // HandleAdlib()
 
-
-///////////////////////////////////////////////////////////////////////////////
-// HandleHotKey()
-//
-// Handles the processing of a hotkey and calls a function
-///////////////////////////////////////////////////////////////////////////////
-
-bool Engine::HandleHotKey(void)
-{
-    // See if there is a hotkey request in the queue - only process one per loop!
-    if (m_nHotKeyQueuePos == g_HotKeyNext)
-        return false;
-
-    // What ID is the hotkey pressed?  Also increment the position and reset if needed
-    WPARAM wParam = g_HotKeyQueue[m_nHotKeyQueuePos++];
-    if (m_nHotKeyQueuePos >= AUT_HOTKEYQUEUESIZE)
-        m_nHotKeyQueuePos = 0;                    // reset
-
-    // Find the corresponding hotkey definition and function
-    int        n;
-
-    for (n = 0; n < AUT_MAXHOTKEYS; ++n)
-    {
-        if (m_HotKeyDetails[n] != NULL && m_HotKeyDetails[n]->wParam == wParam)
-            break;
-    }
-    if (n == AUT_MAXHOTKEYS)
-        return false;                            // Not found the ID! Ignore
-
-
-    // Get the details of the function (we should have previously checked that it
-    // exists!)
-    int        nLineNum, nNumParams, nNumParamsMin, nEndLineNum;
-
-    parser->FindUserFunction(m_HotKeyDetails[n]->sFunction.c_str(), nLineNum, nNumParams, nNumParamsMin, nEndLineNum);
-    ++nLineNum;                                    // Skip function declaration
-
-    // Save current operation (may be waiting)
-    int nCurrentOperation    = m_nCurrentOperation;
-
-    // Continue execution with the user function (using recursive call of Execute() )
-    m_nCurrentOperation = AUT_RUN;                // Change mode to run script (may have been waiting)
-
-    SaveExecute(nLineNum, true, true);            // Save state and recursively call Execute()
-
-    // If the function caused the script to end, we must honour the request rather than restoring
-    if (m_nCurrentOperation != AUT_QUIT)
-        m_nCurrentOperation    = nCurrentOperation;
-
-    return true;                                // Returning true will stop further
-                                                // progress in Execute() and start the loop again
-} // HandleHotKey()
-
-
 ///////////////////////////////////////////////////////////////////////////////
 // HandleGuiEvent()
 //
@@ -1413,8 +1292,8 @@ bool Engine::HandleGuiEvent(void)
     if (g_oGUI.m_bGuiEventEnabled == false || m_bGuiEventInProgress == true)
         return false;
 
-    GUIEVENT    Event;
-    int            nLineNum, nNumParams, nNumParamsMin, nEndLineNum;
+    GUIEVENT   Event;
+    int        nLineNum, nNumParams, nNumParamsMin, nEndLineNum;
 
     // Get the messages until there are no more
     while (g_oGUI.GetMsg(Event))
@@ -1426,7 +1305,8 @@ bool Engine::HandleGuiEvent(void)
         // Callback
 
         // Check that this user function exists
-        if (parser->FindUserFunction(Event.sCallback.c_str(), nLineNum, nNumParams, nNumParamsMin, nEndLineNum) == false)
+        if (_parser->FindUserFunction(Event.sCallback.c_str(),
+                nLineNum, nNumParams, nNumParamsMin, nEndLineNum) == false)
             continue;
         else
         {
@@ -1482,26 +1362,8 @@ bool Engine::HandleGuiEvent(void)
 
 void Engine::SaveExecute(int nScriptLine, bool bRaiseScope, bool bRestoreErrorCode)
 {
-    // Saved state vars - Win related
-    Variant            vWindowSearchTitle;            // Title/text used for winwait commands
-    vWindowSearchTitle        = m_vWindowSearchTitle;
-
-    Variant            vWindowSearchText;            // Title/text used for winwait commands
-    vWindowSearchText        = m_vWindowSearchText;
-
-    DWORD            nWinWaitTimeout        = m_nWinWaitTimeout;    // Time (ms) left before timeout (0=no timeout)
-    HWND            WindowSearchHWND    = m_WindowSearchHWND;    // Last window searched for
-    DWORD            tWinTimerStarted    = m_tWinTimerStarted;    // Time in millis that timer was started
-
     // Saved state vars - Control related
     Variant            vControlSearchValue;                        // The ID, classname or text to search for 
-    vControlSearchValue        = m_vControlSearchValue;
-    HWND            ControlSearchHWND = m_ControlSearchHWND;    // Contains HWND of a successful control search
-
-    // Process related vars
-    AString            sProcessSearchTitle        = m_sProcessSearchTitle;    // Name of process to wait for
-    DWORD            nProcessWaitTimeout        = m_nProcessWaitTimeout;    // Time (ms) left before timeout (0=no timeout)
-    DWORD            tProcessTimerStarted    = m_tProcessTimerStarted;    // Time in millis that timer was started
 
     // Function call related
     int                nNumParams = m_nNumParams;    // Number of parameters passed to a UDF
@@ -1534,20 +1396,6 @@ void Engine::SaveExecute(int nScriptLine, bool bRaiseScope, bool bRestoreErrorCo
     while (nStackSize < m_StatementStack.size())
         m_StatementStack.pop();
 
-
-    // Restore "state"
-    m_vWindowSearchTitle    = vWindowSearchTitle;
-    m_vWindowSearchText        = vWindowSearchText;
-    m_nWinWaitTimeout        = nWinWaitTimeout;
-    m_WindowSearchHWND        = WindowSearchHWND;
-    m_tWinTimerStarted        = tWinTimerStarted;
-
-    m_vControlSearchValue    = vControlSearchValue;
-    m_ControlSearchHWND        = ControlSearchHWND;
-
-    m_sProcessSearchTitle    = sProcessSearchTitle;
-    m_nProcessWaitTimeout    = nProcessWaitTimeout;
-    m_tProcessTimerStarted    = tProcessTimerStarted;
     m_nNumParams            = nNumParams;
     m_nErrorLine            = nErrorLine;
 
@@ -1561,3 +1409,93 @@ void Engine::SaveExecute(int nScriptLine, bool bRaiseScope, bool bRestoreErrorCo
 } // SaveExecute()
 
 
+AUT_RESULT Engine::call(const char* szName, Variant &vResult)
+{
+    int nTemp1, nTemp2, nTemp3, nTemp4;
+
+    // Check that this user function exists
+    if (_parser->FindUserFunction(szName, nTemp1, nTemp2, nTemp3, nTemp4) == false)
+    {
+        SetFuncErrorCode(1);                // Silent error even though function not valid
+        return AUT_OK;                        // As will probably be used this way
+    }
+    else
+    {
+        m_vUserRetVal = 1;                    // Default return value is 1
+        SaveExecute(nTemp1+1, true, false);    // Run the user function (line after the Func declaration)
+        vResult = m_vUserRetVal;            // Get return value (0 = timed out)
+        return AUT_OK;
+    }
+}
+
+AUT_RESULT Engine::interruptCall(const char* szName, Variant &vResult)
+{
+    // Get the details of the function (we should have previously checked that it
+    // exists!)
+    int        nLineNum, nNumParams, nNumParamsMin, nEndLineNum;
+    if (_parser->FindUserFunction(szName, nLineNum, nNumParams, nNumParamsMin, nEndLineNum) == false) {
+        SetFuncErrorCode(1);                // Silent error even though function not valid
+        return AUT_OK;                      // As will probably be used this way
+    }
+
+    // Save current operation (may be waiting)
+    int nCurrentOperation    = m_nCurrentOperation;
+
+    // Continue execution with the user function (using recursive call of Execute() )
+    m_nCurrentOperation = AUT_RUN;                // Change mode to run script (may have been waiting)
+
+    // Skip function declaration
+    m_vUserRetVal = 1;                     // Default return value is 1
+    SaveExecute(nLineNum+1, true, true);   // Save state and recursively call Execute()
+    vResult = m_vUserRetVal;               // Get return value (0 = timed out)
+
+    // If the function caused the script to end, we must honour the request rather than restoring
+    if (m_nCurrentOperation != AUT_QUIT)
+        m_nCurrentOperation    = nCurrentOperation;
+    return AUT_OK;
+}
+
+AUT_RESULT Engine::eval(const char* szName, Variant &vResult)
+{
+    bool    bConst = false;
+
+     if (g_oVarTable.isDeclared(szName))
+     {
+         Variant *pvTemp;
+         g_oVarTable.GetRef(szName, &pvTemp, bConst);
+         vResult = *pvTemp;
+         return AUT_OK;
+     }
+     else
+     {
+         SetFuncErrorCode(1);            // Silent error even though variable not valid
+         vResult = "";
+         return AUT_OK;
+     }
+}
+
+AUT_RESULT Engine::assign(const char* szName, Variant &vValue, int nReqScope,
+        bool bCreate, Variant &vResult)
+{
+    Variant *pvTemp;
+    bool    bConst = false;
+
+    // Get a reference to the variable in the requested scope, if it doesn't exist, then create it.
+    g_oVarTable.GetRef(szName, &pvTemp, bConst, nReqScope);
+    if (pvTemp == NULL)
+    {
+        if (bCreate)
+            g_oVarTable.Assign(szName, vValue, false, nReqScope);
+        else
+            vResult = 0;                        // Default is 1
+    }
+    else
+        *pvTemp = vValue;
+
+    return AUT_OK;
+}
+
+int Engine::isDeclared(const char* szName)
+{
+    return g_oVarTable.isDeclared(vParams[0].szValue());
+}

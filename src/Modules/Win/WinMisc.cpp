@@ -1,11 +1,13 @@
 #include "StdAfx.h"                                // Pre-compiled headers
 #include "ModuleWin.h"
+#include "Utils/WinUtil.h"
+#include "InputBox.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // MsgBox( type, "title", "text" [,timeout] )
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_MsgBox(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleWin::F_MsgBox(VectorVariant &vParams, Variant &vResult)
 {
     if (vParams.size() == 4)
         vResult = Util_MessageBoxEx(NULL, vParams[2].szValue(), vParams[1].szValue(), (UINT)vParams[0].nValue() | MB_SETFOREGROUND, vParams[3].nValue() * 1000);
@@ -20,11 +22,11 @@ AUT_RESULT AutoIt_Script::F_MsgBox(VectorVariant &vParams, Variant &vResult)
 // Creates a balloon tip near the AutoIt icon with specified text, title and icon on Windows 2000 and later.
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_TrayTip(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleWin::F_TrayTip(VectorVariant &vParams, Variant &vResult)
 {
     uint    iNumParams = vParams.size();
 
-    if (g_oVersion.IsWin2000orLater()) {
+    if (engine->g_oVersion.IsWin2000orLater()) {
 
         struct MYNOTIFYICONDATA : public _NOTIFYICONDATAA { // Not wide character compliant.
             DWORD dwState;
@@ -41,7 +43,7 @@ AUT_RESULT AutoIt_Script::F_TrayTip(VectorVariant &vParams, Variant &vResult)
 
         nic.cbSize    = sizeof(nic);
         nic.uFlags = 0x00000010;    // NIF_INFO
-        nic.hWnd = g_hWnd;
+        nic.hWnd = engine->g_hWnd;
         nic.uID = AUT_NOTIFY_ICON_ID;
 
         strncpy(nic.szInfoTitle, vParams[0].szValue(), 63); // Emtpy title means no title.
@@ -67,9 +69,9 @@ AUT_RESULT AutoIt_Script::F_TrayTip(VectorVariant &vParams, Variant &vResult)
 // AutoItWinSetTitle()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_AutoItWinSetTitle(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleWin::F_AutoItWinSetTitle(VectorVariant &vParams, Variant &vResult)
 {
-    SetWindowText(g_hWnd, vParams[0].szValue());
+    SetWindowText(engine->g_hWnd, vParams[0].szValue());
     return AUT_OK;
 
 } // AutoItWinSetTitle()
@@ -79,11 +81,11 @@ AUT_RESULT AutoIt_Script::F_AutoItWinSetTitle(VectorVariant &vParams, Variant &v
 // AutoItWinGetTitle()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_AutoItWinGetTitle(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleWin::F_AutoItWinGetTitle(VectorVariant &vParams, Variant &vResult)
 {
     char szTemp1[AUT_WINTEXTBUFFER+1];
 
-    GetWindowText(g_hWnd, szTemp1, AUT_WINTEXTBUFFER);
+    GetWindowText(engine->g_hWnd, szTemp1, AUT_WINTEXTBUFFER);
     vResult = szTemp1;
     return AUT_OK;
 
@@ -97,7 +99,7 @@ AUT_RESULT AutoIt_Script::F_AutoItWinGetTitle(VectorVariant &vParams, Variant &v
 // Variation code from based on cmallet's post on hiddensoft.com forum.
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_PixelSearch (VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleWin::F_PixelSearch (VectorVariant &vParams, Variant &vResult)
 {
     uint        iNumParams = vParams.size();
     int            q,r;
@@ -116,7 +118,7 @@ AUT_RESULT AutoIt_Script::F_PixelSearch (VectorVariant &vParams, Variant &vResul
     relrect.bottom = vParams[3].nValue();
 
     // Convert coords to screen/active window/client
-    ConvertCoords(m_nCoordPixelMode, ptOrigin);
+    WinUtil::instance.ConvertCoords(engine->nCoordPixelMode(), ptOrigin);
     relrect.left += ptOrigin.x;
     relrect.top += ptOrigin.y;
     relrect.right += ptOrigin.x;
@@ -125,7 +127,7 @@ AUT_RESULT AutoIt_Script::F_PixelSearch (VectorVariant &vParams, Variant &vResul
 
     // Get the search colour and split into components
     col        = vParams[4].nValue();                // Pixel color to find
-    if (m_bColorModeBGR == false)
+    if (engine->bColorModeBGR() == false)
         Util_RGBtoBGR(col);                        // Get RGB color into the standard COLORREF BGR format
 
     red        = GetRValue(col);
@@ -217,7 +219,7 @@ AUT_RESULT AutoIt_Script::F_PixelSearch (VectorVariant &vParams, Variant &vResul
 // PixelChecksum(<left>,<top>,<right>,<bottom> [,<step>])
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_PixelChecksum (VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleWin::F_PixelChecksum (VectorVariant &vParams, Variant &vResult)
 {
     int                q,r;
     COLORREF        col;
@@ -238,7 +240,7 @@ AUT_RESULT AutoIt_Script::F_PixelChecksum (VectorVariant &vParams, Variant &vRes
         nStep = vParams[4].nValue();
 
     // Convert coords to screen/active window/client
-    ConvertCoords(m_nCoordPixelMode, ptOrigin);
+    WinUtil::instance.ConvertCoords(engine->nCoordPixelMode(), ptOrigin);
     relrect.left += ptOrigin.x;
     relrect.top += ptOrigin.y;
     relrect.right += ptOrigin.x;
@@ -285,7 +287,7 @@ AUT_RESULT AutoIt_Script::F_PixelChecksum (VectorVariant &vParams, Variant &vRes
 // PixelGetColor()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_PixelGetColor(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleWin::F_PixelGetColor(VectorVariant &vParams, Variant &vResult)
 {
     HDC        hdc;
     POINT    ptOrigin;
@@ -294,7 +296,7 @@ AUT_RESULT AutoIt_Script::F_PixelGetColor(VectorVariant &vParams, Variant &vResu
     int rely = vParams[1].nValue();
 
     // Convert coords to screen/active window/client
-    ConvertCoords(m_nCoordPixelMode, ptOrigin);
+    WinUtil::instance.ConvertCoords(engine->nCoordPixelMode(), ptOrigin);
     relx += ptOrigin.x;
     rely += ptOrigin.y;
 
@@ -303,7 +305,7 @@ AUT_RESULT AutoIt_Script::F_PixelGetColor(VectorVariant &vParams, Variant &vResu
         int nCol = (int)GetPixel(hdc,relx,rely);
 
         // Convert from BGR to RGB?
-        if (m_bColorModeBGR == false)
+        if (engine->bColorModeBGR() == false)
             Util_BGRtoRGB(nCol);
 
         vResult = nCol;
@@ -321,7 +323,7 @@ AUT_RESULT AutoIt_Script::F_PixelGetColor(VectorVariant &vParams, Variant &vResu
 // SplashTextOn()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_SplashTextOn(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleWin::F_SplashTextOn(VectorVariant &vParams, Variant &vResult)
 {
     return Splash(vParams, vParams.size(), 1);
 
@@ -332,7 +334,7 @@ AUT_RESULT AutoIt_Script::F_SplashTextOn(VectorVariant &vParams, Variant &vResul
 // SplashImageOn()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_SplashImageOn(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleWin::F_SplashImageOn(VectorVariant &vParams, Variant &vResult)
 {
     return Splash(vParams, vParams.size(), 0);
 
@@ -343,7 +345,7 @@ AUT_RESULT AutoIt_Script::F_SplashImageOn(VectorVariant &vParams, Variant &vResu
 // SplashOff()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_SplashOff(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleWin::F_SplashOff(VectorVariant &vParams, Variant &vResult)
 {
     return Splash(vParams, vParams.size(), 2);
 
@@ -356,7 +358,7 @@ AUT_RESULT AutoIt_Script::F_SplashOff(VectorVariant &vParams, Variant &vResult)
 // SplashText and SplashImage handler
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::Splash(VectorVariant &vParams, uint iNumParams, int nFlag)
+AUT_RESULT ModuleWin::Splash(VectorVariant &vParams, uint iNumParams, int nFlag)
 {
     int        W = 500;
     int        H = 400;
@@ -368,15 +370,15 @@ AUT_RESULT AutoIt_Script::Splash(VectorVariant &vParams, uint iNumParams, int nF
     HWND    hWnd;
     RECT    rect;
 
-    if (g_hWndSplash)                // If it exists, kill it...
+    if (engine->g_hWndSplash)                // If it exists, kill it...
     {
-        if (g_hSplashBitmap)
+        if (engine->g_hSplashBitmap)
         {
-            DeleteObject(g_hSplashBitmap);
-            g_hSplashBitmap = NULL;
+            DeleteObject(engine->g_hSplashBitmap);
+            engine->g_hSplashBitmap = NULL;
         }
-        DestroyWindow(g_hWndSplash);
-        g_hWndSplash = NULL;        // Reset to a NULL state
+        DestroyWindow(engine->g_hWndSplash);
+        engine->g_hWndSplash = NULL;        // Reset to a NULL state
     }
 
     if (nFlag==2)                    // SplashOff()
@@ -424,10 +426,10 @@ AUT_RESULT AutoIt_Script::Splash(VectorVariant &vParams, uint iNumParams, int nF
     AdjustWindowRectEx (&rect, style, FALSE, xstyle);
 
     // CREATE Main Splash Window
-    g_hWndSplash = CreateWindowEx(xstyle,AUT_APPCLASS,vParams[0].szValue(),
-        style,L,T,rect.right-rect.left,rect.bottom-rect.top,g_hWnd,NULL,NULL,NULL);
+    engine->g_hWndSplash = CreateWindowEx(xstyle,AUT_APPCLASS,vParams[0].szValue(),
+        style,L,T,rect.right-rect.left,rect.bottom-rect.top,engine->g_hWnd,NULL,NULL,NULL);
 
-    GetClientRect(g_hWndSplash,&rect);    // get the client size
+    GetClientRect(engine->g_hWndSplash,&rect);    // get the client size
 
     if ( nFlag==0 )    // SplashImage()
     {
@@ -441,13 +443,13 @@ AUT_RESULT AutoIt_Script::Splash(VectorVariant &vParams, uint iNumParams, int nF
 
         // CREATE static full size of client area
         hWnd = CreateWindowEx(0,"static",NULL,WS_CHILD|WS_VISIBLE|SS_BITMAP
-            ,0,0,rect.right-rect.left,rect.bottom-rect.top,g_hWndSplash,NULL,NULL,NULL);
+            ,0,0,rect.right-rect.left,rect.bottom-rect.top,engine->g_hWndSplash,NULL,NULL,NULL);
         // JPG,BMP,WMF,ICO,GIF FILE HERE
         hFile=CreateFile(vParams[1].szValue(),GENERIC_READ,0,NULL,OPEN_EXISTING,0,NULL);
 
         if ( hFile == INVALID_HANDLE_VALUE )
         {
-            //FatalError(IDS_AUT_E_PICFILENOTFOUND);
+            //engine->FatalError(IDS_AUT_E_PICFILENOTFOUND);
             return AUT_OK;                        // File does NOT exist
         }
 
@@ -477,7 +479,7 @@ AUT_RESULT AutoIt_Script::Splash(VectorVariant &vParams, uint iNumParams, int nF
         gpPicture->Release();
 
         SendMessage(hWnd,STM_SETIMAGE,(WPARAM)IMAGE_BITMAP,(LPARAM)hBitmap);    // Set picture
-        g_hSplashBitmap = hBitmap;                // Make a note so we can free the memory later
+        engine->g_hSplashBitmap = hBitmap;                // Make a note so we can free the memory later
         SetWindowPos(hWnd,HWND_TOP,0,0,rect.right-rect.left,rect.bottom-rect.top,SWP_DRAWFRAME);                            //
     }
     else    // SplashText()
@@ -489,7 +491,7 @@ AUT_RESULT AutoIt_Script::Splash(VectorVariant &vParams, uint iNumParams, int nF
 
         // CREATE static label full size of client area
         hWnd = CreateWindowEx(0,"static",vParams[1].szValue(),lblstyle,
-            0,0,rect.right-rect.left,rect.bottom-rect.top,g_hWndSplash,NULL,NULL,NULL);
+            0,0,rect.right-rect.left,rect.bottom-rect.top,engine->g_hWndSplash,NULL,NULL,NULL);
 
         h_dc = CreateDC("DISPLAY", NULL, NULL, NULL);                    //
         SelectObject(h_dc,(HFONT)GetStockObject(DEFAULT_GUI_FONT));        // Get Default Font Name
@@ -518,7 +520,7 @@ AUT_RESULT AutoIt_Script::Splash(VectorVariant &vParams, uint iNumParams, int nF
         SendMessage(hWnd,WM_SETFONT,(WPARAM)hfFont,MAKELPARAM(TRUE,0));                    // Do Font
     }
 
-    ShowWindow(g_hWndSplash,SW_SHOWNOACTIVATE);                // Show the Splash
+    ShowWindow(engine->g_hWndSplash,SW_SHOWNOACTIVATE);                // Show the Splash
 
     return AUT_OK;
 
@@ -529,7 +531,7 @@ AUT_RESULT AutoIt_Script::Splash(VectorVariant &vParams, uint iNumParams, int nF
 // ProgressOn()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_ProgressOn(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleWin::F_ProgressOn(VectorVariant &vParams, Variant &vResult)
 {
     return Progress(vParams, vParams.size(), 0);
 
@@ -540,7 +542,7 @@ AUT_RESULT AutoIt_Script::F_ProgressOn(VectorVariant &vParams, Variant &vResult)
 // ProgressOff()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_ProgressOff(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleWin::F_ProgressOff(VectorVariant &vParams, Variant &vResult)
 {
     return Progress(vParams, vParams.size(), 1);
 
@@ -551,18 +553,18 @@ AUT_RESULT AutoIt_Script::F_ProgressOff(VectorVariant &vParams, Variant &vResult
 // ProgressSet()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_ProgressSet(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleWin::F_ProgressSet(VectorVariant &vParams, Variant &vResult)
 {
     uint    iNumParams = vParams.size();
 
-    if (g_hWndProgBar != NULL)
+    if (engine->g_hWndProgBar != NULL)
     {
         if ( vParams[0].nValue() >= 0 && vParams[0].nValue() < 101 )
-            SendMessage(g_hWndProgBar,PBM_SETPOS,(WPARAM)vParams[0].nValue(),(LPARAM)0);
+            SendMessage(engine->g_hWndProgBar,PBM_SETPOS,(WPARAM)vParams[0].nValue(),(LPARAM)0);
         if ( iNumParams >= 2 && vParams[1].szValue()[0] != '\0' )
-            SendMessage(g_hWndProgLblB,WM_SETTEXT,0,(LPARAM)vParams[1].szValue());
+            SendMessage(engine->g_hWndProgLblB,WM_SETTEXT,0,(LPARAM)vParams[1].szValue());
         if (iNumParams > 2)
-            SendMessage(g_hWndProgLblA,WM_SETTEXT,0,(LPARAM)vParams[2].szValue());
+            SendMessage(engine->g_hWndProgLblA,WM_SETTEXT,0,(LPARAM)vParams[2].szValue());
     }
     return AUT_OK;
 
@@ -575,7 +577,7 @@ AUT_RESULT AutoIt_Script::F_ProgressSet(VectorVariant &vParams, Variant &vResult
 // ProgressBar handler
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT    AutoIt_Script::Progress(VectorVariant &vParams, uint iNumParams, int nFlag)
+AUT_RESULT    ModuleWin::Progress(VectorVariant &vParams, uint iNumParams, int nFlag)
 {
     int            L = -1;                                        // Splash Left
     int            T = -1;                                        // Splash Top
@@ -588,10 +590,10 @@ AUT_RESULT    AutoIt_Script::Progress(VectorVariant &vParams, uint iNumParams, i
     HFONT        hfFont;
     char        szFont[65];
 
-    if (g_hWndProgress)            // If it exists, kill it...
+    if (engine->g_hWndProgress)            // If it exists, kill it...
     {
-        DestroyWindow(g_hWndProgress);
-        g_hWndProgress = NULL;    // Reset to a NULL state in case we exit below
+        DestroyWindow(engine->g_hWndProgress);
+        engine->g_hWndProgress = NULL;    // Reset to a NULL state in case we exit below
     }
 
     if (nFlag==1)                // ProgressOff()
@@ -628,14 +630,14 @@ AUT_RESULT    AutoIt_Script::Progress(VectorVariant &vParams, uint iNumParams, i
     AdjustWindowRectEx (&rect, style, FALSE, xstyle);
 
     // CREATE Main Progress Window
-    g_hWndProgress = CreateWindowEx(xstyle,AUT_APPCLASS,vParams[0].szValue(),
-        style,L,T,rect.right-rect.left,rect.bottom-rect.top,g_hWnd,NULL,NULL,NULL);
+    engine->g_hWndProgress = CreateWindowEx(xstyle,AUT_APPCLASS,vParams[0].szValue(),
+        style,L,T,rect.right-rect.left,rect.bottom-rect.top,engine->g_hWnd,NULL,NULL,NULL);
 
-    GetClientRect(g_hWndProgress,&rect);                // for some math
+    GetClientRect(engine->g_hWndProgress,&rect);                // for some math
 
     // CREATE Main label
-    g_hWndProgLblA = CreateWindowEx(0,"static",vParams[1].szValue(),WS_CHILD|WS_VISIBLE|SS_LEFT,
-        (rect.right-rect.left-281),4,1280,24,g_hWndProgress,NULL,NULL,NULL);
+    engine->g_hWndProgLblA = CreateWindowEx(0,"static",vParams[1].szValue(),WS_CHILD|WS_VISIBLE|SS_LEFT,
+        (rect.right-rect.left-281),4,1280,24,engine->g_hWndProgress,NULL,NULL,NULL);
 
     h_dc = CreateDC("DISPLAY", NULL, NULL, NULL);                    //
     SelectObject(h_dc,(HFONT)GetStockObject(DEFAULT_GUI_FONT));        // Get Default Font Name
@@ -645,20 +647,20 @@ AUT_RESULT    AutoIt_Script::Progress(VectorVariant &vParams, uint iNumParams, i
 
     hfFont = CreateFont(0-(10*CyPixels)/72,0,0,0,600,0,0,0,DEFAULT_CHARSET,                // Create a bigger
         OUT_TT_PRECIS,CLIP_DEFAULT_PRECIS,PROOF_QUALITY,FF_DONTCARE,szFont);            // bolder default
-    SendMessage(g_hWndProgLblA,WM_SETFONT,(WPARAM)hfFont,MAKELPARAM(TRUE,0));            // GUI font.
+    SendMessage(engine->g_hWndProgLblA,WM_SETFONT,(WPARAM)hfFont,MAKELPARAM(TRUE,0));            // GUI font.
 
     // CREATE Progress control
-    g_hWndProgBar = CreateWindowEx(WS_EX_CLIENTEDGE,"msctls_progress32",NULL,WS_CHILD|WS_VISIBLE|PBS_SMOOTH,
-        (rect.right-rect.left-260)/2,30,260,20, g_hWndProgress, NULL,NULL,NULL);
-    SendMessage(g_hWndProgBar,PBM_SETRANGE,0,MAKELONG(0,100));    //
-    SendMessage(g_hWndProgBar,PBM_SETSTEP,1,0);                    // set some characteristics
+    engine->g_hWndProgBar = CreateWindowEx(WS_EX_CLIENTEDGE,"msctls_progress32",NULL,WS_CHILD|WS_VISIBLE|PBS_SMOOTH,
+        (rect.right-rect.left-260)/2,30,260,20, engine->g_hWndProgress, NULL,NULL,NULL);
+    SendMessage(engine->g_hWndProgBar,PBM_SETRANGE,0,MAKELONG(0,100));    //
+    SendMessage(engine->g_hWndProgBar,PBM_SETSTEP,1,0);                    // set some characteristics
 
     // CREATE Sub label
-    g_hWndProgLblB = CreateWindowEx(0,"static",sLabelB.c_str(),WS_CHILD|WS_VISIBLE|SS_LEFT,
-        (rect.right-rect.left-280),55,1280,50,g_hWndProgress,NULL,NULL,NULL);
-    SendMessage(g_hWndProgLblB,WM_SETFONT,(WPARAM)GetStockObject(DEFAULT_GUI_FONT),MAKELPARAM(TRUE,0));
+    engine->g_hWndProgLblB = CreateWindowEx(0,"static",sLabelB.c_str(),WS_CHILD|WS_VISIBLE|SS_LEFT,
+        (rect.right-rect.left-280),55,1280,50,engine->g_hWndProgress,NULL,NULL,NULL);
+    SendMessage(engine->g_hWndProgLblB,WM_SETFONT,(WPARAM)GetStockObject(DEFAULT_GUI_FONT),MAKELPARAM(TRUE,0));
 
-    ShowWindow(g_hWndProgress,SW_SHOWNOACTIVATE);                // Show the Progress
+    ShowWindow(engine->g_hWndProgress,SW_SHOWNOACTIVATE);                // Show the Progress
 
     return AUT_OK;
 
@@ -670,13 +672,13 @@ AUT_RESULT    AutoIt_Script::Progress(VectorVariant &vParams, uint iNumParams, i
 // Gets user input text
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_InputBox(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleWin::F_InputBox(VectorVariant &vParams, Variant &vResult)
 {
     uint        iNumParams = vParams.size();
     int            iRetVal, i, iTmp;
     double        fTmp;
     char        cTmp;
-    CInputBox    aDlg;
+    CInputBox    aDlg(engine);
 
     switch (iNumParams) {
         case 9: // timeout
@@ -724,7 +726,7 @@ AUT_RESULT AutoIt_Script::F_InputBox(VectorVariant &vParams, Variant &vResult)
         case 2:    // title and prompt only
             aDlg.m_title = vParams[0].szValue();
             aDlg.m_strPrompt = vParams[1].szValue();
-            iRetVal = aDlg.DoModal(g_hInstance, NULL);
+            iRetVal = aDlg.DoModal(engine->g_hInstance, NULL);
 
             if (iRetVal==IDOK)
                 vResult = aDlg.m_strInputText.c_str();
@@ -742,7 +744,7 @@ AUT_RESULT AutoIt_Script::F_InputBox(VectorVariant &vParams, Variant &vResult)
 
         default:
              // Check for x without y, width without height
-             FatalError(IDS_AUT_E_FUNCTIONNUMPARAMS);
+             engine->FatalError(IDS_AUT_E_FUNCTIONNUMPARAMS);
              return AUT_ERR;
     }
 } // InputBox()

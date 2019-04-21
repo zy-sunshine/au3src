@@ -7,22 +7,7 @@
 
 AUT_RESULT ModuleBuiltIn::F_Call(VectorVariant &vParams, Variant &vResult)
 {
-    int nTemp1, nTemp2, nTemp3, nTemp4;
-
-    // Check that this user function exists
-    if (engine->parser->FindUserFunction(vParams[0].szValue(), nTemp1, nTemp2, nTemp3, nTemp4) == false)
-    {
-        engine->SetFuncErrorCode(1);                // Silent error even though function not valid
-        return AUT_OK;                        // As will probably be used this way
-    }
-    else
-    {
-        m_vUserRetVal = 1;                    // Default return value is 1
-        SaveExecute(nTemp1+1, true, false);    // Run the user function (line after the Func declaration)
-        vResult = m_vUserRetVal;            // Get return value (0 = timed out)
-        return AUT_OK;
-    }
-
+    return engine->call(vParams[0].szValue(), vResult);
 } // Call()
 
 
@@ -32,22 +17,7 @@ AUT_RESULT ModuleBuiltIn::F_Call(VectorVariant &vParams, Variant &vResult)
 
 AUT_RESULT ModuleBuiltIn::F_Eval(VectorVariant &vParams, Variant &vResult)
 {
-    bool    bConst = false;
-
-     if (g_oVarTable.isDeclared(vParams[0].szValue()))
-     {
-         Variant *pvTemp;
-         g_oVarTable.GetRef(vParams[0].szValue(), &pvTemp, bConst);
-         vResult = *pvTemp;
-         return AUT_OK;
-     }
-     else
-     {
-         engine->SetFuncErrorCode(1);            // Silent error even though variable not valid
-         vResult = "";
-         return AUT_OK;
-     }
-
+    return engine->eval(vParams[0].szValue(), vResult);
 } // Eval()
 
 
@@ -64,11 +34,8 @@ AUT_RESULT ModuleBuiltIn::F_Eval(VectorVariant &vParams, Variant &vResult)
 
 AUT_RESULT ModuleBuiltIn::F_Assign(VectorVariant &vParams, Variant &vResult)
 {
-    Variant *pvTemp;
-    int     nReqScope = VARTABLE_ANY;
     bool    bCreate = true;
-    bool    bConst = false;
-
+    int     nReqScope = VARTABLE_ANY;
     if (vParams.size() == 3)
     {
         if (vParams[2].nValue() & 1)
@@ -79,20 +46,7 @@ AUT_RESULT ModuleBuiltIn::F_Assign(VectorVariant &vParams, Variant &vResult)
             bCreate = false;
     }
 
-    // Get a reference to the variable in the requested scope, if it doesn't exist, then create it.
-    g_oVarTable.GetRef(vParams[0].szValue(), &pvTemp, bConst, nReqScope);
-    if (pvTemp == NULL)
-    {
-        if (bCreate)
-            g_oVarTable.Assign(vParams[0].szValue(), vParams[1], false, nReqScope);
-        else
-            vResult = 0;                        // Default is 1
-    }
-    else
-        *pvTemp = vParams[1];
-
-    return AUT_OK;
-
+    return engine->assign(vParams[0].szValue(), vParams[1], nReqScope, bCreate, vResult);
 }    // F_Assign()
 
 
@@ -102,9 +56,8 @@ AUT_RESULT ModuleBuiltIn::F_Assign(VectorVariant &vParams, Variant &vResult)
 
 AUT_RESULT ModuleBuiltIn::F_IsDeclared(VectorVariant &vParams, Variant &vResult)
 {
-     vResult = g_oVarTable.isDeclared(vParams[0].szValue());
-     return AUT_OK;
-
+    vResult = engine->isDeclared(vParams[0].szValue());
+    return AUT_OK;
 } // IsDeclared()
 
 //////////////////////////////////////////////////////////////////////////

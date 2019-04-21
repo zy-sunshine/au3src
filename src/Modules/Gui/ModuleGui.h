@@ -72,6 +72,9 @@ public:
     AUT_RESULT    F_GUISetTrayIcon(VectorVariant &vParams, Variant &vResult);
     AUT_RESULT    F_GUIStartGroup(VectorVariant &vParams, Variant &vResult);
 #endif
+
+private:
+    Engine* engine;
 };
 
 AU3_FuncInfo funcList[] = {
@@ -136,7 +139,5 @@ AU3_FuncInfo funcList[] = {
     {"GUISTARTGROUP", &Engine::F_GUIStartGroup, 0, 1},
     {"GUISWITCH", &Engine::F_GUISwitch, 1, 1},
 #endif
-
-private:
-    Engine* engine;
+    {NULL, NULL, 0, 0},
 };

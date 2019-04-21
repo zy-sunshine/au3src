@@ -429,7 +429,7 @@ AUT_RESULT ModuleBuiltIn::F_StringReplace(VectorVariant &vParams, Variant &vResu
         }
 
         // Store the number of replacements done in @extended
-        SetFuncExtCode(nReplacesDone);
+        engine->SetFuncExtCode(nReplacesDone);
     }
     vResult =  sOutput.c_str();
 

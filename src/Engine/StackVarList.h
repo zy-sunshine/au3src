@@ -43,6 +43,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include "AutoIt.h"
 
 // Includes
 #ifndef _MSC_VER                                // Includes for non-MS compilers

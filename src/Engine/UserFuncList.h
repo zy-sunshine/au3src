@@ -45,8 +45,8 @@
 
 
 // Includes
+#include "AutoIt.h"
 #include "Engine/Type/AString.h"
-
 
 typedef struct
 {

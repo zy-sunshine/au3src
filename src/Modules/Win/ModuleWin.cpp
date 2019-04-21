@@ -53,411 +53,22 @@
 #endif
 
 #include "Utils/utility.h"
+#include "Utils/WinUtil.h"
+#include "WinSearchUtil.h"
 
 
-///////////////////////////////////////////////////////////////////////////////
-// Check if a winwait-style operation is in progress, process and returns
-// true.  If no processing required returns false
-//
-// Just for kicks, this also processes the Sleep() command
-///////////////////////////////////////////////////////////////////////////////
-
-bool ModuleWin::Win_HandleWinWait(void)
+ModuleWin::ModuleWin(Engine* engine)
+    : engine(engine)
 {
-    // Any winwait or Sleep commands to process?
-    if (m_nCurrentOperation != AUT_SLEEP && m_nCurrentOperation != AUT_WINWAIT &&
-        m_nCurrentOperation != AUT_WINWAITCLOSE && m_nCurrentOperation != AUT_WINWAITACTIVE &&
-        m_nCurrentOperation != AUT_WINWAITNOTACTIVE)
-        return false;
-
-    // Idle a little to remove CPU usage
-    Sleep(AUT_IDLE);
-
-
-    // If required, process the timeout
-    if (m_nWinWaitTimeout != 0)
-    {
-        // Get current time in ms
-        DWORD    dwDiff;
-        DWORD    dwCur = timeGetTime();
-        if (dwCur < m_tWinTimerStarted)
-            dwDiff = (UINT_MAX - m_tWinTimerStarted) + dwCur; // timer wraps at 2^32
-        else
-            dwDiff = dwCur - m_tWinTimerStarted;
-
-        // Timer elapsed?
-        if (dwDiff >= m_nWinWaitTimeout)
-        {
-            if (m_nCurrentOperation != AUT_SLEEP)
-                m_vUserRetVal = 0;                // We timed out (default = 1, Sleep gives no error)
-
-            m_bUserFuncReturned = true;            // Request exit from Execute()
-            m_nCurrentOperation = AUT_RUN;        // Continue script
-            return true;
-        }
-    }
-
-
-    // Perform relevant command
-    bool bRes = false;
-    switch (m_nCurrentOperation)
-    {
-        case AUT_WINWAITACTIVE:
-            bRes = Win_WinActive();
-            break;
-        case AUT_WINWAITNOTACTIVE:
-            bRes = !Win_WinActive();
-            break;
-        case AUT_WINWAIT:
-            bRes = Win_WinExists();
-            break;
-        case AUT_WINWAITCLOSE:
-            bRes = !Win_WinExists();
-            break;
-
-        case AUT_SLEEP:
-            break;                                // Don't do anything, timer processed above
-    }
-
-
-    // Wait Command successful?
-    if (bRes == true)
-    {
-        m_bUserFuncReturned = true;            // Request exit from Execute()
-        m_nCurrentOperation = AUT_RUN;        // Continue script
-        Util_Sleep(m_nWinWaitDelay);        // Briefly pause before continuing
-    }
-
-    return true;
-
-} // Win_HandleWinWait()
-
-
-///////////////////////////////////////////////////////////////////////////////
-// Win_WindowSearchInit()
-///////////////////////////////////////////////////////////////////////////////
-
-void ModuleWin::Win_WindowSearchInit(VectorVariant &vParams)
-{
-    // Parameters are title, text - only title is mandatory
-
-    m_vWindowSearchTitle    = vParams[0];    // Title
-
-    if (vParams.size() >= 2)
-        m_vWindowSearchText    = vParams[1];    // Text
-    else
-        m_vWindowSearchText    = "";
-
-} // Win_WindowSearchInit()
-
-
-///////////////////////////////////////////////////////////////////////////////
-// Win_WindowWaitInit()
-///////////////////////////////////////////////////////////////////////////////
-
-void ModuleWin::Win_WindowWaitInit(VectorVariant &vParams)
-{
-    // Parameters are title, text, timeout - only title is mandatory
-
-    // Setup the search for title/text
-    Win_WindowSearchInit(vParams);
-
-    if (vParams.size() == 3)
-        m_nWinWaitTimeout    = vParams[2].nValue() * 1000;    // Timeout
-    else
-        m_nWinWaitTimeout    = 0;
-
-
-    // Make a note of current system time for comparision in timer
-    m_tWinTimerStarted            = timeGetTime();
-
-} // Win_WindowWaitInit()
-
-
-///////////////////////////////////////////////////////////////////////////////
-// Win_WindowSearchDeleteList()
-//
-// When the window search is run a list of windows matched is created, this
-// function clears the list.
-//
-///////////////////////////////////////////////////////////////////////////////
-
-void ModuleWin::Win_WindowSearchDeleteList(void)
-{
-    WinListNode    *lpTemp = m_lpWinListFirst;
-    WinListNode    *lpNext;
-
-    while (lpTemp)
-    {
-        lpNext = lpTemp->lpNext;
-        delete lpTemp;
-        lpTemp = lpNext;
-    }
-
-    m_lpWinListFirst    = NULL;
-    m_lpWinListLast        = NULL;
-    m_nWinListCount        = 0;
-
-} // Win_WindowSearchDeleteList()
-
-
-///////////////////////////////////////////////////////////////////////////////
-// Win_WindowSearchAddToList()
-//
-// Adds a hwnd to the window list
-//
-///////////////////////////////////////////////////////////////////////////////
-
-void ModuleWin::Win_WindowSearchAddToList(HWND hWnd)
-{
-    WinListNode    *lpTemp = new WinListNode;
-
-    lpTemp->hWnd = hWnd;
-    lpTemp->lpNext = NULL;
-
-    if (m_lpWinListLast)
-    {
-        m_lpWinListLast->lpNext = lpTemp;
-        m_lpWinListLast = lpTemp;
-    }
-    else
-        m_lpWinListFirst = m_lpWinListLast = lpTemp;
-
-    ++m_nWinListCount;
-
-} // Win_WindowSearchAddToList()
-
-
-///////////////////////////////////////////////////////////////////////////////
-// Win_WindowSearch()
-///////////////////////////////////////////////////////////////////////////////
-
-bool ModuleWin::Win_WindowSearch(bool bFirstOnly)
-{
-    // Are we looking for all matching windows or just the first?
-    m_bWindowSearchFirstOnly = bFirstOnly;
-
-    // Clear previous search - also set number of found windows (m_nWinListCount) to 0
-    Win_WindowSearchDeleteList();
-
-    // If the Title parameter was a HWND type then we don't need to search at all
-    if (m_vWindowSearchTitle.isHWND())
-    {
-        if (IsWindow(m_vWindowSearchTitle.hWnd()) )
-        {
-            m_WindowSearchHWND = m_vWindowSearchTitle.hWnd();
-            Win_WindowSearchAddToList(m_WindowSearchHWND);    // Create a 1 entry list for those functions that use it
-            return true;
-        }
-        else
-            return false;
-    }
-
-    // If both title and text is blank, then assume active window
-    // If we are in mode 4 then do some other checks
-    if (m_nWindowSearchMatchMode == 4)
-    {
-        if (m_vWindowSearchTitle.szValue()[0] == '\0' || !stricmp(m_vWindowSearchTitle.szValue(), "last") )
-        {
-            if (m_WindowSearchHWND)                    // Make sure that there HAS been a previous match
-            {
-                Win_WindowSearchAddToList(m_WindowSearchHWND);    // Create a 1 entry list for those functions that use it
-                return true;
-            }
-            else
-                return false;
-        }
-        else if (!stricmp(m_vWindowSearchTitle.szValue(), "active") )
-        {
-            m_WindowSearchHWND = GetForegroundWindow();
-            Win_WindowSearchAddToList(m_WindowSearchHWND);    // Create a 1 entry list for those functions that use it
-            return true;
-        }
-        else if ( !strnicmp(m_vWindowSearchTitle.szValue(), "handle=", 7) )    // handle=
-        {
-            int        nTemp;
-
-            // Assumes int32 is big enough for HWND (it currently is... 4 bytes)
-            // We can always bump up to 64 if required in the future (IA64?)
-            Util_ConvDec( &m_vWindowSearchTitle.szValue()[7], nTemp );
-            m_WindowSearchHWND = (HWND)nTemp;
-
-            if (IsWindow(m_WindowSearchHWND) )
-            {
-                Win_WindowSearchAddToList(m_WindowSearchHWND);    // Create a 1 entry list for those functions that use it
-                return true;
-            }
-            else
-                return false;
-        }
-    }
-    else if (m_vWindowSearchTitle.szValue()[0] == '\0'  && m_vWindowSearchText.szValue()[0] == '\0' )
-    {
-        m_WindowSearchHWND = GetForegroundWindow();
-        Win_WindowSearchAddToList(m_WindowSearchHWND);    // Create a 1 entry list for those functions that use it
-        return true;
-    }
-
-    // Do the search
-    if (!m_bWinSearchChildren)
-        EnumWindows((WNDENUMPROC)Win_WindowSearchProc, 0);
-    else
-        EnumChildWindows(GetDesktopWindow(), (WNDENUMPROC)Win_WindowSearchProc, 0);
-
-    if (m_nWinListCount)
-    {
-        // Set the m_WindowSearchHWND to the FIRST window matched to retain compability with the older code
-        // that uses WindowSearch and doesn't know anything about the new WinList struct
-        m_WindowSearchHWND = m_lpWinListFirst->hWnd;
-        return true;
-    }
-    else
-    {
-        m_WindowSearchHWND = NULL;
-        return false;
-    }
+    m_hWndTip                    = NULL;            // ToolTip window
 }
 
-BOOL CALLBACK ModuleWin::Win_WindowSearchProc(HWND hWnd, LPARAM lParam)
+ModuleWin::~ModuleWin()
 {
-    return g_oScript.Win_WindowSearchProcHandler(hWnd, lParam);
+    // Destroy the ToolTip window if required
+    if (m_hWndTip)
+        DestroyWindow(m_hWndTip);
 }
-
-BOOL ModuleWin::Win_WindowSearchProcHandler(HWND hWnd, LPARAM lParam)
-{
-    char    szBuffer[1024+1] = "";                // 1024 chars is more than enough for a title
-
-    // Get the window text
-    GetWindowText(hWnd, szBuffer, 1024);
-
-    m_WindowSearchHWND = hWnd;                    // Save the handle of the window for use in the WinTextSearch()
-
-    switch (m_nWindowSearchMatchMode)
-    {
-        case 1:
-            if ( !strncmp(m_vWindowSearchTitle.szValue(), szBuffer, strlen(m_vWindowSearchTitle.szValue()) ) )
-            {
-                if ( Win_WindowSearchText() == true && m_bWindowSearchFirstOnly == true)
-                    return FALSE;                // No need to search any more
-            }
-            break;
-
-        case 2:
-            if ( strstr(szBuffer, m_vWindowSearchTitle.szValue()) != NULL )
-            {
-                if ( Win_WindowSearchText() == true && m_bWindowSearchFirstOnly == true)
-                    return FALSE;                // No need to search any more
-            }
-            break;
-
-        case 3:
-            if ( !strcmp(szBuffer, m_vWindowSearchTitle.szValue()) )
-            {
-                if ( Win_WindowSearchText() == true && m_bWindowSearchFirstOnly == true)
-                    return FALSE;                // No need to search any more
-            }
-            break;
-
-        case 4:
-            // valid options are "classname=", "handle=", "", "all", "regexp="
-            if ( !strnicmp(m_vWindowSearchTitle.szValue(), "classname=", 10) )    // classname=
-            {
-                GetClassName(hWnd, szBuffer, 1024);
-                if (!strcmp(szBuffer, &m_vWindowSearchTitle.szValue()[10]) )
-                {
-                    if ( Win_WindowSearchText() == true && m_bWindowSearchFirstOnly == true)
-                        return FALSE;            // No need to search any more
-                }
-            }
-            else if ( !stricmp(m_vWindowSearchTitle.szValue(), "all") )
-            {
-                //AUT_MSGBOX("here", "here")
-                // We don't care about the title, so try matching the text
-                if ( Win_WindowSearchText() == true && m_bWindowSearchFirstOnly == true)
-                    return FALSE;                // No need to search any more
-            }
-            else if ( !strncmp(m_vWindowSearchTitle.szValue(), szBuffer, strlen(m_vWindowSearchTitle.szValue())) ) // Try default case 1
-            {
-                if ( Win_WindowSearchText() == true && m_bWindowSearchFirstOnly == true)
-                    return FALSE;                // No need to search any more
-            }
-            break;
-
-    } // End Switch
-
-    return TRUE;                                // Search more
-
-} // Win_WindowSearchProcHandler()
-
-
-///////////////////////////////////////////////////////////////////////////////
-// Win_WindowSearchText()
-///////////////////////////////////////////////////////////////////////////////
-
-bool ModuleWin::Win_WindowSearchText(void)
-{
-    // If the optional text is blank, always return find=yes
-    if (m_vWindowSearchText.szValue()[0] == '\0')
-    {
-        Win_WindowSearchAddToList(m_WindowSearchHWND);
-        return true;    // Found!
-    }
-
-    // If current search window seems hung then don't attempt to read it (WM_GETTEXT would hang)
-    // If we are not using the WM_GETEXT mode then we don't care if it's hung as GetWindowText()
-    // will cope
-    if ( m_nWindowSearchTextMode == 1 && Util_IsWinHung(m_WindowSearchHWND) )
-        return false;
-
-    int nLastCount = m_nWinListCount;
-
-    EnumChildWindows(m_WindowSearchHWND, (WNDENUMPROC)Win_WindowSearchTextProc, 0);
-
-    if (nLastCount != m_nWinListCount)
-        return true;                            // New window matched
-    else
-        return false;
-}
-
-BOOL CALLBACK ModuleWin::Win_WindowSearchTextProc(HWND hWnd, LPARAM lParam)
-{
-    return g_oScript.Win_WindowSearchTextProcHandler(hWnd, lParam);
-}
-
-BOOL ModuleWin::Win_WindowSearchTextProcHandler(HWND hWnd, LPARAM lParam)
-{
-    char    szBuffer[AUT_WINTEXTBUFFER+1];
-    int        nLen;
-
-    // WM_GETTEXT seems to get more info
-    szBuffer[0] = '\0';                            // Blank in case of error with WM_GETTEXT
-
-    // Hidden text?
-    if ( (IsWindowVisible(hWnd)) || (m_bDetectHiddenText == true) )
-    {
-        if (m_nWindowSearchTextMode == 2)
-        {
-            nLen = GetWindowText(hWnd, szBuffer, AUT_WINTEXTBUFFER);    // Quicker mode
-        }
-        else //if (SendMessage(hWnd, WM_GETTEXTLENGTH, 0, 0) > 0)
-        {
-            nLen = (int)SendMessage(hWnd, WM_GETTEXT,(WPARAM)AUT_WINTEXTBUFFER,(LPARAM)szBuffer);
-        }
-
-        szBuffer[AUT_WINTEXTBUFFER] = '\0';        // Ensure terminated if large amount of return text
-
-        if ( nLen && strstr(szBuffer, m_vWindowSearchText.szValue()) )
-        {
-            Win_WindowSearchAddToList(m_WindowSearchHWND);
-            return FALSE;                        // No more searching needed in this window
-        }
-
-    }    // EndIf Visible
-
-    return TRUE;                                // Carry on searching
-
-} // Win_WindowSearchTextProcHandler()
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // WinWait( "title" [,"text"] [,timeout]] )
@@ -465,12 +76,24 @@ BOOL ModuleWin::Win_WindowSearchTextProcHandler(HWND hWnd, LPARAM lParam)
 
 AUT_RESULT ModuleWin::F_WinWait(VectorVariant &vParams, Variant &vResult)
 {
-    Win_WindowWaitInit(vParams);
-    m_vUserRetVal = 1;                    // Default return value is 1
-    m_nCurrentOperation = AUT_WINWAIT;
-    Execute();
-    vResult = m_vUserRetVal;            // Get return value (0 = timed out)
+    BOOL    bRes = FALSE;
+    WinSearchUtil util(engine);
 
+    util.Win_WindowWaitInit(vParams);
+    vResult = 1;
+
+    while (true) {
+        Sleep(AUT_IDLE);
+        if (engine->processEvents() == AUT_QUIT) { break; }
+        bRes = util.Win_WinExists();
+        if (bRes) { break; }
+        if (util.isTimeOut()) {
+            vResult = 0;
+            return AUT_OK;
+        }
+    }
+
+    Util_Sleep(engine->nWinWaitDelay());        // Briefly pause before continuing
     return AUT_OK;
 
 } // F_WinWait()
@@ -482,12 +105,23 @@ AUT_RESULT ModuleWin::F_WinWait(VectorVariant &vParams, Variant &vResult)
 
 AUT_RESULT ModuleWin::F_WinWaitActive(VectorVariant &vParams, Variant &vResult)
 {
-    Win_WindowWaitInit(vParams);
-    m_vUserRetVal = 1;                    // Default return value is 1
-    m_nCurrentOperation = AUT_WINWAITACTIVE;
-    Execute();
-    vResult = m_vUserRetVal;            // Get return value (0 = timed out)
+    BOOL    bRes = FALSE;
+    WinSearchUtil util(engine);
+    util.Win_WindowWaitInit(vParams);
 
+    vResult = 1;                    // Default return value is 1
+    while (true) {
+        Sleep(AUT_IDLE);
+        if (engine->processEvents() == AUT_QUIT) { break; }
+        bRes = util.Win_WinActive();
+        if (bRes) { break; }
+        if (util.isTimeOut()) {
+            vResult = 0;
+            return AUT_OK;
+        }
+    }
+
+    Util_Sleep(engine->nWinWaitDelay());        // Briefly pause before continuing
     return AUT_OK;
 
 } // F_WinWaitActive()
@@ -499,12 +133,23 @@ AUT_RESULT ModuleWin::F_WinWaitActive(VectorVariant &vParams, Variant &vResult)
 
 AUT_RESULT ModuleWin::F_WinWaitNotActive(VectorVariant &vParams, Variant &vResult)
 {
-    Win_WindowWaitInit(vParams);
-    m_vUserRetVal = 1;                    // Default return value is 1
-    m_nCurrentOperation = AUT_WINWAITNOTACTIVE;
-    Execute();
-    vResult = m_vUserRetVal;            // Get return value (0 = timed out)
+    BOOL    bRes = FALSE;
+    WinSearchUtil util(engine);
+    util.Win_WindowWaitInit(vParams);
 
+    vResult = 1;                    // Default return value is 1
+    while (true) {
+        Sleep(AUT_IDLE);
+        if (engine->processEvents() == AUT_QUIT) { break; }
+        bRes = !util.Win_WinActive();
+        if (bRes) { break; }
+        if (util.isTimeOut()) {
+            vResult = 0;
+            return AUT_OK;
+        }
+    }
+
+    Util_Sleep(engine->nWinWaitDelay());        // Briefly pause before continuing
     return AUT_OK;
 
 } // F_WinWaitNotActive()
@@ -516,12 +161,23 @@ AUT_RESULT ModuleWin::F_WinWaitNotActive(VectorVariant &vParams, Variant &vResul
 
 AUT_RESULT ModuleWin::F_WinWaitClose(VectorVariant &vParams, Variant &vResult)
 {
-    Win_WindowWaitInit(vParams);
-    m_vUserRetVal = 1;                    // Default return value is 1
-    m_nCurrentOperation = AUT_WINWAITCLOSE;
-    Execute();
-    vResult = m_vUserRetVal;            // Get return value (0 = timed out)
+    BOOL    bRes = FALSE;
+    WinSearchUtil util(engine);
+    util.Win_WindowWaitInit(vParams);
 
+    vResult = 1;                    // Default return value is 1
+    while (true) {
+        Sleep(AUT_IDLE);
+        if (engine->processEvents() == AUT_QUIT) { break; }
+        bRes = !util.Win_WinExists();
+        if (bRes) { break; }
+        if (util.isTimeOut()) {
+            vResult = 0;
+            return AUT_OK;
+        }
+    }
+
+    Util_Sleep(engine->nWinWaitDelay());        // Briefly pause before continuing
     return AUT_OK;
 
 } // F_WinWaitClose()
@@ -533,8 +189,10 @@ AUT_RESULT ModuleWin::F_WinWaitClose(VectorVariant &vParams, Variant &vResult)
 
 AUT_RESULT ModuleWin::F_WinActive(VectorVariant &vParams, Variant &vResult)
 {
-    Win_WindowSearchInit(vParams);
-    if (Win_WinActive() == false)
+    WinSearchUtil util(engine);
+
+    util.Win_WindowSearchInit(vParams);
+    if (util.Win_WinActive() == false)
         vResult = 0;                    // Default is 1
 
     return AUT_OK;
@@ -543,51 +201,19 @@ AUT_RESULT ModuleWin::F_WinActive(VectorVariant &vParams, Variant &vResult)
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// Win_WinActive()
-// Must call Win_WindowSearchInit() first to set title and text to search for
-///////////////////////////////////////////////////////////////////////////////
-
-bool ModuleWin::Win_WinActive(void)
-{
-    // If the window doesn't exist it can't be active
-    if ( Win_WindowSearch() == false)
-        return false;
-
-    if (m_WindowSearchHWND == GetForegroundWindow())
-        return true;
-    else
-        return false;
-
-} // Win_WinActive()
-
-
-///////////////////////////////////////////////////////////////////////////////
 // WinExists( "title" [,"text"] )
 ///////////////////////////////////////////////////////////////////////////////
 
 AUT_RESULT ModuleWin::F_WinExists(VectorVariant &vParams, Variant &vResult)
 {
-    Win_WindowSearchInit(vParams);
-    if (Win_WinExists() == false)
+    WinSearchUtil util(engine);
+    util.Win_WindowSearchInit(vParams);
+    if (util.Win_WinExists() == false)
         vResult = 0;                    // Default is 1
 
     return AUT_OK;
 
 } // F_WinExists()
-
-
-///////////////////////////////////////////////////////////////////////////////
-// Win_WinExists()
-// Must call Win_WindowSearchInit() first to set title and text to search for
-///////////////////////////////////////////////////////////////////////////////
-
-bool ModuleWin::Win_WinExists(void)
-{
-    return Win_WindowSearch();
-
-} // Win_WinExists()
-
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // WinActivate( "title" [,"text"] )
@@ -595,13 +221,14 @@ bool ModuleWin::Win_WinExists(void)
 
 AUT_RESULT ModuleWin::F_WinActivate(VectorVariant &vParams, Variant &vResult)
 {
-    Win_WindowSearchInit(vParams);
+    WinSearchUtil util(engine);
+    util.Win_WindowSearchInit(vParams);
 
-    if (Win_WindowSearch() == false)
+    if (util.Win_WindowSearch() == false)
         return AUT_OK;                            // No window to activate
 
-    g_oSetForeWinEx.Activate(m_WindowSearchHWND);
-    Util_Sleep(m_nWinWaitDelay);                // Briefly pause before continuing
+    engine->g_oSetForeWinEx.Activate(util.m_WindowSearchHWND);
+    Util_Sleep(engine->nWinWaitDelay());                // Briefly pause before continuing
 
     return AUT_OK;
 
@@ -614,21 +241,22 @@ AUT_RESULT ModuleWin::F_WinActivate(VectorVariant &vParams, Variant &vResult)
 
 AUT_RESULT ModuleWin::F_WinShow(VectorVariant &vParams, Variant &vResult)
 {
-    Win_WindowSearchInit(vParams);
+    WinSearchUtil util(engine);
+    util.Win_WindowSearchInit(vParams);
 
-    if (Win_WindowSearch() == false)
+    if (util.Win_WindowSearch() == false)
         return AUT_OK;                            // Required window not found
 
     int nFlag = vParams[2].nValue();
 
     if (nFlag == SW_ENABLE)
-        EnableWindow(m_WindowSearchHWND, TRUE);
+        EnableWindow(util.m_WindowSearchHWND, TRUE);
     else if (nFlag == SW_DISABLE)
-        EnableWindow(m_WindowSearchHWND, FALSE);
+        EnableWindow(util.m_WindowSearchHWND, FALSE);
     else
     {
-        ShowWindow(m_WindowSearchHWND, nFlag);
-        Util_Sleep(m_nWinWaitDelay);                // Briefly pause before continuing
+        ShowWindow(util.m_WindowSearchHWND, nFlag);
+        Util_Sleep(engine->nWinWaitDelay());                // Briefly pause before continuing
     }
 
     return AUT_OK;
@@ -647,12 +275,13 @@ AUT_RESULT ModuleWin::F_WinMove(VectorVariant &vParams, Variant &vResult)
     int        nWidth, nHeight;
     RECT    rect;
 
-    Win_WindowSearchInit(vParams);
+    WinSearchUtil util(engine);
+    util.Win_WindowSearchInit(vParams);
 
-    if (Win_WindowSearch() == false)
+    if (util.Win_WindowSearch() == false)
         return AUT_OK;                                    // Required window not found
 
-    GetWindowRect(m_WindowSearchHWND, &rect);
+    GetWindowRect(util.m_WindowSearchHWND, &rect);
 
     if (iNumParams < 5)
         nWidth = rect.right - rect.left;
@@ -664,8 +293,8 @@ AUT_RESULT ModuleWin::F_WinMove(VectorVariant &vParams, Variant &vResult)
     else
         nHeight = vParams[5].nValue();
 
-    MoveWindow(m_WindowSearchHWND, vParams[2].nValue(), vParams[3].nValue(), nWidth, nHeight, TRUE);
-    //Util_Sleep(m_nWinWaitDelay);                // Briefly pause before continuing
+    MoveWindow(util.m_WindowSearchHWND, vParams[2].nValue(), vParams[3].nValue(), nWidth, nHeight, TRUE);
+    //Util_Sleep(engine->nWinWaitDelay());                // Briefly pause before continuing
 
     return AUT_OK;
 
@@ -678,13 +307,14 @@ AUT_RESULT ModuleWin::F_WinMove(VectorVariant &vParams, Variant &vResult)
 
 AUT_RESULT ModuleWin::F_WinClose(VectorVariant &vParams, Variant &vResult)
 {
-    Win_WindowSearchInit(vParams);
+    WinSearchUtil util(engine);
+    util.Win_WindowSearchInit(vParams);
 
-    if (Win_WindowSearch() == false)
+    if (util.Win_WindowSearch() == false)
         return AUT_OK;                            // Required window not found
 
-    PostMessage(m_WindowSearchHWND, WM_CLOSE, 0, 0L);
-    Util_Sleep(m_nWinWaitDelay);                // Briefly pause before continuing
+    PostMessage(util.m_WindowSearchHWND, WM_CLOSE, 0, 0L);
+    Util_Sleep(engine->nWinWaitDelay());                // Briefly pause before continuing
 
     return AUT_OK;
 
@@ -698,13 +328,14 @@ AUT_RESULT ModuleWin::F_WinClose(VectorVariant &vParams, Variant &vResult)
 
 AUT_RESULT ModuleWin::F_WinKill(VectorVariant &vParams, Variant &vResult)
 {
-    Win_WindowSearchInit(vParams);
+    WinSearchUtil util(engine);
+    util.Win_WindowSearchInit(vParams);
 
-    if (Win_WindowSearch() == false)
+    if (util.Win_WindowSearch() == false)
         return AUT_OK;                            // Required window not found
 
-    Util_WinKill(m_WindowSearchHWND);
-    Util_Sleep(m_nWinWaitDelay);                // Briefly pause before continuing
+    Util_WinKill(util.m_WindowSearchHWND);
+    Util_Sleep(engine->nWinWaitDelay());                // Briefly pause before continuing
 
     return AUT_OK;
 
@@ -718,12 +349,13 @@ AUT_RESULT ModuleWin::F_WinKill(VectorVariant &vParams, Variant &vResult)
 
 AUT_RESULT ModuleWin::F_WinSetTitle(VectorVariant &vParams, Variant &vResult)
 {
-    Win_WindowSearchInit(vParams);
+    WinSearchUtil util(engine);
+    util.Win_WindowSearchInit(vParams);
 
-    if (Win_WindowSearch() == false)
+    if (util.Win_WindowSearch() == false)
         return AUT_OK;                                    // Required window not found
 
-    SetWindowText( m_WindowSearchHWND, vParams[2].szValue() );
+    SetWindowText(util.m_WindowSearchHWND, vParams[2].szValue());
 
     return AUT_OK;
 
@@ -739,13 +371,14 @@ AUT_RESULT ModuleWin::F_WinSetTitle(VectorVariant &vParams, Variant &vResult)
 AUT_RESULT ModuleWin::F_WinGetTitle(VectorVariant &vParams, Variant &vResult)
 {
     char    szBuffer[AUT_WINTEXTBUFFER+1];
+    WinSearchUtil util(engine);
 
-    Win_WindowSearchInit(vParams);
+    util.Win_WindowSearchInit(vParams);
 
-    if (Win_WindowSearch() == false)
+    if (util.Win_WindowSearch() == false)
         return AUT_OK;                                    // Required window not found
 
-    GetWindowText(m_WindowSearchHWND, szBuffer, AUT_WINTEXTBUFFER);
+    GetWindowText(util.m_WindowSearchHWND, szBuffer, AUT_WINTEXTBUFFER);
 
     vResult = szBuffer;
 
@@ -763,123 +396,18 @@ AUT_RESULT ModuleWin::F_WinGetTitle(VectorVariant &vParams, Variant &vResult)
 AUT_RESULT ModuleWin::F_WinGetText(VectorVariant &vParams, Variant &vResult)
 {
     // $var = WinGetText(<title>, [<text>])
-    Win_WindowSearchInit(vParams);
+    WinSearchUtil util(engine);
 
-    if (Win_WindowSearch() == false)
+    util.Win_WindowSearchInit(vParams);
+
+    if (util.Win_WindowSearch() == false)
         return AUT_OK;                                    // Required window not found
 
-    vResult = Util_GetWinText(m_WindowSearchHWND, m_bDetectHiddenText);
+    vResult = Util_GetWinText(util.m_WindowSearchHWND, engine->bDetectHiddenText());
 
     return AUT_OK;
 
 } // Win_WinGetText()
-
-
-///////////////////////////////////////////////////////////////////////////////
-// ControlSearch() - requires a title, text and controlname
-///////////////////////////////////////////////////////////////////////////////
-
-bool ModuleWin::ControlSearch(VectorVariant &vParams)
-{
-    // Init the window search and see if it exists
-    m_vWindowSearchTitle    = vParams[0];
-    m_vWindowSearchText        = vParams[1];
-
-    if (Win_WindowSearch() == false)
-        return false;                            // Required window not found
-
-
-    // Zero control search params
-    m_vControlSearchValue        = vParams[2];    // The Control ID/Class or Text to find
-    m_iControlSearchInstance    = 0;            // Variable to keep track of class instance
-    m_bControlSearchFoundFlag    = false;        // Found nothing yet
-
-
-    // We have a valid parent window, if the control to search for is a HWND then we can return straight away
-    // This used to ignore title/text and use GetParent() but it messed up sometimes.
-    if (m_vControlSearchValue.isHWND())
-    {
-        m_ControlSearchHWND = m_vControlSearchValue.hWnd();
-        return true;
-    }
-
-
-    // If the class name is blank, return the main window handle as the control handle...
-    if (m_vControlSearchValue.isTrue() == false)    // Blank string is false, and 0 is false
-    {
-        m_ControlSearchHWND = m_WindowSearchHWND;
-        return true;
-    }
-
-    // If the class is a number - assume Control ID, otherwise try classnameNN and then text
-    if (m_vControlSearchValue.isNumber())
-    {
-        m_nControlSearchMethod = AUT_CONTROLSEARCH_ID;
-        EnumChildWindows(m_WindowSearchHWND, (WNDENUMPROC)ControlSearchProc, 0);
-    }
-    else
-    {
-        m_nControlSearchMethod = AUT_CONTROLSEARCH_CLASS;
-        EnumChildWindows(m_WindowSearchHWND, (WNDENUMPROC)ControlSearchProc, 0);
-
-        if (m_bControlSearchFoundFlag == false)
-        {
-            m_nControlSearchMethod = AUT_CONTROLSEARCH_TEXT;
-            EnumChildWindows(m_WindowSearchHWND, (WNDENUMPROC)ControlSearchProc, 0);
-        }
-    }
-
-    return m_bControlSearchFoundFlag;
-}
-
-BOOL CALLBACK ModuleWin::ControlSearchProc(HWND hWnd, LPARAM lParam)
-{
-    return g_oScript.ControlSearchProcHandler(hWnd, lParam);
-}
-
-BOOL ModuleWin::ControlSearchProcHandler(HWND hWnd, LPARAM lParam)
-{
-    char    szBuffer[1024+1];
-    BOOL    bRes = TRUE;                        // Return TRUE to continue enumeration
-
-    // Determine the search method to use, ClassNN, ID or Text
-    if (m_nControlSearchMethod == AUT_CONTROLSEARCH_ID)
-    {
-        if (m_vControlSearchValue.nValue() == GetDlgCtrlID(hWnd))
-            bRes = FALSE;
-    }
-    else if (m_nControlSearchMethod == AUT_CONTROLSEARCH_CLASS)
-    {
-        GetClassName(hWnd, szBuffer, 256);
-
-        if ( strncmp(m_vControlSearchValue.szValue(), szBuffer, strlen(szBuffer)) == 0 )
-        {
-            m_iControlSearchInstance++;                //Control name found, increment instance
-
-            sprintf(szBuffer, "%s%u", szBuffer, m_iControlSearchInstance);
-
-            if ( strcmp(szBuffer, m_vControlSearchValue.szValue()) == 0 )    //Do we match control name AND num
-                bRes = FALSE;
-        }
-    }
-    else                                        // Use window text
-    {
-        GetWindowText(hWnd, szBuffer, 1024);
-
-        if ( strcmp(m_vControlSearchValue.szValue(), szBuffer) == 0 )
-            bRes = FALSE;
-    }
-
-    if (bRes == FALSE)
-    {
-        m_ControlSearchHWND            = hWnd;    // Save the hwnd of this control
-        m_bControlSearchFoundFlag    = true;    // Set the found flag
-    }
-
-    return bRes;
-
-} // ControlSearchProcHandler()
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // WinSetOnTop()
@@ -889,15 +417,16 @@ BOOL ModuleWin::ControlSearchProcHandler(HWND hWnd, LPARAM lParam)
 
 AUT_RESULT ModuleWin::F_WinSetOnTop(VectorVariant &vParams, Variant &vResult)
 {
-    Win_WindowSearchInit(vParams);
+    WinSearchUtil util(engine);
 
-    if (Win_WindowSearch() == false)
+    util.Win_WindowSearchInit(vParams);
+    if (util.Win_WindowSearch() == false)
         return AUT_OK;                                    // Required window not found
 
     if ( vParams[2].nValue() == 1 )                            // 1 = TopMost... else NoTopMost
-        SetWindowPos(m_WindowSearchHWND, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
+        SetWindowPos(util.m_WindowSearchHWND, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
     else
-        SetWindowPos(m_WindowSearchHWND, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
+        SetWindowPos(util.m_WindowSearchHWND, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
 
     return AUT_OK;
 
@@ -915,16 +444,17 @@ AUT_RESULT ModuleWin::F_WinGetPos(VectorVariant &vParams, Variant &vResult)
 {
     RECT    rect;
     Variant    *pvTemp;
+    WinSearchUtil util(engine);
 
-    Win_WindowSearchInit(vParams);
+    util.Win_WindowSearchInit(vParams);
 
-    if (Win_WindowSearch() == false)
+    if (util.Win_WindowSearch() == false)
     {
         engine->SetFuncErrorCode(1);
         return AUT_OK;                                    // Required window not found
     }
 
-    GetWindowRect(m_WindowSearchHWND, &rect);    // Load the window stats
+    GetWindowRect(util.m_WindowSearchHWND, &rect);    // Load the window stats
 
     // Setup vResult as an Array to hold the 4 values we want to return
     Util_VariantArrayDim(&vResult, 4);
@@ -952,18 +482,19 @@ AUT_RESULT ModuleWin::F_WinGetPos(VectorVariant &vParams, Variant &vResult)
 
 AUT_RESULT ModuleWin::F_ControlFocus(VectorVariant &vParams, Variant &vResult)
 {
-    if ( ControlSearch(vParams) == false )
+    WinSearchUtil util(engine);
+    if (util.ControlSearch(vParams) == false)
     {
         vResult = 0;
         return AUT_OK;                                    // Required control not found
     }
 
-    Util_AttachThreadInput(m_WindowSearchHWND, true);
+    Util_AttachThreadInput(util.m_WindowSearchHWND, true);
 
-    if ( SetFocus(m_ControlSearchHWND) == NULL)
+    if ( SetFocus(util.m_ControlSearchHWND) == NULL)
         vResult = 0;            // Error
 
-    Util_AttachThreadInput(m_WindowSearchHWND, false);
+    Util_AttachThreadInput(util.m_WindowSearchHWND, false);
 
     return AUT_OK;
 
@@ -983,19 +514,20 @@ AUT_RESULT ModuleWin::F_ControlClick(VectorVariant &vParams, Variant &vResult)
     WPARAM    wParam;
     RECT    rect;
     LPARAM    lParam;
+    WinSearchUtil util(engine);
 
-    if ( ControlSearch(vParams) == false )
+    if (util.ControlSearch(vParams) == false)
     {
         vResult = 0;
         return AUT_OK;                                    // Required control not found
     }
 
-    Util_AttachThreadInput(m_WindowSearchHWND, true);
+    Util_AttachThreadInput(util.m_WindowSearchHWND, true);
 
-    SetActiveWindow(m_WindowSearchHWND);        // See BM_CLICK documentation, applies to this too
+    SetActiveWindow(util.m_WindowSearchHWND);        // See BM_CLICK documentation, applies to this too
 
     // Get the dimensions of the control so we can click the centre of it (maybe safer and more natural than 0,0)
-    GetWindowRect(m_ControlSearchHWND, &rect);
+    GetWindowRect(util.m_ControlSearchHWND, &rect);
     lParam = MAKELPARAM( (rect.right - rect.left) / 2, (rect.bottom - rect.top) / 2);
 
     // Get number of clicks
@@ -1027,13 +559,13 @@ AUT_RESULT ModuleWin::F_ControlClick(VectorVariant &vParams, Variant &vResult)
 
     for (int i=0; i<nClicks; ++i)
     {
-        PostMessage( m_ControlSearchHWND, msgdown, wParam, lParam);
+        PostMessage(util.m_ControlSearchHWND, msgdown, wParam, lParam);
         //Sleep(m_nMouseClickDownDelay); - causing failures?
-        PostMessage( m_ControlSearchHWND, msgup, 0, lParam);
-        Util_Sleep(m_nMouseClickDelay);
+        PostMessage(util.m_ControlSearchHWND, msgup, 0, lParam);
+        Util_Sleep(engine->nMouseClickDelay());
     }
 
-    Util_AttachThreadInput(m_WindowSearchHWND, false);
+    Util_AttachThreadInput(util.m_WindowSearchHWND, false);
 
     return AUT_OK;
 
@@ -1046,13 +578,14 @@ AUT_RESULT ModuleWin::F_ControlClick(VectorVariant &vParams, Variant &vResult)
 
 AUT_RESULT ModuleWin::F_ControlSetText(VectorVariant &vParams, Variant &vResult)
 {
-    if ( ControlSearch(vParams) == false )
+    WinSearchUtil util(engine);
+    if (util.ControlSearch(vParams) == false)
     {
         vResult = 0;
         return AUT_OK;                                    // Required control not found
     }
 
-    if ( SendMessage(m_ControlSearchHWND,WM_SETTEXT, 0, (LPARAM)vParams[3].szValue()) != TRUE)
+    if (SendMessage(util.m_ControlSearchHWND,WM_SETTEXT, 0, (LPARAM)vParams[3].szValue()) != TRUE)
         vResult = 0;            // Error
 
     return AUT_OK;
@@ -1068,16 +601,18 @@ AUT_RESULT ModuleWin::F_ControlSetText(VectorVariant &vParams, Variant &vResult)
 AUT_RESULT ModuleWin::F_ControlGetText(VectorVariant &vParams, Variant &vResult)
 {
     char    szBuffer[AUT_WINTEXTBUFFER+1];
+    WinSearchUtil util(engine);
 
     vResult = "";                                // In this case set the default to be a blank string
 
-    if ( ControlSearch(vParams) == false )
+    if (util.ControlSearch(vParams) == false)
     {
         engine->SetFuncErrorCode(1);
         return AUT_OK;                                    // Required control not found
     }
 
-    if ( !(SendMessage(m_ControlSearchHWND,WM_GETTEXT,(WPARAM)AUT_WINTEXTBUFFER, (LPARAM)szBuffer) > 0) )
+    if ( !(SendMessage(util.m_ControlSearchHWND,WM_GETTEXT,(WPARAM)AUT_WINTEXTBUFFER,
+                    (LPARAM)szBuffer) > 0) )
         engine->SetFuncErrorCode(1);            // Error
     else
         vResult = szBuffer;
@@ -1096,19 +631,20 @@ AUT_RESULT ModuleWin::F_ControlGetPos(VectorVariant &vParams, Variant &vResult)
     Variant    *pvTemp;
     POINT    point;
     RECT    rect;
+    WinSearchUtil util(engine);
 
-    if ( ControlSearch(vParams) == false )
+    if (util.ControlSearch(vParams) == false)
     {
         engine->SetFuncErrorCode(1);
         return AUT_OK;                                    // Required control not found
     }
 
-    if ( GetWindowRect(m_ControlSearchHWND, &rect) )    // Load the window stats
+    if ( GetWindowRect(util.m_ControlSearchHWND, &rect) )    // Load the window stats
     {
         point.x = rect.left;
         point.y = rect.top;
 
-        ScreenToClient(m_WindowSearchHWND,&point);
+        ScreenToClient(util.m_WindowSearchHWND,&point);
 
         // Setup vResult as an Array to hold the 4 values we want to return
         Util_VariantArrayDim(&vResult, 4);
@@ -1143,16 +679,17 @@ AUT_RESULT ModuleWin::F_ControlMove(VectorVariant &vParams, Variant &vResult)
     uint    iNumParams = vParams.size();
     int        nWidth, nHeight;
     RECT    rect;
+    WinSearchUtil util(engine);
 
-    if ( ControlSearch(vParams) == false )
+    if (util.ControlSearch(vParams) == false)
     {
         vResult = 0;
         return AUT_OK;                                    // Required control not found
     }
 
-    Util_AttachThreadInput(m_WindowSearchHWND, true);
+    Util_AttachThreadInput(util.m_WindowSearchHWND, true);
 
-    if ( GetWindowRect(m_ControlSearchHWND, &rect) )    // Load the window stats
+    if ( GetWindowRect(util.m_ControlSearchHWND, &rect) )    // Load the window stats
     {
         if (iNumParams < 6)
             nWidth = rect.right - rect.left;
@@ -1164,7 +701,7 @@ AUT_RESULT ModuleWin::F_ControlMove(VectorVariant &vParams, Variant &vResult)
         else
             nHeight = vParams[6].nValue();
 
-        MoveWindow(m_ControlSearchHWND, vParams[3].nValue(), vParams[4].nValue(), nWidth, nHeight, true);
+        MoveWindow(util.m_ControlSearchHWND, vParams[3].nValue(), vParams[4].nValue(), nWidth, nHeight, true);
     }
     else
     {
@@ -1172,7 +709,7 @@ AUT_RESULT ModuleWin::F_ControlMove(VectorVariant &vParams, Variant &vResult)
         return AUT_OK;
     }
 
-    Util_AttachThreadInput(m_WindowSearchHWND, false);
+    Util_AttachThreadInput(util.m_WindowSearchHWND, false);
 
     return AUT_OK;
 
@@ -1185,13 +722,14 @@ AUT_RESULT ModuleWin::F_ControlMove(VectorVariant &vParams, Variant &vResult)
 
 AUT_RESULT ModuleWin::F_ControlEnable(VectorVariant &vParams, Variant &vResult)
 {
-    if ( ControlSearch(vParams) == false )
+    WinSearchUtil util(engine);
+    if (util.ControlSearch(vParams) == false)
     {
         vResult = 0;
         return AUT_OK;                                    // Required control not found
     }
 
-    EnableWindow(m_ControlSearchHWND,TRUE);
+    EnableWindow(util.m_ControlSearchHWND,TRUE);
 
     return AUT_OK;
 
@@ -1204,13 +742,14 @@ AUT_RESULT ModuleWin::F_ControlEnable(VectorVariant &vParams, Variant &vResult)
 
 AUT_RESULT ModuleWin::F_ControlDisable(VectorVariant &vParams, Variant &vResult)
 {
-    if ( ControlSearch(vParams) == false )
+    WinSearchUtil util(engine);
+    if (util.ControlSearch(vParams) == false)
     {
         vResult = 0;
         return AUT_OK;                                    // Required control not found
     }
 
-    EnableWindow(m_ControlSearchHWND,FALSE);
+    EnableWindow(util.m_ControlSearchHWND,FALSE);
 
     return AUT_OK;
 
@@ -1223,13 +762,14 @@ AUT_RESULT ModuleWin::F_ControlDisable(VectorVariant &vParams, Variant &vResult)
 
 AUT_RESULT ModuleWin::F_ControlShow(VectorVariant &vParams, Variant &vResult)
 {
-    if ( ControlSearch(vParams) == false )
+    WinSearchUtil util(engine);
+    if (util.ControlSearch(vParams) == false)
     {
         vResult = 0;
         return AUT_OK;                                    // Required control not found
     }
 
-    ShowWindow(m_ControlSearchHWND,SW_SHOWNOACTIVATE);
+    ShowWindow(util.m_ControlSearchHWND,SW_SHOWNOACTIVATE);
 
     return AUT_OK;
 
@@ -1242,13 +782,14 @@ AUT_RESULT ModuleWin::F_ControlShow(VectorVariant &vParams, Variant &vResult)
 
 AUT_RESULT ModuleWin::F_ControlHide(VectorVariant &vParams, Variant &vResult)
 {
-    if ( ControlSearch(vParams) == false )
+    WinSearchUtil util(engine);
+    if (util.ControlSearch(vParams) == false )
     {
         vResult = 0;
         return AUT_OK;                                    // Required control not found
     }
 
-    ShowWindow(m_ControlSearchHWND,SW_HIDE);
+    ShowWindow(util.m_ControlSearchHWND,SW_HIDE);
 
     return AUT_OK;
 
@@ -1294,8 +835,9 @@ AUT_RESULT ModuleWin::F_ControlCommand(VectorVariant &vParams,  Variant &vResult
     RECT        rect;
     LPARAM        lParam;
     Variant        vTemp;
+    WinSearchUtil util(engine);
 
-    if ( ControlSearch(vParams) == false )
+    if (util.ControlSearch(vParams) == false)
     {
         engine->SetFuncErrorCode(1);
         return AUT_OK;                                    // Required control not found
@@ -1308,7 +850,7 @@ AUT_RESULT ModuleWin::F_ControlCommand(VectorVariant &vParams,  Variant &vResult
         vParams.push_back(vTemp);
 
 
-    Util_AttachThreadInput(m_WindowSearchHWND, true);
+    Util_AttachThreadInput(util.m_WindowSearchHWND, true);
 
     // Easy access to the command parameter
     szCmd = vParams[3].szValue();
@@ -1317,7 +859,7 @@ AUT_RESULT ModuleWin::F_ControlCommand(VectorVariant &vParams,  Variant &vResult
     {
         if ( strcmpi(szCmd,"ISVISIBLE")==0 )
         {
-            if ( IsWindowVisible(m_ControlSearchHWND) )
+            if ( IsWindowVisible(util.m_ControlSearchHWND) )
                 vResult = 1;
             else
                 vResult = 0;
@@ -1325,7 +867,7 @@ AUT_RESULT ModuleWin::F_ControlCommand(VectorVariant &vParams,  Variant &vResult
         }
         if ( strcmpi(szCmd,"ISENABLED")==0 )
         {
-            if ( IsWindowEnabled(m_ControlSearchHWND) )
+            if ( IsWindowEnabled(util.m_ControlSearchHWND) )
                 vResult = 1;
             else
                 vResult = 0;
@@ -1333,21 +875,21 @@ AUT_RESULT ModuleWin::F_ControlCommand(VectorVariant &vParams,  Variant &vResult
         }
         if ( strcmpi(szCmd,"TABLEFT")==0 )
         {// must be a Tab Control
-            PostMessage(m_ControlSearchHWND, WM_KEYDOWN, VK_LEFT, (LPARAM)( (MapVirtualKey(VK_LEFT, 0)<<16) | 0x00000001 ) );
+            PostMessage(util.m_ControlSearchHWND, WM_KEYDOWN, VK_LEFT, (LPARAM)( (MapVirtualKey(VK_LEFT, 0)<<16) | 0x00000001 ) );
             Sleep(0);
-            PostMessage(m_ControlSearchHWND, WM_KEYUP, VK_LEFT, (LPARAM)( (MapVirtualKey(VK_LEFT, 0)<<16) | 0xC0000001 ) );
+            PostMessage(util.m_ControlSearchHWND, WM_KEYUP, VK_LEFT, (LPARAM)( (MapVirtualKey(VK_LEFT, 0)<<16) | 0xC0000001 ) );
             break;                            // TABLEFT performed, exit switch
         }
         if ( strcmpi(szCmd,"TABRIGHT")==0 )
         {// must be a Tab Control
-            PostMessage(m_ControlSearchHWND,WM_KEYDOWN,VK_RIGHT, (LPARAM)( (MapVirtualKey(VK_LEFT, 0)<<16) | 0x00000001 ) );
+            PostMessage(util.m_ControlSearchHWND,WM_KEYDOWN,VK_RIGHT, (LPARAM)( (MapVirtualKey(VK_LEFT, 0)<<16) | 0x00000001 ) );
             Sleep(0);
-            PostMessage(m_ControlSearchHWND,WM_KEYUP,VK_RIGHT, (LPARAM)( (MapVirtualKey(VK_LEFT, 0)<<16) | 0xC0000001 ));
+            PostMessage(util.m_ControlSearchHWND,WM_KEYUP,VK_RIGHT, (LPARAM)( (MapVirtualKey(VK_LEFT, 0)<<16) | 0xC0000001 ));
             break;                            // TABRIGHT performed, exit switch
         }
         if ( strcmpi(szCmd,"CURRENTTAB")==0 )
         {// must be a Tab Control
-            int nTab = (int)SendMessage(m_ControlSearchHWND,TCM_GETCURSEL,vParams[4].nValue(),0);
+            int nTab = (int)SendMessage(util.m_ControlSearchHWND,TCM_GETCURSEL,vParams[4].nValue(),0);
             if ( nTab==-1 )
                 engine->SetFuncErrorCode(1);
             else
@@ -1360,14 +902,14 @@ AUT_RESULT ModuleWin::F_ControlCommand(VectorVariant &vParams,  Variant &vResult
 
         if ( strcmpi(szCmd,"SHOWDROPDOWN")==0 )
         {// must be a ComboBox
-            if ( !(SendMessage(m_ControlSearchHWND, CB_SHOWDROPDOWN, (WPARAM)TRUE, 0)) )
+            if ( !(SendMessage(util.m_ControlSearchHWND, CB_SHOWDROPDOWN, (WPARAM)TRUE, 0)) )
                 engine->SetFuncErrorCode(1);
             break;                            // SHOWDROPDOWN performed, exit switch
         }
 
         if ( strcmpi(szCmd,"HIDEDROPDOWN")==0 )
         {// must be a ComboBox
-            if ( !(SendMessage(m_ControlSearchHWND, CB_SHOWDROPDOWN, (WPARAM)FALSE, 0)) )
+            if ( !(SendMessage(util.m_ControlSearchHWND, CB_SHOWDROPDOWN, (WPARAM)FALSE, 0)) )
                 engine->SetFuncErrorCode(1);
             break;                            // HIDEDROPDOWN performed, exit switch
         }
@@ -1380,7 +922,7 @@ AUT_RESULT ModuleWin::F_ControlCommand(VectorVariant &vParams,  Variant &vResult
                 vMsg = LB_ADDSTRING;
             if ( vMsg )
             {// Must be ComboBox or ListBox
-                if ( !(SendMessage(m_ControlSearchHWND, vMsg, 0, (LPARAM)vParams[4].szValue())) )
+                if ( !(SendMessage(util.m_ControlSearchHWND, vMsg, 0, (LPARAM)vParams[4].szValue())) )
                     engine->SetFuncErrorCode(1);
             }
             break;                            // ADDSTRING performed, exit switch
@@ -1394,7 +936,7 @@ AUT_RESULT ModuleWin::F_ControlCommand(VectorVariant &vParams,  Variant &vResult
                 vMsg = LB_DELETESTRING;
             if ( vMsg )
             {// Must be ComboBox or ListBox
-                if ( !(SendMessage(m_ControlSearchHWND, vMsg, (WPARAM)vParams[4].nValue(), 0)) )
+                if ( !(SendMessage(util.m_ControlSearchHWND, vMsg, (WPARAM)vParams[4].nValue(), 0)) )
                     engine->SetFuncErrorCode(1);
             }
             break;                            // DELSTRING performed, exit switch
@@ -1408,7 +950,7 @@ AUT_RESULT ModuleWin::F_ControlCommand(VectorVariant &vParams,  Variant &vResult
                 vMsg = LB_FINDSTRINGEXACT;
             if ( vMsg )
             {// Must be ComboBox or ListBox
-                vResult = (int)SendMessage(m_ControlSearchHWND, vMsg, (WPARAM)1, (LPARAM)vParams[4].szValue());
+                vResult = (int)SendMessage(util.m_ControlSearchHWND, vMsg, (WPARAM)1, (LPARAM)vParams[4].szValue());
                 if ( vResult.nValue() == -1 )
                     engine->SetFuncErrorCode(1);
             }
@@ -1433,12 +975,16 @@ AUT_RESULT ModuleWin::F_ControlCommand(VectorVariant &vParams,  Variant &vResult
             }
             if ( vMsg )
             {// Must be ComboBox or ListBox
-                if ( SendMessage(m_ControlSearchHWND, vMsg, (WPARAM)vParams[4].nValue(), 0) == -1 )
+                if ( SendMessage(util.m_ControlSearchHWND, vMsg, (WPARAM)vParams[4].nValue(), 0) == -1 )
                     engine->SetFuncErrorCode(1);
                 else
                 {
-                    SendMessage(GetParent(m_ControlSearchHWND),WM_COMMAND,(WPARAM)MAKELONG(GetDlgCtrlID(m_ControlSearchHWND),xMsg),(LPARAM)m_ControlSearchHWND);
-                    SendMessage(GetParent(m_ControlSearchHWND),WM_COMMAND,(WPARAM)MAKELONG(GetDlgCtrlID(m_ControlSearchHWND),yMsg),(LPARAM)m_ControlSearchHWND);
+                    SendMessage(GetParent(util.m_ControlSearchHWND),WM_COMMAND,
+                            (WPARAM)MAKELONG(GetDlgCtrlID(util.m_ControlSearchHWND),xMsg),
+                            (LPARAM)util.m_ControlSearchHWND);
+                    SendMessage(GetParent(util.m_ControlSearchHWND),WM_COMMAND,
+                            (WPARAM)MAKELONG(GetDlgCtrlID(util.m_ControlSearchHWND),yMsg),
+                            (LPARAM)util.m_ControlSearchHWND);
                 }
             }
             break;                            // SETCURRENTSELECTION performed, exit switch
@@ -1461,12 +1007,12 @@ AUT_RESULT ModuleWin::F_ControlCommand(VectorVariant &vParams,  Variant &vResult
             if ( vMsg )
             {// Must be ComboBox or ListBox
                 int          nIndex, nLen;
-                nIndex = (int)SendMessage(m_ControlSearchHWND, vMsg, 0, 0);
+                nIndex = (int)SendMessage(util.m_ControlSearchHWND, vMsg, 0, 0);
                 if ( nIndex == -1)
                     engine->SetFuncErrorCode(1);
                 else
                 {
-                    nLen = (int)SendMessage(m_ControlSearchHWND,xMsg,(WPARAM)nIndex,0);
+                    nLen = (int)SendMessage(util.m_ControlSearchHWND,xMsg,(WPARAM)nIndex,0);
                     if ( nLen == -1 )
                         engine->SetFuncErrorCode(1);
                     else
@@ -1474,7 +1020,8 @@ AUT_RESULT ModuleWin::F_ControlCommand(VectorVariant &vParams,  Variant &vResult
                         char     *pBuffer = NULL;
                         nLen++;
                         pBuffer=(char*)calloc(256+nLen,1);
-                        nLen = (int)SendMessage(m_ControlSearchHWND,yMsg,(WPARAM)nIndex,(LPARAM)pBuffer);
+                        nLen = (int)SendMessage(util.m_ControlSearchHWND,yMsg,
+                                (WPARAM)nIndex,(LPARAM)pBuffer);
                         if ( nLen == -1 )
                                 engine->SetFuncErrorCode(1);
                         else
@@ -1503,12 +1050,17 @@ AUT_RESULT ModuleWin::F_ControlCommand(VectorVariant &vParams,  Variant &vResult
             }
             if ( vMsg )
             {// Must be ComboBox or ListBox
-                if ( SendMessage(m_ControlSearchHWND, vMsg, (WPARAM)1, (LPARAM)vParams[4].szValue()) == -1 )
+                if ( SendMessage(util.m_ControlSearchHWND, vMsg, (WPARAM)1,
+                            (LPARAM)vParams[4].szValue()) == -1 )
                     engine->SetFuncErrorCode(1);
                 else
                 {
-                    SendMessage(GetParent(m_ControlSearchHWND),WM_COMMAND,(WPARAM)MAKELONG(GetDlgCtrlID(m_ControlSearchHWND),xMsg),(LPARAM)m_ControlSearchHWND);
-                    SendMessage(GetParent(m_ControlSearchHWND),WM_COMMAND,(WPARAM)MAKELONG(GetDlgCtrlID(m_ControlSearchHWND),yMsg),(LPARAM)m_ControlSearchHWND);
+                    SendMessage(GetParent(util.m_ControlSearchHWND),WM_COMMAND,
+                            (WPARAM)MAKELONG(GetDlgCtrlID(util.m_ControlSearchHWND),xMsg),
+                            (LPARAM)util.m_ControlSearchHWND);
+                    SendMessage(GetParent(util.m_ControlSearchHWND),WM_COMMAND,
+                            (WPARAM)MAKELONG(GetDlgCtrlID(util.m_ControlSearchHWND),yMsg),
+                            (LPARAM)util.m_ControlSearchHWND);
                 }
             }
             break;                            // SELECTSTRING performed, exit switch
@@ -1516,7 +1068,7 @@ AUT_RESULT ModuleWin::F_ControlCommand(VectorVariant &vParams,  Variant &vResult
 
         if ( strcmpi(szCmd,"ISCHECKED")==0  )
         {//Must be a Button
-            if ( SendMessage(m_ControlSearchHWND,BM_GETCHECK, 0, 0) == BST_CHECKED )
+            if ( SendMessage(util.m_ControlSearchHWND,BM_GETCHECK, 0, 0) == BST_CHECKED )
                 vResult = 1;                // Is checked (0 is default/not checked)
             else
                 vResult = 0;
@@ -1526,15 +1078,17 @@ AUT_RESULT ModuleWin::F_ControlCommand(VectorVariant &vParams,  Variant &vResult
         if ( strcmpi(szCmd,"CHECK")==0 )
         {//Must be a Button
             // Only send the "check" if the button is not already checked
-            if ( SendMessage(m_ControlSearchHWND,BM_GETCHECK, 0, 0) == BST_UNCHECKED )
+            if ( SendMessage(util.m_ControlSearchHWND,BM_GETCHECK, 0, 0) == BST_UNCHECKED )
             {
-                //SendMessage(m_ControlSearchHWND,BM_SETCHECK,(WPARAM)BST_CHECKED, 0);
-                //SendMessage(GetParent(m_ControlSearchHWND),WM_COMMAND,(WPARAM)MAKELONG(GetDlgCtrlID(m_ControlSearchHWND),BN_CLICKED),(LPARAM)m_ControlSearchHWND);
-                SetActiveWindow(m_WindowSearchHWND);        // See BM_CLICK docs, applies to this too
-                GetWindowRect(m_ControlSearchHWND, &rect);    // Code to primary click the centre of the control
+                //SendMessage(util.m_ControlSearchHWND,BM_SETCHECK,(WPARAM)BST_CHECKED, 0);
+                //SendMessage(GetParent(util.m_ControlSearchHWND),WM_COMMAND,
+                //  (WPARAM)MAKELONG(GetDlgCtrlID(util.m_ControlSearchHWND),BN_CLICKED),
+                //  (LPARAM)util.m_ControlSearchHWND);
+                SetActiveWindow(util.m_WindowSearchHWND);        // See BM_CLICK docs, applies to this too
+                GetWindowRect(util.m_ControlSearchHWND, &rect);    // Code to primary click the centre of the control
                 lParam = MAKELPARAM( (rect.right - rect.left) / 2, (rect.bottom - rect.top) / 2);
-                PostMessage(m_ControlSearchHWND, WM_LBUTTONDOWN, MK_LBUTTON, lParam);
-                PostMessage(m_ControlSearchHWND, WM_LBUTTONUP, 0, lParam);
+                PostMessage(util.m_ControlSearchHWND, WM_LBUTTONDOWN, MK_LBUTTON, lParam);
+                PostMessage(util.m_ControlSearchHWND, WM_LBUTTONUP, 0, lParam);
             }
             break;                            // CHECK performed, exit switch
         }
@@ -1542,15 +1096,17 @@ AUT_RESULT ModuleWin::F_ControlCommand(VectorVariant &vParams,  Variant &vResult
         if ( strcmpi(szCmd,"UNCHECK")==0 )
         {//Must be a Button
             // Only send the "uncheck" if the button is not already unchecked
-            if ( SendMessage(m_ControlSearchHWND,BM_GETCHECK, 0, 0) == BST_CHECKED )
+            if ( SendMessage(util.m_ControlSearchHWND,BM_GETCHECK, 0, 0) == BST_CHECKED )
             {
-                //SendMessage(m_ControlSearchHWND,BM_SETCHECK,(WPARAM)BST_UNCHECKED, 0);
-                //SendMessage(GetParent(m_ControlSearchHWND),WM_COMMAND,(WPARAM)MAKELONG(GetDlgCtrlID(m_ControlSearchHWND),BN_CLICKED),(LPARAM)m_ControlSearchHWND);
-                SetActiveWindow(m_WindowSearchHWND);        // See BM_CLICK docs, applies to this too
-                GetWindowRect(m_ControlSearchHWND, &rect);    // Code to primary click the centre of the control
+                //SendMessage(util.m_ControlSearchHWND,BM_SETCHECK,(WPARAM)BST_UNCHECKED, 0);
+                //SendMessage(GetParent(util.m_ControlSearchHWND),WM_COMMAND,
+                //  (WPARAM)MAKELONG(GetDlgCtrlID(util.m_ControlSearchHWND),BN_CLICKED),
+                //  (LPARAM)util.m_ControlSearchHWND);
+                SetActiveWindow(util.m_WindowSearchHWND);        // See BM_CLICK docs, applies to this too
+                GetWindowRect(util.m_ControlSearchHWND, &rect);    // Code to primary click the centre of the control
                 lParam = MAKELPARAM( (rect.right - rect.left) / 2, (rect.bottom - rect.top) / 2);
-                PostMessage(m_ControlSearchHWND, WM_LBUTTONDOWN, MK_LBUTTON, lParam);
-                PostMessage(m_ControlSearchHWND, WM_LBUTTONUP, 0, lParam);
+                PostMessage(util.m_ControlSearchHWND, WM_LBUTTONDOWN, MK_LBUTTON, lParam);
+                PostMessage(util.m_ControlSearchHWND, WM_LBUTTONUP, 0, lParam);
             }
                 break;                            // UNCHECK performed, exit switch
         }
@@ -1560,13 +1116,14 @@ AUT_RESULT ModuleWin::F_ControlCommand(VectorVariant &vParams,  Variant &vResult
             UINT    nLen,nStart,nEnd;
             char    *pBuffer = NULL;
 
-            SendMessage(m_ControlSearchHWND,EM_GETSEL,(WPARAM)&nStart,(LPARAM)&nEnd);
+            SendMessage(util.m_ControlSearchHWND,EM_GETSEL,(WPARAM)&nStart,(LPARAM)&nEnd);
             if (nStart!=nEnd)
             {
-                if ( (nLen = (int)SendMessage(m_ControlSearchHWND,WM_GETTEXTLENGTH,0 , 0)) )
+                if ( (nLen = (int)SendMessage(util.m_ControlSearchHWND,WM_GETTEXTLENGTH,0 , 0)) )
                 {
                     pBuffer=(char*)calloc(256+nLen,1);
-                    if ( SendMessage(m_ControlSearchHWND,WM_GETTEXT,(WPARAM)(nLen+1), (LPARAM)pBuffer) && nEnd <= AUT_WINTEXTBUFFER )
+                    if ( SendMessage(util.m_ControlSearchHWND,WM_GETTEXT,(WPARAM)(nLen+1),
+                                (LPARAM)pBuffer) && nEnd <= AUT_WINTEXTBUFFER )
                     {
                         if (nEnd != nLen )
                             pBuffer[nEnd]='\0';
@@ -1587,13 +1144,13 @@ AUT_RESULT ModuleWin::F_ControlCommand(VectorVariant &vParams,  Variant &vResult
 
         if ( strcmpi(szCmd,"GETLINECOUNT")==0 )
         {//Must be an Edit
-            vResult = (int)SendMessage(m_ControlSearchHWND,EM_GETLINECOUNT, 0, 0);
+            vResult = (int)SendMessage(util.m_ControlSearchHWND,EM_GETLINECOUNT, 0, 0);
             break;                            // GETLINECOUNT performed, exit switch
         }
 
         if ( strcmpi(szCmd,"GETCURRENTLINE")==0 )
         {
-            vResult = (int)SendMessage(m_ControlSearchHWND,EM_LINEFROMCHAR, (WPARAM)-1, 0)+1;
+            vResult = (int)SendMessage(util.m_ControlSearchHWND,EM_LINEFROMCHAR, (WPARAM)-1, 0)+1;
             break;
         }
 
@@ -1602,16 +1159,16 @@ AUT_RESULT ModuleWin::F_ControlCommand(VectorVariant &vParams,  Variant &vResult
             uint nStart, nEnd, nOriginal;
             int  nLine;
 
-            SendMessage(m_ControlSearchHWND,EM_GETSEL,(WPARAM)&nStart,(LPARAM)&nEnd);
+            SendMessage(util.m_ControlSearchHWND,EM_GETSEL,(WPARAM)&nStart,(LPARAM)&nEnd);
             nOriginal = nStart;  //the charcter index
 
             //Decrement the character index until the row changes
             //Difference between this char index and original is the column.
 
-            nLine = (int)SendMessage(m_ControlSearchHWND,EM_LINEFROMCHAR,(WPARAM)nStart,0);
+            nLine = (int)SendMessage(util.m_ControlSearchHWND,EM_LINEFROMCHAR,(WPARAM)nStart,0);
             if (nLine >= 1)
             {
-                while (nLine == (int)SendMessage(m_ControlSearchHWND,EM_LINEFROMCHAR,(WPARAM)nStart,0))
+                while (nLine == (int)SendMessage(util.m_ControlSearchHWND,EM_LINEFROMCHAR,(WPARAM)nStart,0))
                 {
                     nStart--;
                 }
@@ -1624,7 +1181,7 @@ AUT_RESULT ModuleWin::F_ControlCommand(VectorVariant &vParams,  Variant &vResult
 
         if ( strcmpi(szCmd,"EDITPASTE")==0 )
         {
-            SendMessage(m_ControlSearchHWND,EM_REPLACESEL, TRUE, (LPARAM)vParams[4].szValue());
+            SendMessage(util.m_ControlSearchHWND,EM_REPLACESEL, TRUE, (LPARAM)vParams[4].szValue());
             break;
         }
         if ( strcmpi(szCmd,"GETLINE")==0 )
@@ -1632,7 +1189,7 @@ AUT_RESULT ModuleWin::F_ControlCommand(VectorVariant &vParams,  Variant &vResult
             int nFoo;
             *((LPINT)szBuffer) = sizeof(szBuffer);
 
-            nFoo = (int)SendMessage(m_ControlSearchHWND, EM_GETLINE, (WPARAM)vParams[4].nValue()-1, (LPARAM)szBuffer);
+            nFoo = (int)SendMessage(util.m_ControlSearchHWND, EM_GETLINE, (WPARAM)vParams[4].nValue()-1, (LPARAM)szBuffer);
             if ( nFoo )
             {
                 szBuffer[nFoo]='\0';
@@ -1648,7 +1205,7 @@ AUT_RESULT ModuleWin::F_ControlCommand(VectorVariant &vParams,  Variant &vResult
         break;
     }
 
-    Util_AttachThreadInput(m_WindowSearchHWND, false);
+    Util_AttachThreadInput(util.m_WindowSearchHWND, false);
 
     return AUT_OK;
 
@@ -1662,7 +1219,8 @@ AUT_RESULT ModuleWin::F_ControlCommand(VectorVariant &vParams,  Variant &vResult
 
 AUT_RESULT ModuleWin::F_ControlSend(VectorVariant &vParams, Variant &vResult)
 {
-    if ( ControlSearch(vParams) == false )
+    WinSearchUtil util(engine);
+    if (util.ControlSearch(vParams) == false)
     {
         vResult = 0;
         return AUT_OK;                                    // Required control not found
@@ -1670,9 +1228,9 @@ AUT_RESULT ModuleWin::F_ControlSend(VectorVariant &vParams, Variant &vResult)
 
     // Send the keys
     if (vParams.size() >= 5 && vParams[4].nValue() != 0)
-        engine->m_oSendKeys.SendRaw(vParams[3].szValue(), m_ControlSearchHWND);
+        engine->oSendKeys().SendRaw(vParams[3].szValue(), util.m_ControlSearchHWND);
     else
-        engine->m_oSendKeys.Send(vParams[3].szValue(), m_ControlSearchHWND);
+        engine->oSendKeys().Send(vParams[3].szValue(), util.m_ControlSearchHWND);
 
     return AUT_OK;
 
@@ -1691,16 +1249,17 @@ AUT_RESULT ModuleWin::F_WinMenuSelectItem(VectorVariant &vParams, Variant &vResu
     UINT    nId = 0;
     BOOL    bFound;
     HMENU    hMenu;
+    WinSearchUtil util(engine);
 
-    Win_WindowSearchInit(vParams);
+    util.Win_WindowSearchInit(vParams);
 
-    if (Win_WindowSearch() == false)
+    if (util.Win_WindowSearch() == false)
     {
         vResult = 0;                                // Default is 1
         return AUT_OK;                                // Required window not found
     }
 
-    if ( !(hMenu = GetMenu(m_WindowSearchHWND)) )
+    if ( !(hMenu = GetMenu(util.m_WindowSearchHWND)) )
     {
         vResult = 0;                                // Default is 1
         return AUT_OK;                                // Required menu not found
@@ -1751,9 +1310,9 @@ AUT_RESULT ModuleWin::F_WinMenuSelectItem(VectorVariant &vParams, Variant &vResu
         vResult = 0;                                // Default is 1
     else
     {
-        Util_AttachThreadInput(m_WindowSearchHWND, true);
-        PostMessage(m_WindowSearchHWND,WM_COMMAND,(WPARAM)nId,0);
-        Util_AttachThreadInput(m_WindowSearchHWND, false);
+        Util_AttachThreadInput(util.m_WindowSearchHWND, true);
+        PostMessage(util.m_WindowSearchHWND,WM_COMMAND,(WPARAM)nId,0);
+        Util_AttachThreadInput(util.m_WindowSearchHWND, false);
     }
 
     return AUT_OK;
@@ -1770,15 +1329,17 @@ AUT_RESULT ModuleWin::F_WinMenuSelectItem(VectorVariant &vParams, Variant &vResu
 AUT_RESULT ModuleWin::F_WinGetClassList(VectorVariant &vParams, Variant &vResult)
 {
     // $var = WinGetClassList(<title>, [<text>])
-    Win_WindowSearchInit(vParams);
+    WinSearchUtil util(engine);
 
-    if (Win_WindowSearch() == false)
+    util.Win_WindowSearchInit(vParams);
+
+    if (util.Win_WindowSearch() == false)
     {
         engine->SetFuncErrorCode(1);
         return AUT_OK;                                    // Required window not found
     }
 
-    vResult = Util_GetClassList(m_WindowSearchHWND);
+    vResult = Util_GetClassList(util.m_WindowSearchHWND);
 
     return AUT_OK;
 
@@ -1793,16 +1354,17 @@ AUT_RESULT ModuleWin::F_WinGetClientSize(VectorVariant &vParams, Variant &vResul
 {
     RECT    rect;
     Variant    *pvTemp;
+    WinSearchUtil util(engine);
 
-    Win_WindowSearchInit(vParams);
+    util.Win_WindowSearchInit(vParams);
 
-    if (Win_WindowSearch() == false)
+    if (util.Win_WindowSearch() == false)
     {
         engine->SetFuncErrorCode(1);
         return AUT_OK;                                    // Required window not found
     }
 
-    if ( GetClientRect(m_WindowSearchHWND, &rect) )    // Load the window stats
+    if ( GetClientRect(util.m_WindowSearchHWND, &rect) )    // Load the window stats
     {
         // Setup vResult as an Array to hold the 4 values we want to return
         Util_VariantArrayDim(&vResult, 2);
@@ -1828,20 +1390,21 @@ AUT_RESULT ModuleWin::F_WinGetClientSize(VectorVariant &vParams, Variant &vResul
 AUT_RESULT ModuleWin::F_WinGetHandle(VectorVariant &vParams, Variant &vResult)
 {
 //    char    szTemp[65+1];            // Big enough to hold __int64
+    WinSearchUtil util(engine);
 
-    Win_WindowSearchInit(vParams);
+    util.Win_WindowSearchInit(vParams);
 
-    if (Win_WindowSearch() == false)
+    if (util.Win_WindowSearch() == false)
     {
         engine->SetFuncErrorCode(1);
         vResult = "";
         return AUT_OK;                                    // Required window not found
     }
 
-//    sprintf(szTemp, "%p", m_WindowSearchHWND);
+//    sprintf(szTemp, "%p", util.m_WindowSearchHWND);
 //    vResult = szTemp;
 
-    vResult = m_WindowSearchHWND;
+    vResult = util.m_WindowSearchHWND;
 
     return AUT_OK;
 
@@ -1854,82 +1417,18 @@ AUT_RESULT ModuleWin::F_WinGetHandle(VectorVariant &vParams, Variant &vResult)
 
 AUT_RESULT ModuleWin::F_ControlGetHandle(VectorVariant &vParams, Variant &vResult)
 {
-    if ( ControlSearch(vParams) == false )
+    WinSearchUtil util(engine);
+    if (util.ControlSearch(vParams) == false)
     {
         vResult = "";
         return AUT_OK;                                    // Required control not found
     }
 
-    vResult = m_ControlSearchHWND;
+    vResult = util.m_ControlSearchHWND;
 
     return AUT_OK;
 
 } // ControlGetHandle()
-
-
-///////////////////////////////////////////////////////////////////////////////
-// ControlWithFocus()
-///////////////////////////////////////////////////////////////////////////////
-
-void ModuleWin::ControlWithFocus(HWND hWnd, Variant &vResult)
-{
-    char    szClass[256];
-
-
-    Util_AttachThreadInput(hWnd, true);
-    m_ControlSearchHWND=GetFocus();                // Get control with focus' hWnd
-    Util_AttachThreadInput(hWnd, false);
-
-    if(!m_ControlSearchHWND)
-    {
-        engine->SetFuncErrorCode(1);
-        return;
-    }
-
-    GetClassName(m_ControlSearchHWND, szClass, 255);
-    m_vControlSearchValue        = szClass;        // Set the class to find
-
-    m_iControlSearchInstance    = 0;            // Variable to keep track of class instance
-    m_bControlSearchFoundFlag    = false;        // Found nothing yet
-
-    EnumChildWindows(hWnd, (WNDENUMPROC)ControlWithFocusProc, 0);
-
-    if (m_bControlSearchFoundFlag)
-    {
-        sprintf(szClass,"%s%d",m_vControlSearchValue.szValue(),m_iControlSearchInstance);
-        vResult=szClass;
-    }
-    else
-        engine->SetFuncErrorCode(1);
-
-}
-
-BOOL CALLBACK ModuleWin::ControlWithFocusProc(HWND hWnd, LPARAM lParam)
-{
-    return g_oScript.ControlWithFocusProcHandler(hWnd, lParam);
-}
-
-BOOL ModuleWin::ControlWithFocusProcHandler(HWND hWnd, LPARAM lParam)
-{
-    char    szBuffer[256];
-
-    GetClassName(hWnd, szBuffer, 255);
-
-    if ( strcmp(m_vControlSearchValue.szValue(), szBuffer) == 0 )
-    {
-        m_iControlSearchInstance++;                //Control name found, increment instance
-
-        if ( hWnd==m_ControlSearchHWND )    //Do we match control hWnd
-        {
-            m_bControlSearchFoundFlag    = true;    // Set the found flag
-            return FALSE;                        // End the search/enumeration
-        }
-    }
-
-    return TRUE;                                // Continue the search
-
-} // ControlWithFocusProcHandler()
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // F_ControlGetFocus()
@@ -1939,13 +1438,14 @@ AUT_RESULT ModuleWin::F_ControlGetFocus(VectorVariant &vParams, Variant &vResult
 {
     // Set default text as "" for error
     vResult = "";
+    WinSearchUtil util(engine);
 
-    Win_WindowSearchInit(vParams);
+    util.Win_WindowSearchInit(vParams);
 
-    if (Win_WindowSearch() == false)
+    if (util.Win_WindowSearch() == false)
         engine->SetFuncErrorCode(1);
     else
-        ControlWithFocus(m_WindowSearchHWND, vResult);
+        util.ControlWithFocus(util.m_WindowSearchHWND, vResult);
 
     return AUT_OK;
 
@@ -1978,7 +1478,7 @@ AUT_RESULT ModuleWin::F_WinGetCaretPos(VectorVariant &vParams, Variant &vResult)
         // point contains the caret pos in CLIENT area coordinates, convert to screen (absolute coords)
         // and then let the current mode decide how they will be returned
         ClientToScreen(hWnd, &point);
-        ConvertCoords(m_nCoordCaretMode, ptOrigin);
+        WinUtil::instance.ConvertCoords(engine->nCoordCaretMode(), ptOrigin);
         point.x -= ptOrigin.x;
         point.y -= ptOrigin.y;
 
@@ -2015,10 +1515,11 @@ AUT_RESULT ModuleWin::F_WinGetCaretPos(VectorVariant &vParams, Variant &vResult)
 AUT_RESULT ModuleWin::F_WinGetState(VectorVariant &vParams, Variant &vResult)
 {
     int        nState = 1;
+    WinSearchUtil util(engine);
 
-    Win_WindowSearchInit(vParams);
+    util.Win_WindowSearchInit(vParams);
 
-    if (Win_WindowSearch() == false)
+    if (util.Win_WindowSearch() == false)
     {
         vResult = 0;                            // Default is 1
         engine->SetFuncErrorCode(1);
@@ -2026,23 +1527,23 @@ AUT_RESULT ModuleWin::F_WinGetState(VectorVariant &vParams, Variant &vResult)
     }
 
     // Is it visible?
-    if (IsWindowVisible(m_WindowSearchHWND))
+    if (IsWindowVisible(util.m_WindowSearchHWND))
         nState |= 2;
 
     // Is it enabled?
-    if (IsWindowEnabled(m_WindowSearchHWND))
+    if (IsWindowEnabled(util.m_WindowSearchHWND))
         nState |= 4;
 
     // Is it active?
-    if (GetForegroundWindow() == m_WindowSearchHWND)
+    if (GetForegroundWindow() == util.m_WindowSearchHWND)
         nState |= 8;
 
     // Is it minimized?
-    if (IsIconic(m_WindowSearchHWND))
+    if (IsIconic(util.m_WindowSearchHWND))
         nState |= 16;
 
     // Is it maximized?
-    if (IsZoomed(m_WindowSearchHWND))
+    if (IsZoomed(util.m_WindowSearchHWND))
         nState |= 32;
 
     vResult = nState;
@@ -2126,7 +1627,7 @@ AUT_RESULT ModuleWin::F_ToolTip(VectorVariant &vParams, Variant &vResult)
 AUT_RESULT ModuleWin::F_WinMinimizeAll(VectorVariant &vParams, Variant &vResult)
 {
     PostMessage(FindWindow("Shell_TrayWnd", NULL), WM_COMMAND, 419, 0);
-    Util_Sleep(m_nWinWaitDelay);                // Briefly pause before continuing
+    Util_Sleep(engine->nWinWaitDelay());                // Briefly pause before continuing
 
     return AUT_OK;
 
@@ -2140,7 +1641,7 @@ AUT_RESULT ModuleWin::F_WinMinimizeAll(VectorVariant &vParams, Variant &vResult)
 AUT_RESULT ModuleWin::F_WinMinimizeAllUndo(VectorVariant &vParams, Variant &vResult)
 {
     PostMessage(FindWindow("Shell_TrayWnd", NULL), WM_COMMAND, 416, 0);
-    Util_Sleep(m_nWinWaitDelay);                // Briefly pause before continuing
+    Util_Sleep(engine->nWinWaitDelay());                // Briefly pause before continuing
 
     return AUT_OK;
 
@@ -2168,9 +1669,10 @@ AUT_RESULT ModuleWin::F_WinSetTrans(VectorVariant &vParams, Variant &vResult)
     typedef BOOL (WINAPI *SLWA)(HWND, COLORREF, BYTE, DWORD);    // Prototype for SetLayeredWindowAttributes()
 
     uint value = vParams[2].nValue() < 0 ? 0 : vParams[2].nValue();        // Valid range is 0 - 255
+    WinSearchUtil util(engine);
 
-    Win_WindowSearchInit(vParams);
-    if (Win_WindowSearch() == false)
+    util.Win_WindowSearchInit(vParams);
+    if (util.Win_WindowSearch() == false)
         return AUT_OK; // No window
 
     HMODULE hMod = LoadLibrary("user32.dll");
@@ -2180,13 +1682,13 @@ AUT_RESULT ModuleWin::F_WinSetTrans(VectorVariant &vParams, Variant &vResult)
     SLWA lpSetLayeredWindowAttributes = (SLWA)GetProcAddress(hMod, "SetLayeredWindowAttributes");
     if (lpSetLayeredWindowAttributes)
     {
-        LONG style = GetWindowLong(m_WindowSearchHWND, GWL_EXSTYLE);
+        LONG style = GetWindowLong(util.m_WindowSearchHWND, GWL_EXSTYLE);
         if (value >= 255 && (style & WS_EX_LAYERED))
-            SetWindowLong(m_WindowSearchHWND, GWL_EXSTYLE, style ^ WS_EX_LAYERED);    // Remove
+            SetWindowLong(util.m_WindowSearchHWND, GWL_EXSTYLE, style ^ WS_EX_LAYERED);    // Remove
         else
         {
-            SetWindowLong(m_WindowSearchHWND, GWL_EXSTYLE, style | WS_EX_LAYERED);
-            lpSetLayeredWindowAttributes(m_WindowSearchHWND, 0, value, LWA_ALPHA);
+            SetWindowLong(util.m_WindowSearchHWND, GWL_EXSTYLE, style | WS_EX_LAYERED);
+            lpSetLayeredWindowAttributes(util.m_WindowSearchHWND, 0, value, LWA_ALPHA);
         }
         vResult = 1;
     }
@@ -2197,8 +1699,6 @@ AUT_RESULT ModuleWin::F_WinSetTrans(VectorVariant &vParams, Variant &vResult)
     return AUT_OK;
 
 }    // WinSetTrans()
-
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // WinList()
@@ -2212,30 +1712,29 @@ AUT_RESULT ModuleWin::F_WinList(VectorVariant &vParams, Variant &vResult)
 {
     Variant        *pvVariant;
     char        szTitle[AUT_WINTEXTBUFFER+1];
-    int            nOldMode = m_nWindowSearchMatchMode;    // save the mode, we might change it
+    WinSearchUtil util(engine);
 
     // Matching defaults
-    m_vWindowSearchTitle = "all";
-    m_vWindowSearchText = "";
+    util.m_vWindowSearchTitle = "all";
+    util.m_vWindowSearchText = "";
 
     if (vParams.size() == 0)
-        m_nWindowSearchMatchMode = 4;
+        util.m_nWindowSearchMatchMode = 4;
     else
     {
         if (vParams.size() > 0)
-            m_vWindowSearchTitle = vParams[0].szValue();
+            util.m_vWindowSearchTitle = vParams[0].szValue();
         if (vParams.size() > 1)
-            m_vWindowSearchText = vParams[1].szValue();
+            util.m_vWindowSearchText = vParams[1].szValue();
     }
 
     // Generate the list of matching windows (false = make list rather than stop at first match)
-    Win_WindowSearch(false);
-    m_nWindowSearchMatchMode = nOldMode;        // Restore matching mode
 
+    util.Win_WindowSearch(false);
 
     // Create a 2d array big enough for all the windows, +1 for the count
     vResult.ArraySubscriptClear();                        // Reset the subscript
-    vResult.ArraySubscriptSetNext(m_nWinListCount + 1);    // Number of elements
+    vResult.ArraySubscriptSetNext(util.m_nWinListCount + 1);    // Number of elements
     vResult.ArraySubscriptSetNext(2);                    // Number of elements ([0]=title. [1]=hwnd)
     vResult.ArrayDim();                                    // Dimension array
 
@@ -2244,11 +1743,11 @@ AUT_RESULT ModuleWin::F_WinList(VectorVariant &vParams, Variant &vResult)
     vResult.ArraySubscriptSetNext(0);
     vResult.ArraySubscriptSetNext(0);                    // [0][0]
     pvVariant = vResult.ArrayGetRef();                    // Get reference to the element
-    *pvVariant = m_nWinListCount;                        // Store the count
+    *pvVariant = util.m_nWinListCount;                        // Store the count
 
 
-    WinListNode    *lpTemp = m_lpWinListFirst;
-    for (int i = 1; i <= m_nWinListCount; ++i)
+    WinListNode    *lpTemp = util.m_lpWinListFirst;
+    for (int i = 1; i <= util.m_nWinListCount; ++i)
     {
         // Get the window text
         GetWindowText(lpTemp->hWnd, szTitle, AUT_WINTEXTBUFFER);
@@ -2271,7 +1770,6 @@ AUT_RESULT ModuleWin::F_WinList(VectorVariant &vParams, Variant &vResult)
     return AUT_OK;
 }
 
-
 ///////////////////////////////////////////////////////////////////////////////
 // WinGetProcess()
 //
@@ -2281,9 +1779,11 @@ AUT_RESULT ModuleWin::F_WinList(VectorVariant &vParams, Variant &vResult)
 
 AUT_RESULT ModuleWin::F_WinGetProcess(VectorVariant &vParams, Variant &vResult)
 {
-    Win_WindowSearchInit(vParams);
+    WinSearchUtil util(engine);
 
-    if (Win_WindowSearch() == false)
+    util.Win_WindowSearchInit(vParams);
+
+    if (util.Win_WindowSearch() == false)
     {
         vResult = -1;                            // Default is 1
         return AUT_OK;
@@ -2291,10 +1791,9 @@ AUT_RESULT ModuleWin::F_WinGetProcess(VectorVariant &vParams, Variant &vResult)
 
     DWORD    dwPid;
 
-    GetWindowThreadProcessId(m_WindowSearchHWND, &dwPid);
+    GetWindowThreadProcessId(util.m_WindowSearchHWND, &dwPid);
     vResult = (int)dwPid;
 
     return AUT_OK;
 
 } // WinGetProcess()
-

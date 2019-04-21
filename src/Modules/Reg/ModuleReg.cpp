@@ -44,16 +44,13 @@
 
 // Includes
 #include "StdAfx.h"                                // Pre-compiled headers
+#include "ModuleReg.h"
 
 #ifndef _MSC_VER                                // Includes for non-MS compilers
     #include <windows.h>
 #endif
 
-#include "AutoIt.h"                                // Autoit values, macros and config options
-
-#include "script.h"
-#include "utility.h"
-#include "resources\resource.h"
+#include "Utils/utility.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -353,7 +350,7 @@ AUT_RESULT ModuleReg::F_RegWrite(VectorVariant &vParams, Variant &vResult)
 
     //local
     // Open the registry key
-    if ( RegCreateKeyEx(hMainKey, sSubKey.c_str(), 0, "", REG_OPTION_NON_VOLATILE,
+    if ( RegCreateKeyEx(hMainKey, sSubKey.c_str(), 0, 0, REG_OPTION_NON_VOLATILE,
             KEY_WRITE, NULL, &hRegKey, &dwRes) != ERROR_SUCCESS )
     {
         vResult = 0;                            // Default is 1

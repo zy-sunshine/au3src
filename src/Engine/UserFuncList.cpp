@@ -45,14 +45,12 @@
 
 // Includes
 #include "StdAfx.h"                                // Pre-compiled headers
+#include "UserFuncList.h"
 
 #ifndef _MSC_VER                                // Includes for non-MS compilers
     #include <stdio.h>
     #include <string.h>
 #endif
-
-#include "userfunction_list.h"
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // Constructor()

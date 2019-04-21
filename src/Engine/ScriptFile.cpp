@@ -52,26 +52,22 @@
 
 // Includes
 #include "StdAfx.h"                                // Pre-compiled headers
+#include "ScriptFile.h"
+#include "Engine.h"
 
 #ifndef _MSC_VER                                // Includes for non-MS compilers
     #include <stdio.h>
     #include <windows.h>
 #endif
 
-#include "AutoIt.h"                                // Autoit values, macros and config options
-
-#include "globaldata.h"
-#include "scriptfile.h"
-#include "utility.h"
-
-#include "resources\resource.h"
-
+#include "Utils/utility.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Constructor()
 ///////////////////////////////////////////////////////////////////////////////
 
-AutoIt_ScriptFile::AutoIt_ScriptFile()
+ScriptFile::ScriptFile(Engine *engine)
+    :engine(engine)
 {
     m_pIncludeDirs    = new char*[256];
     char            szTemp[_MAX_PATH+1];
@@ -146,14 +142,14 @@ AutoIt_ScriptFile::AutoIt_ScriptFile()
         strcpy(m_pIncludeDirs[m_nIncludeDirs++], "Include\\");
     }
 
-} // AutoIt_ScriptFile()
+} // ScriptFile()
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // Destructor()
 ///////////////////////////////////////////////////////////////////////////////
 
-AutoIt_ScriptFile::~AutoIt_ScriptFile()
+ScriptFile::~ScriptFile()
 {
     for (unsigned int i = 0; i < m_nIncludeDirs; ++i)
         delete[] m_pIncludeDirs[i];
@@ -166,7 +162,7 @@ AutoIt_ScriptFile::~AutoIt_ScriptFile()
 // AddLine()
 ///////////////////////////////////////////////////////////////////////////////
 
-void AutoIt_ScriptFile::AddLine(int nLineNum,  const char *szLine, int nIncludeID)
+void ScriptFile::AddLine(int nLineNum,  const char *szLine, int nIncludeID)
 {
     LARRAY    *lpTemp;
     LARRAY    *lpLast;
@@ -217,7 +213,7 @@ void AutoIt_ScriptFile::AddLine(int nLineNum,  const char *szLine, int nIncludeI
 // Same as AddLine except it adds the text onto the LAST line added
 ///////////////////////////////////////////////////////////////////////////////
 
-void AutoIt_ScriptFile::AppendLastLine(const char *szLine)
+void ScriptFile::AppendLastLine(const char *szLine)
 {
     char    *szTemp;
     size_t    CombinedLen;
@@ -249,7 +245,7 @@ void AutoIt_ScriptFile::AppendLastLine(const char *szLine)
 // AddIncludeName()
 ///////////////////////////////////////////////////////////////////////////////
 
-int AutoIt_ScriptFile::AddIncludeName(const char *szFileName)
+int ScriptFile::AddIncludeName(const char *szFileName)
 {
     char    szFullPath[_MAX_PATH+1];
     char    *szTemp;
@@ -287,7 +283,7 @@ int AutoIt_ScriptFile::AddIncludeName(const char *szFileName)
 // GetIncludeID()
 ///////////////////////////////////////////////////////////////////////////////
 
-int AutoIt_ScriptFile::GetIncludeID(int nLineNum)
+int ScriptFile::GetIncludeID(int nLineNum)
 {
     int        i;
     LARRAY    *lpTemp = m_lpScript;
@@ -308,7 +304,7 @@ int AutoIt_ScriptFile::GetIncludeID(int nLineNum)
 // GetIncludeName()
 ///////////////////////////////////////////////////////////////////////////////
 
-const char * AutoIt_ScriptFile::GetIncludeName(int nIncludeID)
+const char * ScriptFile::GetIncludeName(int nIncludeID)
 {
     if (nIncludeID >= AUT_MAX_INCLUDE_IDS || nIncludeID < 0)
         return NULL;
@@ -322,13 +318,13 @@ const char * AutoIt_ScriptFile::GetIncludeName(int nIncludeID)
 // GetIncludeFileName()
 ///////////////////////////////////////////////////////////////////////////////
 
-const char * AutoIt_ScriptFile::GetIncludeFileName(int nIncludeID)
+const char * ScriptFile::GetIncludeFileName(int nIncludeID)
 {
     if (nIncludeID >= AUT_MAX_INCLUDE_IDS || nIncludeID < 0)
         return NULL;
     else
     {
-        char *szInclude = (char *)g_oScriptFile.GetIncludeName(nIncludeID);
+        char *szInclude = (char *)GetIncludeName(nIncludeID);
         char        *szFilePart;
         GetFullPathName(szInclude, _MAX_PATH, szInclude, &szFilePart);
         return szFilePart;
@@ -341,7 +337,7 @@ const char * AutoIt_ScriptFile::GetIncludeFileName(int nIncludeID)
 // UnloadScript()
 ///////////////////////////////////////////////////////////////////////////////
 
-void AutoIt_ScriptFile::UnloadScript(void)
+void ScriptFile::UnloadScript(void)
 {
     LARRAY    *lpTemp, *lpTemp2;
 
@@ -381,7 +377,7 @@ void AutoIt_ScriptFile::UnloadScript(void)
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-const char * AutoIt_ScriptFile::GetLine(int nLineNum)
+const char * ScriptFile::GetLine(int nLineNum)
 {
     // Do we have this many lines?
     if (nLineNum > m_nScriptLines || nLineNum <= 0)
@@ -399,7 +395,7 @@ const char * AutoIt_ScriptFile::GetLine(int nLineNum)
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-int AutoIt_ScriptFile::GetAutLineNumber(int nLineNum)
+int ScriptFile::GetAutLineNumber(int nLineNum)
 {
     int        i;
     LARRAY    *lpTemp = m_lpScript;
@@ -422,7 +418,7 @@ int AutoIt_ScriptFile::GetAutLineNumber(int nLineNum)
 // back the string changed to contain the filename of the file to include
 ///////////////////////////////////////////////////////////////////////////////
 
-bool AutoIt_ScriptFile::IncludeParse(const char *szLine, char *szTemp)
+bool ScriptFile::IncludeParse(const char *szLine, char *szTemp)
 {
     int        i,j;
     i = 0;
@@ -514,7 +510,7 @@ bool AutoIt_ScriptFile::IncludeParse(const char *szLine, char *szTemp)
 // Strips trailing spaces, tabs, \n and \r
 ///////////////////////////////////////////////////////////////////////////////
 
-void AutoIt_ScriptFile::StripTrailing(char *szLine)
+void ScriptFile::StripTrailing(char *szLine)
 {
     int i;
     int    nLen;
@@ -539,7 +535,7 @@ void AutoIt_ScriptFile::StripTrailing(char *szLine)
 // StripLeading()
 ///////////////////////////////////////////////////////////////////////////////
 
-void AutoIt_ScriptFile::StripLeading(char *szLine)
+void ScriptFile::StripLeading(char *szLine)
 {
     int i, j;
 
@@ -571,7 +567,7 @@ void AutoIt_ScriptFile::StripLeading(char *szLine)
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-void AutoIt_ScriptFile::PrepareScript(void)
+void ScriptFile::PrepareScript(void)
 {
     LARRAY    *lpTemp;
 
@@ -607,7 +603,7 @@ void AutoIt_ScriptFile::PrepareScript(void)
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-bool AutoIt_ScriptFile::LoadScript(char *szFile)
+bool ScriptFile::LoadScript(char *szFile)
 {
     OPENFILENAME    ofn;
 
@@ -646,7 +642,7 @@ bool AutoIt_ScriptFile::LoadScript(char *szFile)
 // Include()
 ///////////////////////////////////////////////////////////////////////////////
 
-bool AutoIt_ScriptFile::Include(const char *szFileName, int nIncludeID)
+bool ScriptFile::Include(const char *szFileName, int nIncludeID)
 {
     char    szDrive[_MAX_DRIVE+1];
     char    szDir[_MAX_DIR+1];
@@ -766,7 +762,7 @@ bool AutoIt_ScriptFile::Include(const char *szFileName, int nIncludeID)
 // CheckDirective()
 ///////////////////////////////////////////////////////////////////////////////
 
-int AutoIt_ScriptFile::CheckDirective(char *szLine, const char *szFullFileName, int &nLineNum, FILE *fIn, int nIncludeID)
+int ScriptFile::CheckDirective(char *szLine, const char *szFullFileName, int &nLineNum, FILE *fIn, int nIncludeID)
 {
     char    szTemp[AUT_MAX_LINESIZE+1];
     int        nCommentsGroup = 0;
@@ -780,7 +776,7 @@ int AutoIt_ScriptFile::CheckDirective(char *szLine, const char *szFullFileName, 
     // Check for NoTrayIcon
     if (strnicmp(szLine, "#notrayicon", 11) == 0)
     {
-        g_bTrayIconInitial = false;
+        engine->g_bTrayIconInitial = false;
         return AUT_DIRECTIVE_STRIP;
     }
 

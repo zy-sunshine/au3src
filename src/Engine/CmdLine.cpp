@@ -45,14 +45,14 @@
 
 // Includes
 #include "StdAfx.h"                                // Pre-compiled headers
+#include "CmdLine.h"
 
 #ifndef _MSC_VER                                // Includes for non-MS compilers
     #include <stdio.h>
     #include <string.h>
 #endif
 
-#include "cmdline.h"
-#include "utility.h"
+#include "Utils/utility.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////

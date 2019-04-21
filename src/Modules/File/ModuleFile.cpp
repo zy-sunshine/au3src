@@ -345,7 +345,7 @@ AUT_RESULT ModuleFile::F_FileOpen(VectorVariant &vParams, Variant &vResult)
     // Have we room for another file handle?
     if (m_nNumFileHandles == AUT_MAXOPENFILES)
     {
-        FatalError(IDS_AUT_E_TOOMANYFILES);
+        engine->FatalError(IDS_AUT_E_TOOMANYFILES);
         return AUT_ERR;
     }
 
@@ -419,7 +419,7 @@ AUT_RESULT ModuleFile::F_FileClose(VectorVariant &vParams, Variant &vResult)
 
     if (nHandle >= AUT_MAXOPENFILES || m_FileHandleDetails[nHandle] == NULL)
     {
-        FatalError(IDS_AUT_E_FILEHANDLEINVALID);
+        engine->FatalError(IDS_AUT_E_FILEHANDLEINVALID);
         return AUT_ERR;
     }
     else
@@ -491,14 +491,14 @@ AUT_RESULT ModuleFile::F_FileReadLine(VectorVariant &vParams, Variant &vResult)
         // Does this file handle exist?
         if (nHandle >= AUT_MAXOPENFILES || m_FileHandleDetails[nHandle] == NULL)
         {
-            FatalError(IDS_AUT_E_FILEHANDLEINVALID);
+            engine->FatalError(IDS_AUT_E_FILEHANDLEINVALID);
             return AUT_ERR;
         }
 
         // Is it a file open handle?
         if (m_FileHandleDetails[nHandle]->nType != AUT_FILEOPEN)
         {
-            FatalError(IDS_AUT_E_FILEHANDLEINVALID);
+            engine->FatalError(IDS_AUT_E_FILEHANDLEINVALID);
             return AUT_ERR;
         }
 
@@ -608,14 +608,14 @@ AUT_RESULT ModuleFile::F_FileRead(VectorVariant &vParams, Variant &vResult)
         // Does this file handle exist?
         if (nHandle >= AUT_MAXOPENFILES || m_FileHandleDetails[nHandle] == NULL)
         {
-            FatalError(IDS_AUT_E_FILEHANDLEINVALID);
+            engine->FatalError(IDS_AUT_E_FILEHANDLEINVALID);
             return AUT_ERR;
         }
 
         // Is it a file open handle?
         if (m_FileHandleDetails[nHandle]->nType != AUT_FILEOPEN)
         {
-            FatalError(IDS_AUT_E_FILEHANDLEINVALID);
+            engine->FatalError(IDS_AUT_E_FILEHANDLEINVALID);
             return AUT_ERR;
         }
 
@@ -713,14 +713,14 @@ AUT_RESULT ModuleFile::FileWriteLine(VectorVariant &vParams, Variant &vResult, b
         // Does this file handle exist?
         if (nHandle >= AUT_MAXOPENFILES || nHandle < 0 || m_FileHandleDetails[nHandle] == NULL)
         {
-            FatalError(IDS_AUT_E_FILEHANDLEINVALID);
+            engine->FatalError(IDS_AUT_E_FILEHANDLEINVALID);
             return AUT_ERR;
         }
 
         // Is it a file open handle?
         if (m_FileHandleDetails[nHandle]->nType != AUT_FILEOPEN)
         {
-            FatalError(IDS_AUT_E_FILEHANDLEINVALID);
+            engine->FatalError(IDS_AUT_E_FILEHANDLEINVALID);
             return AUT_ERR;
         }
 
@@ -1234,7 +1234,7 @@ AUT_RESULT ModuleFile::FileDialog(VectorVariant &vParams, Variant &vResult, uint
 
     if (nPos1 == sTemp.length() || nPos2 == sTemp.length() || nPos2 < nPos1)
     {
-        FatalError(IDS_AUT_E_BADFILEFILTER);
+        engine->FatalError(IDS_AUT_E_BADFILEFILTER);
         return AUT_ERR;
     }
 
@@ -1480,7 +1480,7 @@ AUT_RESULT ModuleFile::F_DriveMapAdd(VectorVariant &vParams, Variant &vResult)
     if (szDrive[0] == '*')
         dwFlags |= CONNECT_REDIRECT;            // Use first available drive
 
-    if (iNumParams < 4 || g_oVersion.IsWin9x())
+    if (iNumParams < 4 || engine->g_oVersion.IsWin9x())
         res = WNetUseConnection(NULL,&nr, NULL, NULL, dwFlags, szBuffer, &dwBuffersize, &dwResult); // Use current user/password
     else
     {
@@ -2004,7 +2004,7 @@ AUT_RESULT ModuleFile::F_FileCreateShortcut(VectorVariant &vParams, Variant &vRe
         if ( iNumParams > 6 && vParams[6].isTrue())        // Hotkey may be blank
         {
             // Get the virtual key code and modifiers
-            if (engine->m_oSendKeys.GetSingleVKandMods(vParams[6].szValue(), vk, bShift, bControl, bAlt, bWin) == true)
+            if (engine->oSendKeys().GetSingleVKandMods(vParams[6].szValue(), vk, bShift, bControl, bAlt, bWin) == true)
             {
                 if (bShift)
                     mods |= HOTKEYF_SHIFT;
@@ -2592,7 +2592,7 @@ AUT_RESULT    ModuleFile::F_FileFindFirstFile(VectorVariant &vParams, Variant &v
     // Have we room for another file handle?
     if (m_nNumFileHandles == AUT_MAXOPENFILES)
     {
-        FatalError(IDS_AUT_E_TOOMANYFILES);
+        engine->FatalError(IDS_AUT_E_TOOMANYFILES);
         return AUT_ERR;
     }
 
@@ -2633,14 +2633,14 @@ AUT_RESULT    ModuleFile::F_FileFindNextFile(VectorVariant &vParams, Variant &vR
     // Does this file handle exist?
     if (nHandle >= AUT_MAXOPENFILES || nHandle < 0 || m_FileHandleDetails[nHandle] == NULL)
     {
-        FatalError(IDS_AUT_E_FILEHANDLEINVALID);
+        engine->FatalError(IDS_AUT_E_FILEHANDLEINVALID);
         return AUT_ERR;
     }
 
     // Is it a file find handle?
     if (m_FileHandleDetails[nHandle]->nType != AUT_FILEFIND)
     {
-        FatalError(IDS_AUT_E_FILEHANDLEINVALID);
+        engine->FatalError(IDS_AUT_E_FILEHANDLEINVALID);
         return AUT_ERR;
     }
 
@@ -2943,7 +2943,7 @@ bool ModuleFile::GetDirSize(const char *szInputPath, __int64 &nSize, __int64 &nF
     {
         // As this function may take ages to execute, keep the message loop going and handle
         // any pause/quit requests
-        nMsg = ProcessMessages();
+        nMsg = engine->processEvents();
         if (nMsg == AUT_QUIT)
         {
             bRes = false;

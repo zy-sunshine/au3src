@@ -121,7 +121,6 @@ HEADERS = \
     src/Engine/Type/Variant.h \
     src/Engine/Type/VectorVariant.h \
     src/Engine/Engine.h \
-    src/Engine/globaldata.h \
     src/Engine/Parser/Lexer.h \
     src/Engine/Parser/Parser.h \
     src/Engine/Parser/ParserExp.h \
@@ -168,7 +167,6 @@ SOURCES = \
     src/Engine/Type/Variant.cpp \
     src/Engine/Type/VectorVariant.cpp \
     src/Engine/Engine.cpp \
-    src/Engine/globaldata.cpp \
     src/Engine/Parser/Lexer.cpp \
     src/Engine/Parser/Parser.cpp \
     src/Engine/Parser/ParserExp.cpp \

@@ -5,7 +5,7 @@
 // EnvGet()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_EnvGet(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleSys::F_EnvGet(VectorVariant &vParams, Variant &vResult)
 {
     char    szEnvValue[AUT_MAX_ENVSIZE+1];        // Env variable value
 
@@ -23,7 +23,7 @@ AUT_RESULT AutoIt_Script::F_EnvGet(VectorVariant &vParams, Variant &vResult)
 // EnvSet()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_EnvSet(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleSys::F_EnvSet(VectorVariant &vParams, Variant &vResult)
 {
     if (vParams.size() >= 2)
         SetEnvironmentVariable(vParams[0].szValue(), vParams[1].szValue());
@@ -38,7 +38,7 @@ AUT_RESULT AutoIt_Script::F_EnvSet(VectorVariant &vParams, Variant &vResult)
 // EnvUpdate()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_EnvUpdate(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleSys::F_EnvUpdate(VectorVariant &vParams, Variant &vResult)
 {
     DWORD_PTR nResult;
 
@@ -54,17 +54,38 @@ AUT_RESULT AutoIt_Script::F_EnvUpdate(VectorVariant &vParams, Variant &vResult)
 // Sleep(ms)
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_Sleep(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleSys::F_Sleep(VectorVariant &vParams, Variant &vResult)
 {
     // Handle sleep 0 as a special
     if (vParams[0].nValue() <= 0)
         ::Sleep(0);
     else
     {
-        m_tWinTimerStarted    = timeGetTime();    // Using the WinWait timer - go fig.
-        m_nWinWaitTimeout    = vParams[0].nValue();
-        m_nCurrentOperation = AUT_SLEEP;
-        Execute();
+        int tWinTimerStarted    = timeGetTime();    // Using the WinWait timer - go fig.
+        int nWinWaitTimeout    = vParams[0].nValue();
+        while (true) {
+            // Idle a little to remove CPU usage
+            Sleep(AUT_IDLE);
+            engine->processEvents();
+
+            // If required, process the timeout
+            if (nWinWaitTimeout != 0)
+            {
+                // Get current time in ms
+                DWORD    dwDiff;
+                DWORD    dwCur = timeGetTime();
+                if (dwCur < tWinTimerStarted)
+                    dwDiff = (UINT_MAX - tWinTimerStarted) + dwCur; // timer wraps at 2^32
+                else
+                    dwDiff = dwCur - tWinTimerStarted;
+
+                // Timer elapsed?
+                if (dwDiff >= nWinWaitTimeout)
+                {
+                    break;
+                }
+            }
+        }
     }
 
     return AUT_OK;
@@ -75,7 +96,7 @@ AUT_RESULT AutoIt_Script::F_Sleep(VectorVariant &vParams, Variant &vResult)
 // BlockInput()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_BlockInput(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleSys::F_BlockInput(VectorVariant &vParams, Variant &vResult)
 {
 
 typedef void (CALLBACK *BlockInput)(BOOL);
@@ -111,9 +132,9 @@ typedef void (CALLBACK *BlockInput)(BOOL);
 // AdlibDisable()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_AdlibDisable(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleSys::F_AdlibDisable(VectorVariant &vParams, Variant &vResult)
 {
-    m_bAdlibEnabled    = false;
+    engine->setAdlibEnabled(false);
     return AUT_OK;
 
 } // AdlibDisable()
@@ -123,28 +144,28 @@ AUT_RESULT AutoIt_Script::F_AdlibDisable(VectorVariant &vParams, Variant &vResul
 // AdlibEnable()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_AdlibEnable(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleSys::F_AdlibEnable(VectorVariant &vParams, Variant &vResult)
 {
     int        nTemp1, nTemp2, nTemp3, nTemp4;
-    m_bAdlibEnabled    = false;            // Disable by default in case of error
+    engine->setAdlibEnabled(false);            // Disable by default in case of error
 
     // Check that this user function exists
-    if (engine->parser->FindUserFunction(vParams[0].szValue(), nTemp1, nTemp2, nTemp3, nTemp4) == false)
+    if (engine->parser()->FindUserFunction(vParams[0].szValue(), nTemp1, nTemp2, nTemp3, nTemp4) == false)
     {
-        FatalError(IDS_AUT_E_UNKNOWNUSERFUNC);
+        engine->FatalError(IDS_AUT_E_UNKNOWNUSERFUNC);
         return AUT_ERR;
     }
     else
     {
-        m_sAdlibFuncName    = vParams[0].szValue();
-        m_tAdlibTimerStarted= timeGetTime();
+        engine->setAdlibFuncName(vParams[0].szValue());
+        engine->setAdlibTimerStarted(timeGetTime());
 
         if (vParams.size() == 2 && vParams[1].nValue() > 0)
-            m_nAdlibTimeout = vParams[1].nValue();
+            engine->setAdlibTimeout(vParams[1].nValue());
         else
-            m_nAdlibTimeout = AUT_ADLIB_DELAY;
+            engine->setAdlibTimeout(AUT_ADLIB_DELAY);
 
-        m_bAdlibEnabled        = true;
+        engine->setAdlibEnabled(true);
     }
 
     return AUT_OK;
@@ -155,13 +176,13 @@ AUT_RESULT AutoIt_Script::F_AdlibEnable(VectorVariant &vParams, Variant &vResult
 // ClipGet()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_ClipGet(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleSys::F_ClipGet(VectorVariant &vParams, Variant &vResult)
 {
     // $var = ClipGet()
 
     if (IsClipboardFormatAvailable(CF_TEXT))
     {
-        OpenClipboard(g_hWnd);
+        OpenClipboard(engine->g_hWnd);
         HGLOBAL hClipMem = GetClipboardData(CF_TEXT);
         if (hClipMem == NULL)
         {
@@ -193,7 +214,7 @@ AUT_RESULT AutoIt_Script::F_ClipGet(VectorVariant &vParams, Variant &vResult)
 // ClipPut()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_ClipPut(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleSys::F_ClipPut(VectorVariant &vParams, Variant &vResult)
 {
     // ClipPut(<text>)
 
@@ -214,7 +235,7 @@ AUT_RESULT AutoIt_Script::F_ClipPut(VectorVariant &vParams, Variant &vResult)
     strcpy( pClipMem, vParams[0].szValue() );    // Store the data
     GlobalUnlock(hClipMem);
 
-    OpenClipboard(g_hWnd);
+    OpenClipboard(engine->g_hWnd);
     EmptyClipboard();
     SetClipboardData(CF_TEXT, hClipMem);
     CloseClipboard();
@@ -230,11 +251,11 @@ AUT_RESULT AutoIt_Script::F_ClipPut(VectorVariant &vParams, Variant &vResult)
 // Returns 1 if current user has admin rights (or is running 9x).
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_IsAdmin(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleSys::F_IsAdmin(VectorVariant &vParams, Variant &vResult)
 {
     vResult = 0;                                // Set default
 
-    if (g_oVersion.IsWin9x())
+    if (engine->g_oVersion.IsWin9x())
     {
         vResult = 1;
         return AUT_OK;
@@ -267,7 +288,7 @@ AUT_RESULT AutoIt_Script::F_IsAdmin(VectorVariant &vParams, Variant &vResult)
 // SetError()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_SetError(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleSys::F_SetError(VectorVariant &vParams, Variant &vResult)
 {
     engine->SetFuncErrorCode(vParams[0].nValue());
     return AUT_OK;
@@ -279,9 +300,9 @@ AUT_RESULT AutoIt_Script::F_SetError(VectorVariant &vParams, Variant &vResult)
 // SetExtended()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_SetExtended(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleSys::F_SetExtended(VectorVariant &vParams, Variant &vResult)
 {
-    SetFuncExtCode(vParams[0].nValue());
+    engine->SetFuncExtCode(vParams[0].nValue());
     return AUT_OK;
 
 } // SetError()
@@ -290,12 +311,12 @@ AUT_RESULT AutoIt_Script::F_SetExtended(VectorVariant &vParams, Variant &vResult
 // Break()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_Break(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleSys::F_Break(VectorVariant &vParams, Variant &vResult)
 {
     if (vParams[0].nValue() == 0)
-        g_bBreakEnabled = false;
+        engine->g_bBreakEnabled = false;
     else
-        g_bBreakEnabled = true;
+        engine->g_bBreakEnabled = true;
     return AUT_OK;
 
 } // Break()
@@ -305,279 +326,279 @@ AUT_RESULT AutoIt_Script::F_Break(VectorVariant &vParams, Variant &vResult)
 // Sets various parameters (systray icon, title match modes, mouse modes etc)
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_AutoItSetOption(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleSys::F_AutoItSetOption(VectorVariant &vParams, Variant &vResult)
 {
     const char *szOption = vParams[0].szValue();
     int            nValue = vParams[1].nValue();
 
     if ( !stricmp(szOption, "CaretCoordMode") )                // CaretCoordMode
     {
-        vResult = (int)m_nCoordCaretMode;    // Store current value
-        m_nCoordCaretMode = nValue;
+        vResult = (int)engine->nCoordCaretMode();    // Store current value
+        engine->setCoordCaretMode(nValue);
     }
     else if ( !stricmp(szOption, "ColorMode") )                // ColorMode
     {
-        vResult = (int)m_bColorModeBGR;
+        vResult = (int)engine->bColorModeBGR();
 
         if (nValue == 0)
         {
-            m_bColorModeBGR = false;
+            engine->setColorModeBGR(false);
 
             #ifdef AUT_CONFIG_GUI                            // Is GUI enabled?
-                g_oGUI.m_bColorModeBGR = false;
+                engine->g_oGUI.m_bColorModeBGR = false;
             #endif
         }
         else
         {
-            m_bColorModeBGR = true;
+            engine->setColorModeBGR(true);
             #ifdef AUT_CONFIG_GUI                            // Is GUI enabled?
-                g_oGUI.m_bColorModeBGR = true;
+                engine->g_oGUI.m_bColorModeBGR = true;
             #endif
         }
     }
     else if ( !stricmp(szOption, "FtpBinaryMode") )            // GUICoordMode
     {
-        vResult = (int)m_bFtpBinaryMode;    // Store current value
+        vResult = (int)engine->bFtpBinaryMode();    // Store current value
 
         if (nValue == 0)
-            m_bFtpBinaryMode = false;
+            engine->setFtpBinaryMode(false);
         else
-            m_bFtpBinaryMode = true;
+            engine->setFtpBinaryMode(true);
     }
     else if ( !stricmp(szOption, "GUICloseOnESC") )            // GUICloseOnESC
     {
         #ifdef AUT_CONFIG_GUI                                // Is GUI enabled?
-            vResult = g_oGUI.m_bCloseOnESC;
+            vResult = engine->g_oGUI.m_bCloseOnESC;
             if (nValue == 0 )
-                g_oGUI.m_bCloseOnESC = false;
+                engine->g_oGUI.m_bCloseOnESC = false;
             else
-                g_oGUI.m_bCloseOnESC = true;
+                engine->g_oGUI.m_bCloseOnESC = true;
         #endif
     }
     else if ( !stricmp(szOption, "GUICoordMode") )            // GUICoordMode
     {
         #ifdef AUT_CONFIG_GUI                            // Is GUI enabled?
-            vResult = g_oGUI.m_nGUICoordMode;
+            vResult = engine->g_oGUI.m_nGUICoordMode;
             if (nValue >= 0 && nValue <= 2)
-                g_oGUI.m_nGUICoordMode = nValue;
+                engine->g_oGUI.m_nGUICoordMode = nValue;
             else
-                g_oGUI.m_nGUICoordMode = 1;
+                engine->g_oGUI.m_nGUICoordMode = 1;
         #endif
     }
     else if ( !stricmp(szOption, "GUIOnEventMode") )    // GUIOnEventMode
     {
         #ifdef AUT_CONFIG_GUI                            // Is GUI enabled?
-            vResult = (int)g_oGUI.m_bGuiEventEnabled;
+            vResult = (int)engine->g_oGUI.m_bGuiEventEnabled;
         if (nValue == 0)
-            g_oGUI.m_bGuiEventEnabled = false;
+            engine->g_oGUI.m_bGuiEventEnabled = false;
         else
-            g_oGUI.m_bGuiEventEnabled = true;
+            engine->g_oGUI.m_bGuiEventEnabled = true;
         #endif
     }
     else if ( !stricmp(szOption, "GUIResizeMode") )            // GUIResizeMode
     {
         #ifdef AUT_CONFIG_GUI                            // Is GUI enabled?
-            vResult = g_oGUI.m_nGUIResizeMode;
+            vResult = engine->g_oGUI.m_nGUIResizeMode;
             if (nValue >= 0 && nValue < 1023)
-                g_oGUI.m_nGUIResizeMode = nValue;
+                engine->g_oGUI.m_nGUIResizeMode = nValue;
             else
-                g_oGUI.m_nGUIResizeMode = 0;
+                engine->g_oGUI.m_nGUIResizeMode = 0;
         #endif
     }
 /*    else if ( !stricmp(szOption, "GuiTaskbarEntry") )        // GuiTaskbarEntry
     {
         #ifdef AUT_CONFIG_GUI                            // Is GUI enabled?
-            vResult = g_oGUI.m_bGuiTaskbarEntry;
+            vResult = engine->g_oGUI.m_bGuiTaskbarEntry;
             if (nValue >= 0 && nValue <= 2)
-                g_oGUI.m_bGuiTaskbarEntry = (nValue!=0);
+                engine->g_oGUI.m_bGuiTaskbarEntry = (nValue!=0);
             else
-                g_oGUI.m_bGuiTaskbarEntry = false;
+                engine->g_oGUI.m_bGuiTaskbarEntry = false;
         #endif
     }
     else if ( !stricmp(szOption, "GuiTrayMode") )            // GuiTrayMode
     {
         #ifdef AUT_CONFIG_GUI                            // Is GUI enabled?
-            vResult = g_oGUI.m_nGUITrayMode;
+            vResult = engine->g_oGUI.m_nGUITrayMode;
             if (nValue >= 1 && nValue <= 4)
             {
-                g_oGUI.m_nGUITrayMode = nValue;
-                if (g_oGUI.m_bGUIDisplayed && nValue == 4)    // mode 4 only for start in tray
+                engine->g_oGUI.m_nGUITrayMode = nValue;
+                if (engine->g_oGUI.m_bGUIDisplayed && nValue == 4)    // mode 4 only for start in tray
                     nValue = 1;
             }
             else
-                g_oGUI.m_nGUITrayMode = 0;    // default
+                engine->g_oGUI.m_nGUITrayMode = 0;    // default
         #endif
     }
 */    else if ( !stricmp(szOption, "ExpandEnvStrings") )        // ExpandEnvStrings
     {
-        vResult = (int)m_bExpandEnvStrings;    // Store current value
+        vResult = (int)engine->bExpandEnvStrings();    // Store current value
 
         if (nValue == 0)
-            m_bExpandEnvStrings = false;
+            engine->setExpandEnvStrings(false);
         else
-            m_bExpandEnvStrings = true;
+            engine->setExpandEnvStrings(true);
     }
     else if ( !stricmp(szOption, "ExpandVarStrings") )        // ExpandEnvStrings
     {
-        vResult = (int)m_bExpandVarStrings;    // Store current value
+        vResult = (int)engine->bExpandVarStrings();    // Store current value
 
         if (nValue == 0)
-            m_bExpandVarStrings = false;
+            engine->setExpandVarStrings(false);
         else
-            m_bExpandVarStrings = true;
+            engine->setExpandVarStrings(true);
     }
     else if ( !stricmp(szOption, "MouseClickDelay") )        // MouseClickDelay
     {
-        vResult = (int)m_nMouseClickDelay;    // Store current value
+        vResult = (int)engine->nMouseClickDelay();    // Store current value
 
         if (nValue >= 0)
-            m_nMouseClickDelay = nValue;
+            engine->setMouseClickDelay(nValue);
     }
     else if ( !stricmp(szOption, "MouseClickDownDelay") )    // MouseClickDownDelay
     {
-        vResult = (int)m_nMouseClickDownDelay;    // Store current value
+        vResult = (int)engine->nMouseClickDownDelay();    // Store current value
 
         if (nValue >= 0)
-            m_nMouseClickDownDelay = nValue;
+            engine->setMouseClickDownDelay(nValue);
     }
     else if ( !stricmp(szOption, "MouseClickDragDelay") )    // MouseClickDragDelay
     {
-        vResult = (int)m_nMouseClickDragDelay;    // Store current value
+        vResult = (int)engine->nMouseClickDragDelay();    // Store current value
 
         if (nValue >= 0)
-            m_nMouseClickDragDelay = nValue;
+            engine->setMouseClickDragDelay(nValue);
     }
     else if ( !stricmp(szOption, "MouseCoordMode") )        // MouseCoordMode
     {
-        vResult = (int)m_nCoordMouseMode;    // Store current value
-        m_nCoordMouseMode = nValue;
+        vResult = (int)engine->nCoordMouseMode();    // Store current value
+        engine->setCoordMouseMode(nValue);
     }
     else if ( !stricmp(szOption, "MustDeclareVars") )        // MustDeclareVars
     {
-        vResult = (int)m_bMustDeclareVars;    // Store current value
+        vResult = (int)engine->bMustDeclareVars();    // Store current value
 
         if (nValue == 0)
-            m_bMustDeclareVars = false;
+            engine->setMustDeclareVars(false);
         else
-            m_bMustDeclareVars = true;
+            engine->setMustDeclareVars(true);
     }
     else if ( !stricmp(szOption, "OnExitFunc") )            // OnExitFunc
     {
-        vResult = m_sOnExitFunc.c_str();    // Store current value
-        m_sOnExitFunc = vParams[1].szValue();
+        vResult = engine->sOnExitFunc().c_str();    // Store current value
+        engine->setOnExitFunc(vParams[1].szValue());
 
     }
     else if ( !stricmp(szOption, "PixelCoordMode") )        // PixelCoordMode
     {
-        vResult = (int)m_nCoordPixelMode;    // Store current value
-        m_nCoordPixelMode = nValue;
+        vResult = (int)engine->nCoordPixelMode();    // Store current value
+        engine->setCoordPixelMode(nValue);
     }
     else if ( !stricmp(szOption, "RunErrorsFatal") )        // RunErrorsFatal
     {
-        vResult = (int)m_bRunErrorsFatal;    // Store current value
+        vResult = (int)engine->bRunErrorsFatal();    // Store current value
 
         if (nValue == 0)
-            m_bRunErrorsFatal = false;
+            engine->setRunErrorsFatal(false);
         else
-            m_bRunErrorsFatal = true;
+            engine->setRunErrorsFatal(true);
     }
     else if ( !stricmp(szOption, "SendAttachMode") )        // SendAttachMode
     {
-        vResult = (int)engine->m_oSendKeys.m_bAttachMode;    // Store current value
+        vResult = (int)engine->oSendKeys().m_bAttachMode;    // Store current value
 
         if (nValue == 0)
-            engine->m_oSendKeys.SetAttachMode(false);
+            engine->oSendKeys().SetAttachMode(false);
         else
-            engine->m_oSendKeys.SetAttachMode(true);
+            engine->oSendKeys().SetAttachMode(true);
     }
     else if ( !stricmp(szOption, "SendCapslockMode") )        // SendCapslockMode
     {
-        vResult = (int)engine->m_oSendKeys.m_bStoreCapslockMode;    // Store current value
+        vResult = (int)engine->oSendKeys().m_bStoreCapslockMode;    // Store current value
 
         if (nValue == 0)
-            engine->m_oSendKeys.SetStoreCapslockMode(false);
+            engine->oSendKeys().SetStoreCapslockMode(false);
         else
-            engine->m_oSendKeys.SetStoreCapslockMode(true);
+            engine->oSendKeys().SetStoreCapslockMode(true);
     }
     else if ( !stricmp(szOption, "SendKeyDelay") )            // SendKeyDelay
     {
-        vResult = (int)engine->m_oSendKeys.m_nKeyDelay;    // Store current value
+        vResult = (int)engine->oSendKeys().m_nKeyDelay;    // Store current value
 
         if (nValue >= -1)
-            engine->m_oSendKeys.SetKeyDelay( nValue );
+            engine->oSendKeys().SetKeyDelay( nValue );
     }
     else if ( !stricmp(szOption, "SendKeyDownDelay") )        // SendKeyDownDelay
     {
-        vResult = (int)engine->m_oSendKeys.m_nKeyDownDelay;    // Store current value
+        vResult = (int)engine->oSendKeys().m_nKeyDownDelay;    // Store current value
 
         if (nValue >= -1)
-            engine->m_oSendKeys.SetKeyDownDelay( nValue );
+            engine->oSendKeys().SetKeyDownDelay( nValue );
     }
     else if ( !stricmp(szOption, "TrayIconDebug") )            // TrayIconDebug
     {
-        vResult = (int)g_bTrayIconDebug;    // Store current value
+        vResult = (int)engine->g_bTrayIconDebug;    // Store current value
 
         if (nValue == 0)
-            g_bTrayIconDebug = false;
+            engine->g_bTrayIconDebug = false;
         else
-            g_bTrayIconDebug = true;
+            engine->g_bTrayIconDebug = true;
     }
 //    else if ( !stricmp(szOption, "TrayIconHide") )            // TrayIconHide
 //    {
-//        vResult = (int)!g_bTrayIcon;    // Store current value
+//        vResult = (int)!engine->g_bTrayIcon;    // Store current value
 //
 //        if (nValue == 0)
-//            g_oApplication.CreateTrayIcon();
+//            engine->g_oApplication.CreateTrayIcon();
 //        else
-//            g_oApplication.DestroyTrayIcon();
+//            engine->g_oApplication.DestroyTrayIcon();
 //    }
     else if (!stricmp(szOption, "WinSearchChildren"))
     {
-        vResult = (int)m_bWinSearchChildren;    // Store current value
+        vResult = (int)engine->bWinSearchChildren();    // Store current value
 
         if (nValue == 0)
-            m_bWinSearchChildren = false;
+            engine->setWinSearchChildren(false);
         else
-            m_bWinSearchChildren = true;
+            engine->setWinSearchChildren(true);
     }
     else if ( !stricmp(szOption, "WinWaitDelay") )            // WinWaitDelay
     {
-        vResult = (int)m_nWinWaitDelay;    // Store current value
+        vResult = (int)engine->nWinWaitDelay();    // Store current value
 
         if (nValue >= 0)
-            m_nWinWaitDelay = nValue;
+            engine->setWinWaitDelay(nValue);
     }
     else if ( !stricmp(szOption, "WinDetectHiddenText") )    // WinDetectHiddenText
     {
-        vResult = (int)m_bDetectHiddenText;    // Store current value
+        vResult = (int)engine->bDetectHiddenText();    // Store current value
 
         if ( nValue == 0)
-            m_bDetectHiddenText = false;
+            engine->setDetectHiddenText(false);
         else
-            m_bDetectHiddenText = true;
+            engine->setDetectHiddenText(true);
     }
     else if ( !stricmp(szOption, "WinTextMatchMode") )        // WinTextMatchMode
     {
-        vResult = (int)m_nWindowSearchTextMode;    // Store current value
+        vResult = (int)engine->nWindowSearchTextMode();    // Store current value
 
         if (nValue >= 1 && nValue <= 2)
-            m_nWindowSearchTextMode = nValue;
+            engine->setWindowSearchTextMode(nValue);
         else
-            m_nWindowSearchTextMode = 1;
+            engine->setWindowSearchTextMode(1);
     }
     else if ( !stricmp(szOption, "WinTitleMatchMode") )        // WinTitleMatchMode
     {
-        vResult = (int)m_nWindowSearchMatchMode;    // Store current value
+        vResult = (int)engine->nWindowSearchMatchMode();    // Store current value
 
         if (nValue >= 1 && nValue <= 4)
-            m_nWindowSearchMatchMode = nValue;
+            engine->setWindowSearchMatchMode(nValue);
         else
-            m_nWindowSearchMatchMode = 1;
+            engine->setWindowSearchMatchMode(1);
     }
     else
     {
         // No matching option if we got here
-        FatalError(IDS_AUT_E_BADOPTION);
+        engine->FatalError(IDS_AUT_E_BADOPTION);
         return AUT_ERR;
     }
 
@@ -591,7 +612,7 @@ AUT_RESULT AutoIt_Script::F_AutoItSetOption(VectorVariant &vParams, Variant &vRe
 // Starts tracking a high performance counter allowing for accurate timers.
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_TimerInit(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleSys::F_TimerInit(VectorVariant &vParams, Variant &vResult)
 {
     __int64 now;
 
@@ -609,7 +630,7 @@ AUT_RESULT AutoIt_Script::F_TimerInit(VectorVariant &vParams, Variant &vResult)
 // Takes the time difference between now and Baseline and returns the result.
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_TimerDiff(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleSys::F_TimerDiff(VectorVariant &vParams, Variant &vResult)
 {
     __int64 freq, now;
 
@@ -630,7 +651,7 @@ AUT_RESULT AutoIt_Script::F_TimerDiff(VectorVariant &vParams, Variant &vResult)
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_MemGetStats(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleSys::F_MemGetStats(VectorVariant &vParams, Variant &vResult)
 {
     MEMORYSTATUS mem;
     GlobalMemoryStatus(&mem);

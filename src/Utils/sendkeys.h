@@ -66,8 +66,8 @@ public:
     bool    GetSingleVKandMods(const char *szString, UINT &vk, bool &bShift, bool &bControl, bool &bAlt, bool &bWin);
 
     // Variables
-    int        m_nKeyDelay;                                // Time in between keystrokes
-    int        m_nKeyDownDelay;                            // Delay after pressing the key down before releasing
+    int     m_nKeyDelay;                                // Time in between keystrokes
+    int     m_nKeyDownDelay;                            // Delay after pressing the key down before releasing
     bool    m_bStoreCapslockMode;                        // Store/restore capslock state
     bool    m_bAttachMode;                                // Attach mode for Send()
 
@@ -96,7 +96,7 @@ private:
     void    SimKeystroke(UINT vk, bool bForceExtended = false);
     void    SendSpecial(char *szTemp);
 
-    int        ReadToChar(char ch, const char *szLine, char *szResult, int &nPos);
+    int     ReadToChar(char ch, const char *szLine, char *szResult, int &nPos);
 };
 
 ///////////////////////////////////////////////////////////////////////////////

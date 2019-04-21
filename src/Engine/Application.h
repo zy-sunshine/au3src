@@ -44,20 +44,8 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-
-// Class and window titles
-#define AUT_APPCLASS        "AutoIt v3"
-#define AUT_APPTITLE        "AutoIt v3"
-
-// Windows timers
-#define AUT_MAIN_TIMER_ID        1
-#define AUT_MAIN_TIMER_DELAY    750                // Tray icon hiding/flashing/drawing is checked every 750ms
-
-// Tray / popup menu identifiers
-#define AUT_WM_NOTIFYICON        WM_USER+1
-#define AUT_NOTIFY_ICON_ID        1
-
-
+#include "Engine/Engine.h"
+#include "Engine/CmdLine.h"
 
 class Application
 {
@@ -100,6 +88,12 @@ private:
     // Tray icon
     void        SetTrayIconToolTip(void);
     void        NotifyIcon (HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
+
+public:
+    Engine      *engine;
+
+public:
+    CmdLine                 g_oCmdLine;             // CmdLine object
 };
 
 

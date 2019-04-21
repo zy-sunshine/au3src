@@ -45,6 +45,7 @@
 
 
 // Includes
+#include "AutoIt.h"
 #include "Engine/Type/AString.h"
 #include "Engine/Type/Variant.h"
 

@@ -52,8 +52,9 @@
     #include <windef.h>
 #endif
 
-#include "Engine/globaldata.h"
+//#include "Engine/globaldata.h"
 #include "Utils/utility.h"
+#include "Engine/Application.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -62,9 +63,12 @@
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
-    g_hInstance            = hInstance;            // Program instance
-    g_nExitCode            = 0;                    // Default exit code
-    g_nExitMethod        = AUT_EXITBY_NATURAL;    // Default exit method
+    Application app;
+    Engine *engine = app.engine;
+
+    engine->g_hInstance            = hInstance;            // Program instance
+    engine->g_nExitCode            = 0;                    // Default exit code
+    engine->g_nExitMethod        = AUT_EXITBY_NATURAL;    // Default exit method
 
 #ifdef _MSC_VER
     _set_new_handler(Util_NewHandler);            // Functon to call if "new" fails
@@ -72,16 +76,16 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 #endif
 
     // Perform any startup that the objects need
-    g_oSetForeWinEx.Patch();                    // Run our setforegroundwindow patch
-    g_oCmdLine.SetCmdLine(lpCmdLine);            // Split the cmdline parameters into chunks
+    engine->g_oSetForeWinEx.Patch();                    // Run our setforegroundwindow patch
+    app.g_oCmdLine.SetCmdLine(lpCmdLine);            // Split the cmdline parameters into chunks
 
 
     // Run our main application object
-    g_oApplication.Run();
+    app.Run();
 
     // Perform any close down that our objects need
-    g_oSetForeWinEx.UnPatch();                    // Undo our setforegroundwindow patch
+    engine->g_oSetForeWinEx.UnPatch();                    // Undo our setforegroundwindow patch
 
-    return g_nExitCode;
+    return engine->g_nExitCode;
 
 } // Winmain()

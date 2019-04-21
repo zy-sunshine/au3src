@@ -1,11 +1,17 @@
 #include "StdAfx.h"                                // Pre-compiled headers
 #include "ModuleMouse.h"
+#include "Utils/WinUtil.h"
+
+ModuleMouse::ModuleMouse(Engine* engine)
+    :engine(engine)
+{
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // MouseDown("button")
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_MouseDown(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleMouse::F_MouseDown(VectorVariant &vParams, Variant &vResult)
 {
     if (Util_MouseDown(vParams[0].szValue()) == 0)
         vResult = 0;
@@ -19,7 +25,7 @@ AUT_RESULT AutoIt_Script::F_MouseDown(VectorVariant &vParams, Variant &vResult)
 // MouseUp("button")
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_MouseUp(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleMouse::F_MouseUp(VectorVariant &vParams, Variant &vResult)
 {
     if (Util_MouseUp(vParams[0].szValue()) == 0)
         vResult = 0;
@@ -34,7 +40,7 @@ AUT_RESULT AutoIt_Script::F_MouseUp(VectorVariant &vParams, Variant &vResult)
 // MouseClick( "left|middle|right", [x,y] [#clicks] [speed(0-100)] )
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_MouseClick(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleMouse::F_MouseClick(VectorVariant &vParams, Variant &vResult)
 {
     uint    iNumParams = vParams.size();
     int        nSpeed;
@@ -43,7 +49,7 @@ AUT_RESULT AutoIt_Script::F_MouseClick(VectorVariant &vParams, Variant &vResult)
     // Check for x without y
     if (iNumParams == 2)
     {
-        FatalError(IDS_AUT_E_FUNCTIONNUMPARAMS);
+        engine->FatalError(IDS_AUT_E_FUNCTIONNUMPARAMS);
         return AUT_ERR;
     }
 
@@ -85,13 +91,13 @@ AUT_RESULT AutoIt_Script::F_MouseClick(VectorVariant &vParams, Variant &vResult)
             vResult = 0;
             return AUT_OK;
         }
-        Util_Sleep(m_nMouseClickDownDelay);
+        Util_Sleep(engine->nMouseClickDownDelay());
         if (Util_MouseUp(vParams[0].szValue()) == 0) {
             // not a valid click
             vResult = 0;
             return AUT_OK;
         }
-        Util_Sleep(m_nMouseClickDelay);
+        Util_Sleep(engine->nMouseClickDelay());
     }
 
     return AUT_OK;
@@ -104,7 +110,7 @@ AUT_RESULT AutoIt_Script::F_MouseClick(VectorVariant &vParams, Variant &vResult)
 // MouseMove( x, y [,speed(0-100)] )
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_MouseMove(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleMouse::F_MouseMove(VectorVariant &vParams, Variant &vResult)
 {
     int        nSpeed;
 
@@ -124,7 +130,7 @@ AUT_RESULT AutoIt_Script::F_MouseMove(VectorVariant &vParams, Variant &vResult)
 // Function to actually move the mouse
 ///////////////////////////////////////////////////////////////////////////////
 
-void AutoIt_Script::MouseMoveExecute(int x, int y, int nSpeed)
+void ModuleMouse::MouseMoveExecute(int x, int y, int nSpeed)
 {
     POINT    ptCur, ptOrigin;
     RECT    rect;
@@ -134,7 +140,7 @@ void AutoIt_Script::MouseMoveExecute(int x, int y, int nSpeed)
 
 
     // Convert coords to screen/active window/client
-    ConvertCoords(m_nCoordMouseMode, ptOrigin);
+    WinUtil::instance.ConvertCoords(engine->nCoordMouseMode(), ptOrigin);
     x += ptOrigin.x;
     y += ptOrigin.y;
 
@@ -234,14 +240,14 @@ void AutoIt_Script::MouseMoveExecute(int x, int y, int nSpeed)
 // $array = MouseGetPos()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_MouseGetPos(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleMouse::F_MouseGetPos(VectorVariant &vParams, Variant &vResult)
 {
     POINT    pt, ptOrigin;
 
     GetCursorPos(&pt);
 
     // Convert coords to screen/active window/client
-    ConvertCoords(m_nCoordMouseMode, ptOrigin);
+    WinUtil::instance.ConvertCoords(engine->nCoordMouseMode(), ptOrigin);
     pt.x -= ptOrigin.x;
     pt.y -= ptOrigin.y;
 
@@ -266,7 +272,7 @@ AUT_RESULT AutoIt_Script::F_MouseGetPos(VectorVariant &vParams, Variant &vResult
 // Returns the current mouse cursor 1 - 15
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_MouseGetCursor(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleMouse::F_MouseGetCursor(VectorVariant &vParams, Variant &vResult)
 {
     int            a;
     HCURSOR        ciMyCursor;
@@ -316,7 +322,7 @@ AUT_RESULT AutoIt_Script::F_MouseGetCursor(VectorVariant &vParams, Variant &vRes
 // MouseClick( "left|middle|right", x1, y1, x2, y2, [speed(0-100)] )
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_MouseClickDrag(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleMouse::F_MouseClickDrag(VectorVariant &vParams, Variant &vResult)
 {
     int        nSpeed;
 
@@ -345,15 +351,15 @@ AUT_RESULT AutoIt_Script::F_MouseClickDrag(VectorVariant &vParams, Variant &vRes
         vResult = 0;
         return AUT_OK;
     }
-    Util_Sleep(m_nMouseClickDragDelay);
+    Util_Sleep(engine->nMouseClickDragDelay());
     MouseMoveExecute(nX2, nY2, nSpeed);
-    Util_Sleep(m_nMouseClickDragDelay);
+    Util_Sleep(engine->nMouseClickDragDelay());
     if (Util_MouseUp(vParams[0].szValue()) == 0)
     {
         vResult = 0;
         return AUT_OK;
     }
-    Util_Sleep(m_nMouseClickDelay);
+    Util_Sleep(engine->nMouseClickDelay());
 
     return AUT_OK;
 
@@ -365,7 +371,7 @@ AUT_RESULT AutoIt_Script::F_MouseClickDrag(VectorVariant &vParams, Variant &vRes
 // MouseWheel( "up|down", [#clicks] )
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_MouseWheel(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleMouse::F_MouseWheel(VectorVariant &vParams, Variant &vResult)
 {
     int        nClicks = 1;
 
@@ -386,7 +392,7 @@ AUT_RESULT AutoIt_Script::F_MouseWheel(VectorVariant &vParams, Variant &vResult)
             vResult = 0;
             return AUT_OK;
         }
-        Util_Sleep(m_nMouseClickDelay);
+        Util_Sleep(engine->nMouseClickDelay());
     }
 
     return AUT_OK;

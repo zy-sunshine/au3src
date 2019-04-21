@@ -4,7 +4,8 @@
 
 class ModuleSys {
 public:
-    ModuleSys(Engine* engine): engine(engine) {}
+    ModuleSys(Engine* engine);
+    ~ModuleSys();
 
     // Process related functions (script_process.cpp)
     AUT_RESULT    F_Run(VectorVariant &vParams, Variant &vResult);
@@ -14,8 +15,11 @@ public:
     AUT_RESULT    F_ProcessClose(VectorVariant &vParams, Variant &vResult);
     AUT_RESULT    F_ProcessExists(VectorVariant &vParams, Variant &vResult);
     AUT_RESULT    F_ProcessWait(VectorVariant &vParams, Variant &vResult);
-    AUT_RESULT    F_ProcessWaitClose(VectorVariant &vParams, Variant &vResult);
-    bool        HandleProcessWait(void);
+    // TODO: open
+    //AUT_RESULT    F_ProcessWaitClose(VectorVariant &vParams, Variant &vResult);
+    bool HandleProcessWait(int type, AString &sProcessSearchTitle, int nProcessWaitTimeout,
+        int tProcessTimerStarted, Variant &vResult);
+
     void        ProcessWaitInit(VectorVariant &vParams, uint iNumParams);
     AUT_RESULT    F_Shutdown(VectorVariant &vParams, Variant &vResult);
     AUT_RESULT    F_ProcessSetPriority(VectorVariant &vParams, Variant &vResult);
@@ -51,5 +55,20 @@ public:
     AUT_RESULT    F_MemGetStats(VectorVariant &vParams, Variant &vResult);
 
 private:
+    int loopCheckProcess();
+
+private:
     Engine* engine;
+
+    // Process related vars
+    AString          m_sProcessSearchTitle;        // Name of process to wait for
+    DWORD            m_nProcessWaitTimeout;        // Time (ms) left before timeout (0=no timeout)
+    DWORD            m_tProcessTimerStarted;        // Time in millis that timer was started
+    HANDLE           m_piRunProcess;                // Used in RunWait command
+
+    bool             m_bRunAsSet;                // Flag if we want to use RunAs user/password in the Run function
+    DWORD            m_dwRunAsLogonFlags;        // RunAs logon flags
+    wchar_t          *m_wszRunUser;                // User name for RunAs (wide char)
+    wchar_t          *m_wszRunDom;                // Domain name for RunAs (wide char)
+    wchar_t          *m_wszRunPwd;                // Password for RunAs (wide char)
 };

@@ -4,7 +4,8 @@
 
 class ModuleWin {
 public:
-    ModuleWin(Engine* engine): engine(engine) {}
+    ModuleWin(Engine* engine);
+    ~ModuleWin();
 
     // Window-related functions (script_win.cpp)
     AUT_RESULT    F_WinExists(VectorVariant &vParams, Variant &vResult);
@@ -27,9 +28,6 @@ public:
     AUT_RESULT    F_ControlFocus(VectorVariant &vParams, Variant &vResult);
 
     AUT_RESULT    F_ControlGetFocus(VectorVariant &vParams, Variant &vResult);
-    void        ControlWithFocus(HWND hWnd, Variant &vResult);
-    static BOOL CALLBACK ControlWithFocusProc(HWND hWnd, LPARAM lParam);
-    BOOL        ControlWithFocusProcHandler(HWND hWnd, LPARAM lParam);
 
     AUT_RESULT    F_WinSetOnTop(VectorVariant &vParams, Variant &vResult);
     AUT_RESULT    F_WinGetPos(VectorVariant &vParams, Variant &vResult);
@@ -38,7 +36,7 @@ public:
     AUT_RESULT    F_ControlGetPos(VectorVariant &vParams, Variant &vResult);
     AUT_RESULT    F_ControlCommand(VectorVariant &vParams, Variant &vResult);
     AUT_RESULT    F_ControlListView(VectorVariant &vParams,  Variant &vResult);
-    void        ControlLVSelect(bool bSelect, int nFromIndex, int nToIndex);
+    //void        ControlLVSelect(bool bSelect, int nFromIndex, int nToIndex);
     AUT_RESULT    F_ControlTreeView(VectorVariant &vParams,  Variant &vResult);
     AUT_RESULT    F_ControlEnable(VectorVariant &vParams, Variant &vResult);
     AUT_RESULT    F_ControlDisable(VectorVariant &vParams, Variant &vResult);
@@ -57,27 +55,7 @@ public:
     AUT_RESULT    F_WinSetTrans(VectorVariant &vParams, Variant &vResult);
     AUT_RESULT    F_ToolTip(VectorVariant &vParams, Variant &vResult);
 
-    bool        Win_HandleWinWait(void);
-    void        Win_WindowSearchInit(VectorVariant &vParams);
-    void        Win_WindowWaitInit(VectorVariant &vParams);
-
-    void        Win_WindowSearchDeleteList(void);
-    void        Win_WindowSearchAddToList(HWND hWnd);
-    bool        Win_WindowSearch(bool bFirstOnly = true);
-    static BOOL    CALLBACK Win_WindowSearchProc(HWND hWnd, LPARAM lParam);
-    BOOL        Win_WindowSearchProcHandler(HWND hWnd, LPARAM lParam);
-    bool        Win_WindowSearchText(void);
-    static BOOL    CALLBACK Win_WindowSearchTextProc(HWND hWnd, LPARAM lParam);
-    BOOL        Win_WindowSearchTextProcHandler(HWND hWnd, LPARAM lParam);
-
     AUT_RESULT    F_WinList(VectorVariant &vParams, Variant &vResult);
-
-    bool        Win_WinActive(void);
-    bool        Win_WinExists(void);
-
-    bool        ControlSearch(VectorVariant &vParams);
-    static BOOL CALLBACK ControlSearchProc(HWND hWnd, LPARAM lParam);
-    BOOL        ControlSearchProcHandler(HWND hWnd, LPARAM lParam);
 
     AUT_RESULT    F_WinGetProcess(VectorVariant &vParams, Variant &vResult);
 
@@ -104,4 +82,6 @@ public:
 
 private:
     Engine* engine;
+
+    HWND            m_hWndTip;                    // ToolTip window
 };

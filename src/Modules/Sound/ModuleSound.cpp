@@ -5,7 +5,7 @@
 // SoundPlay()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_SoundPlay(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleSound::F_SoundPlay(VectorVariant &vParams, Variant &vResult)
 {
     if (vParams.size() == 2 && vParams[1].nValue() == 1)
         Util_SoundPlay(vParams[0].szValue(), true);
@@ -19,7 +19,7 @@ AUT_RESULT AutoIt_Script::F_SoundPlay(VectorVariant &vParams, Variant &vResult)
 // SoundSetWaveVolume()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_SoundSetWaveVolume(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleSound::F_SoundSetWaveVolume(VectorVariant &vParams, Variant &vResult)
 {
     int nVol = vParams[0].nValue();
     if((nVol>=0)&&(nVol<101))

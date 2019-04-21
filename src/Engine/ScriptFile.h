@@ -46,6 +46,7 @@
 
 
 // Includes
+#include "AutoIt.h"
 
 // Define our structure for holding each line of text from the script
 typedef struct larray
@@ -68,12 +69,13 @@ typedef struct larray
 #define AUT_DIRECTIVE_INCLUDEDECLINED    4        // Attempt to include #include-once file more than once - ignore rest of file
 
 
-class AutoIt_ScriptFile
+class Engine;
+class ScriptFile
 {
 public:
     // Functions
-    AutoIt_ScriptFile();                        // Constructor
-    ~AutoIt_ScriptFile();                        // Destructor
+    ScriptFile(Engine *engine);                        // Constructor
+    ~ScriptFile();                        // Destructor
     bool            LoadScript(char *szFile);    // Loads a script into memory
     void            PrepareScript(void);        // Prepares a loaded script for speed
     void            UnloadScript(void);            // Removes a script from memory
@@ -114,6 +116,7 @@ private:
     #else
         int        CheckDirective(char *szLine, const char *szFullFileName, int &nLineNum, FILE *fIn, int nIncludeID);
     #endif
+    Engine  *engine;
 };
 
 

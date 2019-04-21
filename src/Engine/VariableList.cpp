@@ -45,13 +45,11 @@
 
 // Includes
 #include "StdAfx.h"                                // Pre-compiled headers
+#include "VariableList.h"
 
 #ifndef _MSC_VER                                // Includes for non-MS compilers
     #include <stdio.h>
 #endif
-
-#include "variable_list.h"
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // Constructor()

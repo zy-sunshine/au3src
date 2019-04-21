@@ -203,9 +203,9 @@ AUT_RESULT AutoIt_Script::F_GUISetOnEvent(VectorVariant &vParams, Variant &vResu
     int        nTemp1, nTemp2, nTemp3, nTemp4;
 
     // Check that this user function exists
-    if (engine->parser->FindUserFunction(vParams[1].szValue(), nTemp1, nTemp2, nTemp3, nTemp4) == false)
+    if (engine->parser()->FindUserFunction(vParams[1].szValue(), nTemp1, nTemp2, nTemp3, nTemp4) == false)
     {
-        FatalError(IDS_AUT_E_UNKNOWNUSERFUNC);
+        engine->FatalError(IDS_AUT_E_UNKNOWNUSERFUNC);
         return AUT_ERR;
     }
     else
@@ -368,9 +368,9 @@ AUT_RESULT AutoIt_Script::F_GUICtrlSetOnEvent(VectorVariant &vParams, Variant &v
     int        nTemp1, nTemp2, nTemp3, nTemp4;
 
     // Check that this user function exists
-    if (engine->parser->FindUserFunction(vParams[1].szValue(), nTemp1, nTemp2, nTemp3, nTemp4) == false)
+    if (engine->parser()->FindUserFunction(vParams[1].szValue(), nTemp1, nTemp2, nTemp3, nTemp4) == false)
     {
-        FatalError(IDS_AUT_E_UNKNOWNUSERFUNC);
+        engine->FatalError(IDS_AUT_E_UNKNOWNUSERFUNC);
         return AUT_ERR;
     }
     else
@@ -442,7 +442,7 @@ AUT_RESULT AutoIt_Script::GUICtrlCreate(int nType, VectorVariant &vParams, Varia
 
     if ((nType == AUT_GUI_DUMMY ) && iNumParams != 0)
     {
-        FatalError(IDS_AUT_E_FUNCTIONNUMPARAMS);
+        engine->FatalError(IDS_AUT_E_FUNCTIONNUMPARAMS);
         return AUT_ERR;
     }
 

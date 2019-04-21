@@ -53,7 +53,6 @@
     #include <commctrl.h>
 #endif
 
-#include "Engine/globaldata.h"
 #include "Engine/Engine.h"
 #include "Utils/utility.h"
 
@@ -64,34 +63,12 @@
 
 Application::Application()
 {
-    // Store initial values and zero important variables (the splash and progress functions
-    // in particular rely on these being NULL to work out their status)
-    g_hWnd                = NULL;                    // Main window
-    g_hWndEdit            = NULL;                    // Edit window
-    g_hWndSplash        = NULL;                    // Splash window handle
-    g_hSplashBitmap        = NULL;                    // Splash window bitmap
-    g_hWndProgress        = NULL;                    // Progress window handle
-    g_hWndProgBar        = NULL;                    // Progress progressbar control handle
-    g_hWndProgLblA        = NULL;                    // Progress Top label control handle
-    g_hWndProgLblB        = NULL;                    // Progress Bottom label control handle
-    g_bTrayIcon            = false;                // Icon not initially visible
-    g_bTrayIconInitial    = true;                    // Usually we want the tray icon to be displayed at start
-
     m_bShowingPauseIcon    = false;
 
     m_bSingleCmdMode    = false;                // Script mode by default
 
-    // Script/win communication defaults
-    g_bScriptPaused            = false;
-    g_bBreakEnabled            = true;
-    g_bTrayIconDebug        = false;
-    g_bStdOut                = false;
-    g_bTrayExitClicked        = false;
-    g_bKillWorkerThreads    = false;
-
-    g_HotKeyNext        = 0;                    // Initial position in hot key buffer
-
     m_hIconSmall        = NULL;
+    engine = new Engine();
 
 } // Application()
 
@@ -133,14 +110,14 @@ void Application::Run(void)
         // Create a "loaded" script that contains a single line - cunning eh? :)
         //MessageBox(NULL, m_sSingleLine.c_str(), "", MB_OK);
 
-        g_oScriptFile.AddLine(1, m_sSingleLine.c_str(), -1);
+        engine->g_oScriptFile.AddLine(1, m_sSingleLine.c_str(), -1);
     }
     else
     {
         // Check that we can load the script file.  Returns the FULLPATH of the script loaded
-        if (g_oScriptFile.LoadScript(m_szScriptFileName) == false)
+        if (engine->g_oScriptFile.LoadScript(m_szScriptFileName) == false)
         {
-            g_nExitCode = 1;                        // Main exit code
+            engine->g_nExitCode = 1;                        // Main exit code
             return;                                    // Error loading script
         }
         else
@@ -148,13 +125,13 @@ void Application::Run(void)
     }
 
     // Prepare the script for use
-    g_oScriptFile.PrepareScript();
+    engine->g_oScriptFile.PrepareScript();
 
     // Perform initial check of the script (check userfunctions, etc)
-    if (g_oScript.InitScript(m_szScriptFileName) != AUT_OK)
+    if (engine->InitScript(m_szScriptFileName) != AUT_OK)
     {
-        g_oScriptFile.UnloadScript();
-        g_nExitCode = 1;                        // Main exit code
+        engine->g_oScriptFile.UnloadScript();
+        engine->g_nExitCode = 1;                        // Main exit code
         return;                                    // Error initialising script
     }
 
@@ -166,15 +143,15 @@ void Application::Run(void)
     WindowCreate();
 
     // Show the tray icon if required
-    if (g_bTrayIconInitial == true)
+    if (engine->g_bTrayIconInitial == true)
         CreateTrayIcon();
 
 
     // Run the script from line 1, the Execute() function will run the windows message queue
-    g_oScript.Execute(1);
+    engine->Execute(1);
 
     // Unload the script (even if one wasn't loaded - this is OK)
-    g_oScriptFile.UnloadScript();
+    engine->g_oScriptFile.UnloadScript();
 
     // Restore the old working directory
     SetCurrentDirectory(szOldWorkingDir);
@@ -195,11 +172,11 @@ void Application::RegisterClass(void)
     // Get a handle to use for the tray icon, we need to use LoadImage so that we can
     // try and specify a 16x16 icon - LoadIcon is buggy and tends to pick a 32x32 icon.  If
     // a 16x16 cannot be found it seems to pick one - which is fine.
-    m_hIcon            = LoadIcon(g_hInstance, MAKEINTRESOURCE(IDI_MAIN));
-    m_hIconPause    = LoadIcon(g_hInstance, MAKEINTRESOURCE(IDI_PAUSED));
+    m_hIcon            = LoadIcon(engine->g_hInstance, MAKEINTRESOURCE(IDI_MAIN));
+    m_hIconPause    = LoadIcon(engine->g_hInstance, MAKEINTRESOURCE(IDI_PAUSED));
 
     // Load the right tray icon for the OS
-    if (g_oVersion.IsWinXPorLater() || g_oVersion.IsWinMeorLater())
+    if (engine->g_oVersion.IsWinXPorLater() || engine->g_oVersion.IsWinMeorLater())
         m_hIconSmall    = Util_LoadIcon(IDI_MAIN, 16, 16, -1);
     else
         m_hIconSmall    = Util_LoadIcon(IDI_MAIN, 16, 16, 4);
@@ -209,7 +186,7 @@ void Application::RegisterClass(void)
     wndClass.style            = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
     wndClass.cbClsExtra        = 0;
     wndClass.cbWndExtra        = 0;
-    wndClass.hInstance        = g_hInstance;
+    wndClass.hInstance        = engine->g_hInstance;
     wndClass.hCursor        = hCursor;
     wndClass.hbrBackground    = hBrush;
     wndClass.lpszMenuName    = NULL;
@@ -223,7 +200,7 @@ void Application::RegisterClass(void)
 
     // Also register the AU3GUI stuff
     #ifdef AUT_CONFIG_GUI                            // Is GUI enabled?
-        g_oGUI.RegisterClass(g_hInstance, g_hWnd, m_hIcon, m_hIconSmall);
+        engine->g_oGUI.RegisterClass(engine->g_hInstance, engine->g_hWnd, m_hIcon, m_hIconSmall);
     #endif
 
 } // RegisterClass()
@@ -235,18 +212,19 @@ void Application::RegisterClass(void)
 
 void Application::WindowCreate(void)
 {
-    g_hWnd = CreateWindow(  AUT_APPCLASS, AUT_APPTITLE, WS_OVERLAPPEDWINDOW,
-                            CW_USEDEFAULT, CW_USEDEFAULT, 300, 100, NULL, NULL, g_hInstance, NULL);
+    engine->g_hWnd = CreateWindow(  AUT_APPCLASS, AUT_APPTITLE, WS_OVERLAPPEDWINDOW,
+                            CW_USEDEFAULT, CW_USEDEFAULT, 300, 100, NULL, NULL,
+                            engine->g_hInstance, NULL);
 
     // Add read-only edit control to our main window
-    g_hWndEdit = CreateWindow("edit", NULL, WS_CHILD | WS_VISIBLE | WS_HSCROLL |
+    engine->g_hWndEdit = CreateWindow("edit", NULL, WS_CHILD | WS_VISIBLE | WS_HSCROLL |
                     WS_VSCROLL | WS_BORDER | ES_LEFT | ES_MULTILINE | ES_AUTOHSCROLL |
                     ES_AUTOVSCROLL | ES_READONLY, 0, 0, 0, 0,
-                    g_hWnd, (HMENU)1, g_hInstance, NULL);
+                    engine->g_hWnd, (HMENU)1, engine->g_hInstance, NULL);
 
     // Twice incase the first one is ignored
-    ShowWindow(g_hWnd, SW_HIDE);
-    ShowWindow(g_hWnd, SW_HIDE);
+    ShowWindow(engine->g_hWnd, SW_HIDE);
+    ShowWindow(engine->g_hWnd, SW_HIDE);
 
 } // CreateWindow()
 
@@ -278,13 +256,13 @@ void Application::ParseCmdLine(void)
 
     // Create the variable $CmdLineRaw which holds the original command line
     vTemp = g_oCmdLine.GetCmdLine();
-    g_oVarTable.Assign("CmdLineRaw", vTemp, true);
+    engine->g_oVarTable.Assign("CmdLineRaw", vTemp, true);
     vTemp = 0;                                    // Will be used later as a dummy var so make 0 to save space
 
     // Create a single variable called $CmdLine to hold cmdline details
     // We will dimension it to the correct size later.
-    g_oVarTable.Assign("CmdLine", vTemp, true);        // vTemp is dummy variable for array
-    g_oVarTable.GetRef("CmdLine", &pvTemp, bConst);
+    engine->g_oVarTable.Assign("CmdLine", vTemp, true);        // vTemp is dummy variable for array
+    engine->g_oVarTable.GetRef("CmdLine", &pvTemp, bConst);
 
     nNumParams = g_oCmdLine.GetNumParams();
 
@@ -330,7 +308,7 @@ void Application::ParseCmdLine(void)
     }
     else if (stricmp("/ErrorStdOut", szTemp) == 0)
     {
-        g_bStdOut = true;
+        engine->g_bStdOut = true;
         if (nNumParams == 1)
         {
             pvTemp->ArraySubscriptClear();        // Reset the subscript
@@ -458,7 +436,7 @@ void Application::ParseCmdLine(void)
     }
     else if (stricmp("/ErrorStdOut", szTemp) == 0)
     {
-        g_bStdOut = true;
+        engine->g_bStdOut = true;
         if (nNumParams == 1)
         {
             pvTemp->ArraySubscriptClear();        // Reset the subscript
@@ -526,7 +504,7 @@ void Application::ParseCmdLine(void)
 
 LRESULT CALLBACK Application::WndProc (HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
-    return g_oApplication.WndProcHandler(hWnd, iMsg, wParam, lParam);
+    return WndProcHandler(hWnd, iMsg, wParam, lParam);
 
 } // WndProc()
 
@@ -545,7 +523,7 @@ LRESULT Application::WndProcHandler (HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM
     static UINT s_uTaskbarRestart;                // Holds taskbar recreate message
 
     // What window is the message for? (note, g_hWnd may be NULL during startup WM_CREATE)
-    if (hWnd == g_hWnd || g_hWnd == NULL)
+    if (hWnd == engine->g_hWnd || engine->g_hWnd == NULL)
     {
         //
         // Main window messages
@@ -583,8 +561,8 @@ LRESULT Application::WndProcHandler (HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM
 
                 // Notify the script that close was requested but DON'T allow the system to continue
                 // with the defaut WM_CLOSE - we will call DestroyWindow() ourselves from the script
-                g_bTrayExitClicked = true;
-                g_bKillWorkerThreads = true;            // Ask worker threads to stop (otherwise the script
+                engine->g_bTrayExitClicked = true;
+                engine->g_bKillWorkerThreads = true;            // Ask worker threads to stop (otherwise the script
                                                         // may be blocked - e.g InetGet on a big download)
                 //break;
                 return 0;
@@ -600,12 +578,12 @@ LRESULT Application::WndProcHandler (HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM
 
             // Window is getting focus
             case WM_SETFOCUS:
-                SetFocus(g_hWndEdit);                         // Put focus on the main edit window
+                SetFocus(engine->g_hWndEdit);                         // Put focus on the main edit window
                 return 0;
 
             // Window has been resized in some way
             case WM_SIZE:
-                MoveWindow(g_hWndEdit, 0, 0, LOWORD(lParam), HIWORD(lParam), TRUE);
+                MoveWindow(engine->g_hWndEdit, 0, 0, LOWORD(lParam), HIWORD(lParam), TRUE);
                 return 0;
 
             // Popup menu accessed
@@ -614,11 +592,11 @@ LRESULT Application::WndProcHandler (HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM
                 return 0;
 
             case WM_HOTKEY:                                        // Ignore when paused
-                if (!g_bScriptPaused)
+                if (!engine->g_bScriptPaused)
                 {
-                     g_HotKeyQueue[g_HotKeyNext++] = wParam;     // Store the hotkey ID pressed
-                     if (g_HotKeyNext >= AUT_HOTKEYQUEUESIZE)
-                          g_HotKeyNext = 0;
+                     engine->g_HotKeyQueue[engine->g_HotKeyNext++] = wParam;     // Store the hotkey ID pressed
+                     if (engine->g_HotKeyNext >= AUT_HOTKEYQUEUESIZE)
+                          engine->g_HotKeyNext = 0;
                 }
 
                 //MessageBox(NULL, "", "Hotkey pressed", MB_OK);
@@ -626,7 +604,7 @@ LRESULT Application::WndProcHandler (HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM
 
             default:
                 // If the icon was visible and explorer crashed then redraw
-                if(iMsg == s_uTaskbarRestart && g_bTrayIcon == true)
+                if(iMsg == s_uTaskbarRestart && engine->g_bTrayIcon == true)
                 {
                     AUT_DEBUGMSG("==> Application::WndProc, g_hWnd: TaskbarRestart received - redrawing trayicon\n")
                     DestroyTrayIcon();
@@ -664,14 +642,14 @@ void Application::HandleTimer(HWND hWnd, WPARAM wParam, LPARAM lParam)
 
             // If we are paused then toggle the tray icon, if we are not paused then
             // make sure we are not showing the pause icon
-            if (g_bTrayIcon)
+            if (engine->g_bTrayIcon)
             {
                 nic.cbSize    = sizeof(NOTIFYICONDATA);
                 nic.hWnd    = hWnd;
                 nic.uID        = AUT_NOTIFY_ICON_ID;
                 nic.uFlags    = NIF_ICON;
 
-                if (g_bScriptPaused)
+                if (engine->g_bScriptPaused)
                 {
                     if (m_bShowingPauseIcon == true)
                     {
@@ -722,14 +700,14 @@ bool Application::HandleCommand (HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lPa
         // Don't need to check if break is enabled - these menu items wouldn't
         // be clickable if break was disabled
         case ID_EXIT:
-            g_bTrayExitClicked = true;
+            engine->g_bTrayExitClicked = true;
             //PostMessage(hWnd, WM_CLOSE, 0, 0);    // Will eventually call destroy on the GUI as it is a child window
             return true;
 
         // The pause ID message is only sent when the user clicks to UNPAUSE, the act of clicking on the tray icon is what
         // puts us in the paused state
         case ID_TRAY_PAUSE:
-            g_bScriptPaused = false;
+            engine->g_bScriptPaused = false;
 
             // Change the tooltip based on the unpause
             SetTrayIconToolTip();
@@ -756,18 +734,18 @@ void Application::CreateTrayIcon(void)
 {
     NOTIFYICONDATA    nic;
 
-    if (g_bTrayIcon == true)
+    if (engine->g_bTrayIcon == true)
         return;                                    // Icon is already present
     else
-        g_bTrayIcon = true;
+        engine->g_bTrayIcon = true;
 
     nic.cbSize                = sizeof(NOTIFYICONDATA);
-    nic.hWnd                = g_hWnd;
+    nic.hWnd                = engine->g_hWnd;
     nic.uID                    = AUT_NOTIFY_ICON_ID;
     nic.uFlags                = NIF_ICON | NIF_MESSAGE;
     nic.uCallbackMessage    = AUT_WM_NOTIFYICON;
 
-    //nic.hIcon                = LoadIcon(g_hInstance, MAKEINTRESOURCE(IDI_MAIN_32x32x16));
+    //nic.hIcon                = LoadIcon(engine->g_hInstance, MAKEINTRESOURCE(IDI_MAIN_32x32x16));
     nic.hIcon                = m_hIconSmall;
 
     Shell_NotifyIcon(NIM_ADD, &nic);
@@ -794,17 +772,17 @@ void Application::SetTrayIconToolTip(void)
     int                nCurLine;
 
     // Only update if we need to and an icon exists
-    if (g_bTrayIcon == false)
+    if (engine->g_bTrayIcon == false)
         return;                                    // No icon to modify?
 
     nic.cbSize                = sizeof(NOTIFYICONDATA);
-    nic.hWnd                = g_hWnd;
+    nic.hWnd                = engine->g_hWnd;
     nic.uID                    = AUT_NOTIFY_ICON_ID;
     nic.uFlags                = NIF_TIP;
 
     // Set up the tooltip, add "paused" to the start if required
-    if (g_bScriptPaused == true)
-        LoadString(g_hInstance, IDS_AUT_TIP_PAUSED, szTip, 63);
+    if (engine->g_bScriptPaused == true)
+        LoadString(engine->g_hInstance, IDS_AUT_TIP_PAUSED, szTip, 63);
     else
         szTip[0] = '\0';
 
@@ -812,33 +790,33 @@ void Application::SetTrayIconToolTip(void)
 
 #ifndef AUTOITSC
     // Normal
-    if (!g_bTrayIconDebug)
+    if (!engine->g_bTrayIconDebug)
     {
         sTip += "AutoIt - ";                    // Only Prefix with "AutoIt" when not debugging
         sTip += m_szScriptFilePart;                // Get the scriptname from the script filename
     }
     else
     {
-        nCurLine = g_oScript.GetCurLineNumber();
-        if (g_oScriptFile.GetLine(nCurLine) != NULL)
+        nCurLine = engine->GetCurLineNumber();
+        if (engine->g_oScriptFile.GetLine(nCurLine) != NULL)
         {
-            sTip += g_oScriptFile.GetIncludeFileName(g_oScriptFile.GetIncludeID(nCurLine));
-            sprintf(szTip, "\nLine %d: ", g_oScriptFile.GetAutLineNumber(nCurLine));
+            sTip += engine->g_oScriptFile.GetIncludeFileName(engine->g_oScriptFile.GetIncludeID(nCurLine));
+            sprintf(szTip, "\nLine %d: ", engine->g_oScriptFile.GetAutLineNumber(nCurLine));
             sTip += szTip;
-            sTip += g_oScriptFile.GetLine(nCurLine);
+            sTip += engine->g_oScriptFile.GetLine(nCurLine);
         }
     }
 #else
     // Compiled
     sTip += m_szScriptFilePart;                // Get the scriptname from the script filename
 
-    if (g_bTrayIconDebug)
+    if (engine->g_bTrayIconDebug)
     {
-        nCurLine = g_oScript.GetCurLineNumber();
-        if (g_oScriptFile.GetLine(nCurLine) != NULL)
+        nCurLine = engine->GetCurLineNumber();
+        if (engine->g_oScriptFile.GetLine(nCurLine) != NULL)
         {
             sTip += "\nLine: ";
-            sTip += g_oScriptFile.GetLine(nCurLine);
+            sTip += engine->g_oScriptFile.GetLine(nCurLine);
         }
     }
 #endif
@@ -860,15 +838,15 @@ void Application::SetTrayIconToolTip(void)
 
 void Application::DestroyTrayIcon(void)
 {
-    if (g_bTrayIcon == false)
+    if (engine->g_bTrayIcon == false)
         return;                                    // No icon to delete?
     else
-        g_bTrayIcon = false;
+        engine->g_bTrayIcon = false;
 
     NOTIFYICONDATA nic;
 
     nic.cbSize    = sizeof(NOTIFYICONDATA);
-    nic.hWnd    = g_hWnd;
+    nic.hWnd    = engine->g_hWnd;
     nic.uID        = AUT_NOTIFY_ICON_ID;
 
     Shell_NotifyIcon(NIM_DELETE, &nic);
@@ -897,16 +875,16 @@ void Application::NotifyIcon (HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam
             POINT pt;
 
             // If break is not enabled then don't even bring the menu up
-            if (g_bBreakEnabled == false)
+            if (engine->g_bBreakEnabled == false)
                 break;
 
             // The act of clicking on the tray icon puts us in the paused state no matter what
-            g_bScriptPaused = true;
+            engine->g_bScriptPaused = true;
 
-            hMenu = LoadMenu(g_hInstance, MAKEINTRESOURCE(IDR_TRAY1));
+            hMenu = LoadMenu(engine->g_hInstance, MAKEINTRESOURCE(IDR_TRAY1));
             // check and gray out menu items as neccessary
-            //EnableMenuItem(hMenu, ID_EXIT, !g_oScript.IsBreakAllowed());
-            //EnableMenuItem(hMenu, ID_TRAY_PAUSE, !g_oScript.IsBreakAllowed());
+            //EnableMenuItem(hMenu, ID_EXIT, !engine->IsBreakAllowed());
+            //EnableMenuItem(hMenu, ID_TRAY_PAUSE, !engine->IsBreakAllowed());
 
             // We we actually FORCE the script to pause when the menu is active, so
             // the menu state will always have the pause menu checked

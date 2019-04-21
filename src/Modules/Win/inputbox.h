@@ -46,6 +46,7 @@
 
 #pragma once
 #include "AutoIt.h"
+#include "Engine/Engine.h"
 #include "Engine/Type/AString.h"
 
 /////////////////////////////////////////////////////////////////////////////
@@ -55,7 +56,7 @@ class CInputBox
 {
 // Construction
 public:
-    CInputBox(void);   // standard constructor
+    CInputBox(Engine *engine);   // standard constructor
 
 // Dialog Data
     enum { IDD = IDD_INPUTBOX, TimerConst=1034 };
@@ -101,6 +102,7 @@ private:
 
 protected:
     static CInputBox* CurrInputBox;
+    Engine *engine;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

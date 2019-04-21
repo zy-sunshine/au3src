@@ -44,6 +44,7 @@
 
 // Includes
 #include "StdAfx.h"                                // Pre-compiled headers
+#include "ModuleSys.h"
 
 #ifndef _MSC_VER                                // Includes for non-MS compilers
     #include <stdio.h>
@@ -53,11 +54,8 @@
     #include <tlhelp32.h>
 #endif
 
-#include "AutoIt.h"                                // Autoit values, macros and config options
-
-#include "globaldata.h"
-#include "AutoIt.h"
-#include "utility.h"
+#include "Utils/utility.h"
+#include "Utils/WinUtil.h"
 
 // Dynamic function declarations
 typedef BOOL (WINAPI *MyCreateProcessWithLogonW)(
@@ -79,6 +77,21 @@ typedef BOOL (WINAPI *MyCreateProcessWithLogonW)(
     #define LOGON_NETCREDENTIALS_ONLY 2
 #endif
 
+ModuleSys::ModuleSys(Engine* engine)
+    :engine(engine)
+{
+    // RunAsSet stuff
+    m_bRunAsSet                    = false;        // Don't use RunAs by default
+    m_wszRunUser = m_wszRunDom = m_wszRunPwd = NULL;    // Strings are empty
+}
+
+ModuleSys::~ModuleSys()
+{
+    // RunAsSet stuff
+    delete [] m_wszRunUser;                        // NULL if not used, which is OK
+    delete [] m_wszRunDom;
+    delete [] m_wszRunPwd;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // HandleProcessWait()
@@ -87,71 +100,73 @@ typedef BOOL (WINAPI *MyCreateProcessWithLogonW)(
 // true.  If no processing required returns false
 ///////////////////////////////////////////////////////////////////////////////
 
-bool ModuleSys::HandleProcessWait(void)
+bool ModuleSys::HandleProcessWait(int type, AString &sProcessSearchTitle, int nProcessWaitTimeout,
+    int tProcessTimerStarted, Variant &vResult)
 {
-    // Any ProcessWait commands to process?
-    if (m_nCurrentOperation != AUT_PROCESSWAIT && m_nCurrentOperation != AUT_PROCESSWAITCLOSE)
-        return false;
+    while (true) {
+        // Idle a little to remove CPU usage
+        Sleep(AUT_IDLE);
 
-    // Idle a little to remove CPU usage
-    Sleep(AUT_IDLE);
+        engine->processEvents();
 
-
-    // If required, process the timeout
-    if (m_nProcessWaitTimeout != 0)
-    {
-        // Get current time in ms
-        DWORD    dwDiff;
-        DWORD    dwCur = timeGetTime();
-        if (dwCur < m_tProcessTimerStarted)
-            dwDiff = (UINT_MAX - m_tProcessTimerStarted) + dwCur; // timer wraps at 2^32
-        else
-            dwDiff = dwCur - m_tProcessTimerStarted;
-
-        // Timer elapsed?
-        if (dwDiff >= m_nProcessWaitTimeout)
+        // If required, process the timeout
+        if (nProcessWaitTimeout != 0)
         {
-            m_vUserRetVal = 0;                    // We timed out (default = 1)
-            m_bUserFuncReturned = true;            // Request exit from Execute()
-            m_nCurrentOperation = AUT_RUN;        // Continue script
+            // Get current time in ms
+            DWORD    dwDiff;
+            DWORD    dwCur = timeGetTime();
+            if (dwCur < tProcessTimerStarted)
+                dwDiff = (UINT_MAX - tProcessTimerStarted) + dwCur; // timer wraps at 2^32
+            else
+                dwDiff = dwCur - tProcessTimerStarted;
+
+            // Timer elapsed?
+            if (dwDiff >= nProcessWaitTimeout)
+            {
+                vResult = 0;
+                return true;
+            }
+        }
+
+
+        // Perform relevant command
+        bool bRes = false;
+        DWORD    dwPid;
+        if (type == AUT_PROCESSWAIT)
+        {
+            // Process Wait
+            if (Util_DoesProcessExist(m_sProcessSearchTitle.c_str(), dwPid, bRes) == false)
+            {
+                engine->FatalError(IDE_AUT_E_PROCESSNT);
+                engine->quit();
+            }
+        }
+        else if (type == AUT_PROCESSWAITCLOSE)
+        {
+            // Process Wait Close
+            if (Util_DoesProcessExist(m_sProcessSearchTitle.c_str(), dwPid, bRes) == false)
+            {
+                engine->FatalError(IDE_AUT_E_PROCESSNT);
+                engine->quit();
+            }
+            bRes = !bRes;
+        } else {
+            return false;
+        }
+
+
+        // Wait Command successful?
+        if (bRes == true)
+        {
+            //m_bUserFuncReturned = true;           // Request exit from Execute()
+            //m_nCurrentOperation = AUT_RUN;        // Continue script
+            // NOTE: why wait here?
+            Sleep(engine->nWinWaitDelay());          // Briefly pause before continuing
+            vResult = 1;  // TODO: return process pid?
             return true;
         }
     }
-
-
-    // Perform relevant command
-    bool bRes = false;
-    DWORD    dwPid;
-    if (m_nCurrentOperation == AUT_PROCESSWAIT)
-    {
-        // Process Wait
-        if (Util_DoesProcessExist(m_sProcessSearchTitle.c_str(), dwPid, bRes) == false)
-        {
-            FatalError(IDE_AUT_E_PROCESSNT);
-            m_nCurrentOperation = AUT_QUIT;
-        }
-    }
-    else
-    {
-        // Process Wait Close
-        if (Util_DoesProcessExist(m_sProcessSearchTitle.c_str(), dwPid, bRes) == false)
-        {
-            FatalError(IDE_AUT_E_PROCESSNT);
-            m_nCurrentOperation = AUT_QUIT;
-        }
-        bRes = !bRes;
-    }
-
-
-    // Wait Command successful?
-    if (bRes == true)
-    {
-        m_bUserFuncReturned = true;            // Request exit from Execute()
-        m_nCurrentOperation = AUT_RUN;        // Continue script
-        Sleep(m_nWinWaitDelay);                // Briefly pause before continuing
-    }
-
-    return true;
+    return false;
 
 } // HandleProcessWait()
 
@@ -165,7 +180,7 @@ void ModuleSys::ProcessWaitInit(VectorVariant &vParams, uint iNumParams)
     // Parameters are processname, timeout - only processname is mandatory
 
     // Setup the search for title/text
-    m_sProcessSearchTitle =vParams[0].szValue();
+    m_sProcessSearchTitle = vParams[0].szValue();
 
     if (iNumParams == 2)
         m_nProcessWaitTimeout    = vParams[1].nValue() * 1000;    // Timeout
@@ -192,7 +207,7 @@ AUT_RESULT ModuleSys::F_ProcessExists(VectorVariant &vParams, Variant &vResult)
 
     if (Util_DoesProcessExist(vParams[0].szValue(), dwPid, bResult) == false)
     {
-        FatalError(IDE_AUT_E_PROCESSNT);
+        engine->FatalError(IDE_AUT_E_PROCESSNT);
         return AUT_ERR;
     }
 
@@ -212,16 +227,32 @@ AUT_RESULT ModuleSys::F_ProcessExists(VectorVariant &vParams, Variant &vResult)
 // Waits for a process
 ///////////////////////////////////////////////////////////////////////////////
 
-//AUT_RESULT ModuleSys::F_ProcessWait(VectorVariant &vParams, Variant &vResult)
-//{
-//    ProcessWaitInit(vParams, vParams.size());
-//    m_vUserRetVal = 1;                    // Default return value is 1
-//    m_nCurrentOperation = AUT_PROCESSWAIT;
-//    Execute();
-//    vResult = m_vUserRetVal;            // Get return value (0 = timed out)
-//    return AUT_OK;
-//
-//} // ProcessWait()
+AUT_RESULT ModuleSys::F_ProcessWait(VectorVariant &vParams, Variant &vResult)
+{
+    AString          sProcessSearchTitle;        // Name of process to wait for
+    DWORD            nProcessWaitTimeout;        // Time (ms) left before timeout (0=no timeout)
+    DWORD            tProcessTimerStarted;        // Time in millis that timer was started
+    HANDLE           piRunProcess;                // Used in RunWait command
+
+    // Parameters are processname, timeout - only processname is mandatory
+
+    // Setup the search for title/text
+    sProcessSearchTitle = vParams[0].szValue();
+
+    if (vParams.size() == 2)
+        nProcessWaitTimeout    = vParams[1].nValue() * 1000;    // Timeout
+    else
+        nProcessWaitTimeout    = 0;
+
+    // Make a note of current system time for comparision in timer
+    tProcessTimerStarted    = timeGetTime();
+
+    vResult = 1;                    // Default return value is 1
+    HandleProcessWait(AUT_PROCESSWAIT, sProcessSearchTitle, nProcessWaitTimeout,
+            tProcessTimerStarted, vResult);
+    return AUT_OK;
+
+} // ProcessWait()
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -255,7 +286,7 @@ AUT_RESULT ModuleSys::F_ProcessClose(VectorVariant &vParams, Variant &vResult)
 
     if (Util_DoesProcessExist(vParams[0].szValue(), dwPid, bResult) == false)
     {
-        FatalError(IDE_AUT_E_PROCESSNT);
+        engine->FatalError(IDE_AUT_E_PROCESSNT);
         return AUT_ERR;
     }
 
@@ -285,7 +316,7 @@ AUT_RESULT ModuleSys::F_RunAsSet(VectorVariant &vParams, Variant &vResult)
     uint    iNumParams = vParams.size();
 
     // We must be 2000+ to use this feature
-    if (g_oVersion.IsWin2000orLater() == false)
+    if (engine->g_oVersion.IsWin2000orLater() == false)
     {
         vResult = 0;                            // Not supported (default 1)
         return AUT_OK;
@@ -308,7 +339,7 @@ AUT_RESULT ModuleSys::F_RunAsSet(VectorVariant &vParams, Variant &vResult)
     // 3 or 4 params is the only other valid option
     if (iNumParams != 3 && iNumParams != 4)
     {
-        FatalError(IDS_AUT_E_FUNCTIONNUMPARAMS);
+        engine->FatalError(IDS_AUT_E_FUNCTIONNUMPARAMS);
         return AUT_ERR;
     }
 
@@ -354,26 +385,42 @@ AUT_RESULT ModuleSys::F_Run(VectorVariant &vParams, Variant &vResult)
 // RunWait()
 ///////////////////////////////////////////////////////////////////////////////
 
-//AUT_RESULT ModuleSys::F_RunWait(VectorVariant &vParams, Variant &vResult)
-//{
-//    if (AUT_FAILED(Run(1, vParams, vParams.size(), vResult)))
-//        return AUT_ERR;
-//    else
-//    {
-//        // Run has not indicated an error, BUT if RunErrorsFatal is false this may be an
-//        // incorrect outcome, so also check if @error == 1 (error executing) before init'ing
-//        // a RUNWAIT
-//        if (m_nFuncErrorCode == 0)
-//        {
-//            m_nCurrentOperation = AUT_RUNWAIT;    // Change mode to wait for completion
-//            Execute();                            // In a recursive call
-//            vResult = m_vUserRetVal;            // Pass back return code
-//        }
-//    }
-//    return AUT_OK;
-//
-//} // RunWait()
+AUT_RESULT ModuleSys::F_RunWait(VectorVariant &vParams, Variant &vResult)
+{
+    if (AUT_FAILED(Run(1, vParams, vParams.size(), vResult)))
+        return AUT_ERR;
+    else
+    {
+        // Run has not indicated an error, BUT if RunErrorsFatal is false this may be an
+        // incorrect outcome, so also check if @error == 1 (error executing) before init'ing
+        // a RUNWAIT
+        if (engine->nFuncErrorCode() == 0)
+        {
+            vResult = loopCheckProcess();
+        }
+    }
+    return AUT_OK;
 
+} // RunWait()
+
+int ModuleSys::loopCheckProcess()
+{
+    while (true) {
+        DWORD dwexitcode;
+        GetExitCodeProcess(m_piRunProcess, &dwexitcode);
+
+        if (dwexitcode != STILL_ACTIVE)
+        {
+            CloseHandle(m_piRunProcess);    // Close handle
+            return (int)dwexitcode;// Set exit code
+        }
+        else {
+            Sleep(AUT_IDLE);                // Quick sleep to reduce CPU load
+            if (engine->processEvents() == AUT_QUIT) { break; }
+        }
+    }
+    return 0;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Run()
@@ -452,13 +499,13 @@ AUT_RESULT ModuleSys::Run(int nFunction, VectorVariant &vParams, uint iNumParams
             else
             {
                 FreeLibrary(hinstLib);
-                FatalError(IDS_AUT_E_RUNASFAILED);
+                engine->FatalError(IDS_AUT_E_RUNASFAILED);
                 return AUT_ERR;
             }
         }
         else
         {
-            FatalError(IDS_AUT_E_RUNASFAILED);
+            engine->FatalError(IDS_AUT_E_RUNASFAILED);
             return AUT_ERR;
         }
     }
@@ -481,9 +528,9 @@ AUT_RESULT ModuleSys::Run(int nFunction, VectorVariant &vParams, uint iNumParams
         if (hinstLib)
             FreeLibrary(hinstLib);
 
-        if (m_bRunErrorsFatal == true)
+        if (engine->bRunErrorsFatal() == true)
         {
-            FatalError(IDS_AUT_E_RUNPROG, FormatWinError());
+            engine->FatalError(IDS_AUT_E_RUNPROG, WinUtil::instance.FormatWinError());
             return AUT_ERR;
         }
         else
@@ -588,7 +635,7 @@ AUT_RESULT ModuleSys::F_ProcessSetPriority(VectorVariant &vParams, Variant &vRes
         dwPriority = 0x00000040;                // IDLE_PRIORITY_CLASS
         break;
     case 1:
-        if (g_oVersion.IsWin9x() || g_oVersion.IsWinMe())
+        if (engine->g_oVersion.IsWin9x() || engine->g_oVersion.IsWinMe())
             engine->SetFuncErrorCode(2);
         else
             dwPriority = 0x00004000;            // BELOW_NORMAL_PRIORITY_CLASS
@@ -597,7 +644,7 @@ AUT_RESULT ModuleSys::F_ProcessSetPriority(VectorVariant &vParams, Variant &vRes
         dwPriority = 0x00000020;                // NORMAL_PRIORITY_CLASS
         break;
     case 3:
-        if (g_oVersion.IsWin9x() || g_oVersion.IsWinMe())
+        if (engine->g_oVersion.IsWin9x() || engine->g_oVersion.IsWinMe())
             engine->SetFuncErrorCode(2);
         else
             dwPriority = 0x00008000;            // ABOVE_NORMAL_PRIORITY_CLASS
@@ -615,7 +662,7 @@ AUT_RESULT ModuleSys::F_ProcessSetPriority(VectorVariant &vParams, Variant &vRes
         lpfnSetPriorityClass(hProc, dwPriority);
         // Set to success
         vResult = 1;
-        SetFuncErrorCode(0);
+        engine->SetFuncErrorCode(0);
     }
 
     CloseHandle(hProc);
@@ -647,7 +694,7 @@ AUT_RESULT ModuleSys::F_ProcessList(VectorVariant &vParams, Variant &vResult)
     };
     ProcessInfo piProc[512];
 
-    if (g_oVersion.IsWinNT4())    // Windows NT 4stuff
+    if (engine->g_oVersion.IsWinNT4())    // Windows NT 4stuff
     {
         typedef BOOL (WINAPI *MyEnumProcesses)(DWORD*, DWORD, DWORD*);
         typedef BOOL (WINAPI *MyEnumProcessModules)(HANDLE, HMODULE*, DWORD, LPDWORD);
@@ -669,7 +716,7 @@ AUT_RESULT ModuleSys::F_ProcessList(VectorVariant &vParams, Variant &vResult)
         hinstLib = LoadLibrary("psapi.dll");
         if (!hinstLib)
         {
-            SetFuncErrorCode(1);
+            engine->SetFuncErrorCode(1);
             return AUT_OK;
         }
 
@@ -680,7 +727,7 @@ AUT_RESULT ModuleSys::F_ProcessList(VectorVariant &vParams, Variant &vResult)
         if (!lpfnEnumProcesses || !lpfnEnumProcessModules || !lpfnGetModuleBaseName)
         {
             FreeLibrary(hinstLib);                    // Free the DLL module.
-            SetFuncErrorCode(1);
+            engine->SetFuncErrorCode(1);
             return AUT_OK;
         }
 
@@ -688,7 +735,7 @@ AUT_RESULT ModuleSys::F_ProcessList(VectorVariant &vParams, Variant &vResult)
         if (!lpfnEnumProcesses(idProcessArray, sizeof(idProcessArray), &cbNeeded))
         {
             FreeLibrary(hinstLib);                    // Free the DLL module.
-            SetFuncErrorCode(1);
+            engine->SetFuncErrorCode(1);
             return AUT_OK;
         }
 
@@ -731,7 +778,7 @@ AUT_RESULT ModuleSys::F_ProcessList(VectorVariant &vParams, Variant &vResult)
         hinstLib = GetModuleHandle("KERNEL32.DLL");
         if (!hinstLib)
         {
-            SetFuncErrorCode(1);
+            engine->SetFuncErrorCode(1);
             return AUT_OK;
         }
 
@@ -742,7 +789,7 @@ AUT_RESULT ModuleSys::F_ProcessList(VectorVariant &vParams, Variant &vResult)
         if (!lpfnCreateToolhelp32Snapshot || !lpfnProcess32First || !lpfnProcess32Next)
         {
             FreeLibrary(hinstLib);                    // Free the DLL module.
-            SetFuncErrorCode(1);
+            engine->SetFuncErrorCode(1);
             return AUT_OK;
         }
 

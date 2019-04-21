@@ -1,6 +1,14 @@
 #include "StdAfx.h"                                // Pre-compiled headers
 #include "ModuleNet.h"
 
+ModuleNet::ModuleNet(Engine* engine)
+    :engine(engine)
+{
+    // Proxy stuff
+    m_nHttpProxyMode = AUT_PROXY_REGISTRY;        // Use whatever IE defaults have been set to
+    m_nFtpProxyMode = AUT_PROXY_REGISTRY;        // Use whatever IE defaults have been set to
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // HttpSetProxy()
 //
@@ -8,7 +16,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_HttpSetProxy(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleNet::F_HttpSetProxy(VectorVariant &vParams, Variant &vResult)
 {
     uint iNumParams = vParams.size();
 
@@ -38,7 +46,7 @@ AUT_RESULT AutoIt_Script::F_HttpSetProxy(VectorVariant &vParams, Variant &vResul
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_FtpSetProxy(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModuleNet::F_FtpSetProxy(VectorVariant &vParams, Variant &vResult)
 {
     uint iNumParams = vParams.size();
 

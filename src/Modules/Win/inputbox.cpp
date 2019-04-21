@@ -72,7 +72,8 @@ CInputBox *(CInputBox::CurrInputBox) = NULL;
 /////////////////////////////////////////////////////////////////////////////
 // CInputBox dialog
 
-CInputBox::CInputBox(void)
+CInputBox::CInputBox(Engine *engine)
+    :engine(engine)
 {
     m_hWnd            = NULL;
     m_password        = '\0';
@@ -100,7 +101,7 @@ BOOL CInputBox::OnInitDialog()
     RECT rSize;
 
     // Set application icon
-    SendMessage(m_hWnd, WM_SETICON, ICON_SMALL, (LPARAM)LoadIcon(g_hInstance, MAKEINTRESOURCE(IDI_MAIN)) );
+    SendMessage(m_hWnd, WM_SETICON, ICON_SMALL, (LPARAM)LoadIcon(engine->g_hInstance, MAKEINTRESOURCE(IDI_MAIN)) );
 
     // Title the message box
     if (m_title.length()>0)

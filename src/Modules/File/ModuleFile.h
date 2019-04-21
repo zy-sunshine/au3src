@@ -67,4 +67,8 @@ public:
 
 private:
     Engine* engine;
+
+    // File variables
+    int                    m_nNumFileHandles;                        // Number of file handles in use
+    FileHandleDetails    *m_FileHandleDetails[AUT_MAXOPENFILES];    // Array contains file handles for File functions
 };
