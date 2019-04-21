@@ -125,11 +125,11 @@ void Parser::Parse(VectorToken &vLineToks, int &nScriptLine)
 AUT_RESULT Parser::FunctionCall(VectorToken &vLineToks, uint &ivPos, Variant &vResult)
 {
     VectorVariant    vParams;                    // Vector array of the parameters for this function
-    int                nNumParams;
+    int              nNumParams;
 
     // Get the function name
     int nFunction    = vLineToks[ivPos].nValue;
-    int    nColTemp    = vLineToks[ivPos].m_nCol;
+    int nColTemp     = vLineToks[ivPos].m_nCol;
 
     // Parse the function call and populate vParams
     if ( AUT_FAILED(GetFunctionCallParams(vParams, vLineToks, ivPos, nNumParams )) )

@@ -2,7 +2,9 @@
 #include "AutoIt.h"
 #include "Engine/Engine.h"
 
-class ModuleMath {
+class ModuleMath: public BaseModule {
+public:
+    static AU3_FuncInfo *funcList;
 public:
     ModuleMath(Engine* engine): engine(engine) {}
 

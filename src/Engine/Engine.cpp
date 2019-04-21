@@ -55,6 +55,7 @@
 #endif
 
 #include "Utils/utility.h"
+#include "Utils/StrUtil.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -163,258 +164,61 @@ Engine::Engine()
     m_InetGetDetails.bInProgress    = false;
     m_InetGetDetails.nBytesRead        = -1;
 
+    paser = new Parser();
+} // Engine()
 
-// Initialize the function list (very long - thank VC6 for being buggy)
-// Functon names to be in UPPERCASE and in ALPHABETICAL ORDER (Use the TextPad sort function or similar)
-// Failure to observe these instructions will be very bad...
-AU3_FuncInfo funcList[] = 
+static int funcNameSort(AU3_FuncInfo *a0,  AU3_FuncInfo *a1)
 {
-//    {"ABS", &Engine::F_Abs, 1, 1},
-//    {"ACOS", &Engine::F_ACos, 1, 1},
-    {"ADLIBDISABLE", &Engine::F_AdlibDisable, 0, 0},
-    {"ADLIBENABLE", &Engine::F_AdlibEnable, 1, 2},
-    {"ASC", &Engine::F_Asc, 1, 1},
-//    {"ASIN", &Engine::F_ASin, 1, 1},
-//    {"ASSIGN", &Engine::F_Assign, 2, 3},
-//    {"ATAN", &Engine::F_ATan, 1, 1},
-    {"AUTOITSETOPTION", &Engine::F_AutoItSetOption, 2, 2},
-    {"AUTOITWINGETTITLE", &Engine::F_AutoItWinGetTitle, 0, 0},
-    {"AUTOITWINSETTITLE", &Engine::F_AutoItWinSetTitle, 1, 1},
-    {"BITAND", &Engine::F_BitAND, 2, 255},
-    {"BITNOT", &Engine::F_BitNOT, 1, 1},
-    {"BITOR", &Engine::F_BitOR, 2, 255},
-    {"BITSHIFT", &Engine::F_BitShift, 2, 2},
-    {"BITXOR", &Engine::F_BitXOR, 2, 255},
-    {"BLOCKINPUT", &Engine::F_BlockInput, 1, 1},
-    {"BREAK", &Engine::F_Break, 1, 1},
-//    {"CALL", &Engine::F_Call, 1, 1},
-    {"CDTRAY", &Engine::F_CDTray, 2, 2},
-    {"CHR", &Engine::F_Chr, 1, 1},
-    {"CLIPGET", &Engine::F_ClipGet, 0, 0},
-    {"CLIPPUT", &Engine::F_ClipPut, 1, 1},
-    {"CONSOLEWRITE", &Engine::F_ConsoleWrite, 1, 1},
-    {"CONTROLCLICK", &Engine::F_ControlClick, 3, 5},
-    {"CONTROLCOMMAND", &Engine::F_ControlCommand, 4, 5},
-    {"CONTROLDISABLE", &Engine::F_ControlDisable, 3, 3},
-    {"CONTROLENABLE", &Engine::F_ControlEnable, 3, 3},
-    {"CONTROLFOCUS", &Engine::F_ControlFocus, 3, 3},
-    {"CONTROLGETFOCUS", &Engine::F_ControlGetFocus, 1, 2},
-    {"CONTROLGETHANDLE", &Engine::F_ControlGetHandle, 3, 3},
-    {"CONTROLGETPOS", &Engine::F_ControlGetPos, 3, 3},
-    {"CONTROLGETTEXT", &Engine::F_ControlGetText, 3, 3},
-    {"CONTROLHIDE", &Engine::F_ControlHide, 3, 3},
-//    {"CONTROLLISTVIEW", &Engine::F_ControlListView, 4, 6},
-    {"CONTROLMOVE", &Engine::F_ControlMove, 5, 7},
-    {"CONTROLSEND", &Engine::F_ControlSend, 4, 5},
-    {"CONTROLSETTEXT", &Engine::F_ControlSetText, 4, 4},
-    {"CONTROLSHOW", &Engine::F_ControlShow, 3, 3},
-//    {"COS", &Engine::F_Cos, 1, 1},
-    {"DEC", &Engine::F_Dec, 1, 1},
-    {"DIRCOPY", &Engine::F_DirCopy, 2, 3},
-    {"DIRCREATE", &Engine::F_DirCreate, 1, 1},
-    {"DIRGETSIZE", &Engine::F_DirGetSize, 1, 2},
-    {"DIRMOVE", &Engine::F_DirMove, 2, 3},
-    {"DIRREMOVE", &Engine::F_DirRemove, 1, 2},
-//    {"DLLCALL", &Engine::F_DllCall, 3, 255},
-//    {"DLLCLOSE", &Engine::F_DllClose, 1, 1},
-//    {"DLLOPEN", &Engine::F_DllOpen, 1, 1},
-    {"DRIVEGETDRIVE", &Engine::F_DriveGetDrive, 1, 1},
-    {"DRIVEGETFILESYSTEM", &Engine::F_DriveGetFileSystem, 1, 1},
-    {"DRIVEGETLABEL", &Engine::F_DriveGetLabel, 1, 1},
-    {"DRIVEGETSERIAL", &Engine::F_DriveGetSerial, 1, 1},
-    {"DRIVEGETTYPE", &Engine::F_DriveGetType, 1, 1},
-    {"DRIVEMAPADD", &Engine::F_DriveMapAdd, 2, 5},
-    {"DRIVEMAPDEL", &Engine::F_DriveMapDel, 1, 1},
-    {"DRIVEMAPGET", &Engine::F_DriveMapGet, 1, 1},
-    {"DRIVESETLABEL", &Engine::F_DriveSetLabel, 2, 2},
-    {"DRIVESPACEFREE", &Engine::F_DriveSpaceFree, 1, 1},
-    {"DRIVESPACETOTAL", &Engine::F_DriveSpaceTotal, 1, 1},
-    {"DRIVESTATUS", &Engine::F_DriveStatus, 1, 1},
-    {"ENVGET", &Engine::F_EnvGet, 1, 1},
-    {"ENVSET", &Engine::F_EnvSet, 1, 2},
-    {"ENVUPDATE", &Engine::F_EnvUpdate, 0, 0},
-//    {"EVAL", &Engine::F_Eval, 1, 1},
-//    {"EXP", &Engine::F_Exp, 1, 1},
-    {"FILECHANGEDIR", &Engine::F_FileChangeDir, 1, 1},
-    {"FILECLOSE", &Engine::F_FileClose, 1, 1},
-    {"FILECOPY", &Engine::F_FileCopy, 2, 3},
-    {"FILECREATESHORTCUT", &Engine::F_FileCreateShortcut, 2, 9},
-    {"FILEDELETE", &Engine::F_FileDelete, 1, 1},
-    {"FILEEXISTS", &Engine::F_FileExists, 1, 1},
-    {"FILEFINDFIRSTFILE", &Engine::F_FileFindFirstFile, 1, 1},
-    {"FILEFINDNEXTFILE", &Engine::F_FileFindNextFile, 1, 1},
-    {"FILEGETATTRIB", &Engine::F_FileGetAttrib, 1, 1},
-    {"FILEGETLONGNAME", &Engine::F_FileGetLongName, 1, 1},
-    {"FILEGETSHORTCUT", &Engine::F_FileGetShortcut, 1, 1},
-    {"FILEGETSHORTNAME", &Engine::F_FileGetShortName, 1, 1},
-    {"FILEGETSIZE", &Engine::F_FileGetSize, 1, 1},
-    {"FILEGETTIME", &Engine::F_FileGetTime, 1, 3},
-    {"FILEGETVERSION", &Engine::F_FileGetVersion, 1, 1},
-    {"FILEINSTALL", &Engine::F_FileInstall, 2, 3},
-    {"FILEMOVE", &Engine::F_FileMove, 2, 3},
-    {"FILEOPEN", &Engine::F_FileOpen, 2, 2},
-    {"FILEOPENDIALOG", &Engine::F_FileOpenDialog, 3, 5},
-    {"FILEREAD", &Engine::F_FileRead, 2, 2},
-    {"FILEREADLINE", &Engine::F_FileReadLine, 1, 2},
-    {"FILERECYCLE", &Engine::F_FileRecycle, 1, 1},
-    {"FILERECYCLEEMPTY", &Engine::F_FileRecycleEmpty, 0, 1},
-    {"FILESAVEDIALOG", &Engine::F_FileSaveDialog, 3, 5},
-    {"FILESELECTFOLDER", &Engine::F_FileSelectFolder, 2, 4},
-    {"FILESETATTRIB", &Engine::F_FileSetAttrib, 2, 3},
-    {"FILESETTIME", &Engine::F_FileSetTime, 2, 4},
-    {"FILEWRITE", &Engine::F_FileWrite, 2, 2},
-    {"FILEWRITELINE", &Engine::F_FileWriteLine, 2, 2},
-    {"FTPSETPROXY", &Engine::F_FtpSetProxy, 1, 4},
+    return strcmp(a->szName, b->szName);
+}
 
-    {"HEX", &Engine::F_Hex, 2, 2},
-//    {"HOTKEYSET", &Engine::F_HotKeySet, 1, 2},
-    {"HTTPSETPROXY", &Engine::F_HttpSetProxy, 1, 4},
-//    {"INETGET", &Engine::F_InetGet, 1, 4},
-//    {"INETGETSIZE", &Engine::F_InetGetSize, 1, 1},
-    {"INIDELETE", &Engine::F_IniDelete, 2, 3},
-    {"INIREAD", &Engine::F_IniRead, 4, 4},
-    {"INIREADSECTION", &Engine::F_IniReadSection, 2, 2},
-    {"INIREADSECTIONNAMES", &Engine::F_IniReadSectionNames, 1, 1},
-    {"INIWRITE", &Engine::F_IniWrite, 4, 4},
-    {"INPUTBOX", &Engine::F_InputBox, 2, 9},
-    {"INT", &Engine::F_Int, 1, 1},
-    {"ISADMIN", &Engine::F_IsAdmin, 0, 0},
-    {"ISARRAY", &Engine::F_IsArray, 1, 1},
-//    {"ISDECLARED", &Engine::F_IsDeclared, 1, 1},
-    {"ISFLOAT", &Engine::F_IsFloat, 1, 1},
-    {"ISINT", &Engine::F_IsInt, 1, 1},
-    {"ISNUMBER", &Engine::F_IsNumber, 1, 1},
-    {"ISSTRING", &Engine::F_IsString, 1, 1},
-//    {"LOG", &Engine::F_Log, 1, 1},
-    {"MEMGETSTATS", &Engine::F_MemGetStats, 0, 0},
-//    {"MOD", &Engine::F_Mod, 2, 2},
-    {"MOUSECLICK", &Engine::F_MouseClick, 1, 5},
-    {"MOUSECLICKDRAG", &Engine::F_MouseClickDrag, 5, 6},
-    {"MOUSEDOWN", &Engine::F_MouseDown, 1, 1},
-    {"MOUSEGETCURSOR", &Engine::F_MouseGetCursor, 0, 0},
-    {"MOUSEGETPOS", &Engine::F_MouseGetPos, 0, 0},
-    {"MOUSEMOVE", &Engine::F_MouseMove, 2, 3},
-    {"MOUSEUP", &Engine::F_MouseUp, 1, 1},
-    {"MOUSEWHEEL", &Engine::F_MouseWheel, 1, 2},
-    {"MSGBOX", &Engine::F_MsgBox, 3, 4},
-    {"NUMBER", &Engine::F_Number, 1, 1},
-    {"OPT", &Engine::F_AutoItSetOption, 2, 2},
-//    {"PING", &Engine::F_Ping, 1, 2},
-    {"PIXELCHECKSUM", &Engine::F_PixelChecksum, 4, 5},
-    {"PIXELGETCOLOR", &Engine::F_PixelGetColor, 2, 2},
-    {"PIXELSEARCH", &Engine::F_PixelSearch, 5, 7},
-    {"PROCESSCLOSE", &Engine::F_ProcessClose, 1, 1},
-    {"PROCESSEXISTS", &Engine::F_ProcessExists, 1, 1},
-    {"PROCESSLIST", &Engine::F_ProcessList, 0, 1},
-    {"PROCESSSETPRIORITY", &Engine::F_ProcessSetPriority, 2, 2},
-    {"PROCESSWAIT", &Engine::F_ProcessWait, 1, 2},
-    {"PROCESSWAITCLOSE", &Engine::F_ProcessWaitClose, 1, 2},
-    {"PROGRESSOFF", &Engine::F_ProgressOff, 0, 0},
-    {"PROGRESSON", &Engine::F_ProgressOn, 2, 6},
-    {"PROGRESSSET", &Engine::F_ProgressSet, 1, 3},
-    {"RANDOM", &Engine::F_Random, 0, 3},
-    {"REGDELETE", &Engine::F_RegDelete, 1, 2},
-    {"REGENUMKEY", &Engine::F_RegEnumKey, 2, 2},
-    {"REGENUMVAL", &Engine::F_RegEnumVal, 2, 2},
-    {"REGREAD", &Engine::F_RegRead, 2, 2},
-    {"REGWRITE", &Engine::F_RegWrite, 1, 4},
-//    {"ROUND", &Engine::F_Round, 1, 2},
-    {"RUN", &Engine::F_Run, 1, 3},
-    {"RUNASSET", &Engine::F_RunAsSet, 0, 4},
-    {"RUNWAIT", &Engine::F_RunWait, 1, 3},
-    {"SEND", &Engine::F_Send, 1, 2},
-    {"SETERROR", &Engine::F_SetError, 1, 1},
-    {"SETEXTENDED", &Engine::F_SetExtended, 1, 1},
-    {"SHUTDOWN", &Engine::F_Shutdown, 1, 1},
-//    {"SIN", &Engine::F_Sin, 1, 1},
-    {"SLEEP", &Engine::F_Sleep, 1, 1},
-    {"SOUNDPLAY", &Engine::F_SoundPlay, 1, 2},
-    {"SOUNDSETWAVEVOLUME", &Engine::F_SoundSetWaveVolume, 1, 1},
-    {"SPLASHIMAGEON", &Engine::F_SplashImageOn, 2, 7},
-    {"SPLASHOFF", &Engine::F_SplashOff, 0, 0},
-    {"SPLASHTEXTON", &Engine::F_SplashTextOn, 2, 10},
-//    {"SQRT", &Engine::F_Sqrt, 1, 1},
-//    {"STATUSBARGETTEXT", &Engine::F_StatusbarGetText, 1, 3},
-    {"STRING", &Engine::F_String, 1, 1},
-    {"STRINGADDCR", &Engine::F_StringAddCR, 1, 1},
-    {"STRINGFORMAT", &Engine::F_StringFormat, 1, 33},
-    {"STRINGINSTR", &Engine::F_StringInStr, 2, 4},
-    {"STRINGISALNUM", &Engine::F_StringIsAlnum, 1, 1},
-    {"STRINGISALPHA", &Engine::F_StringIsAlpha, 1, 1},
-    {"STRINGISASCII", &Engine::F_StringIsASCII, 1, 1},
-    {"STRINGISDIGIT", &Engine::F_StringIsDigit, 1, 1},
-    {"STRINGISFLOAT", &Engine::F_StringIsFloat, 1, 1},
-    {"STRINGISINT", &Engine::F_StringIsInt, 1, 1},
-    {"STRINGISLOWER", &Engine::F_StringIsLower, 1, 1},
-    {"STRINGISSPACE", &Engine::F_StringIsSpace, 1, 1},
-    {"STRINGISUPPER", &Engine::F_StringIsUpper, 1, 1},
-    {"STRINGISXDIGIT", &Engine::F_StringIsXDigit, 1, 1},
-    {"STRINGLEFT", &Engine::F_StringLeft, 2, 2},
-    {"STRINGLEN", &Engine::F_StringLen, 1, 1},
-    {"STRINGLOWER", &Engine::F_StringLower, 1, 1},
-    {"STRINGMID", &Engine::F_StringMid, 2, 3},
-//    {"STRINGREGEXP", &Engine::F_StringRegExp, 2, 3},
-//    {"STRINGREGEXPREPLACE", &Engine::F_StringRegExpReplace, 3, 4},
-    {"STRINGREPLACE", &Engine::F_StringReplace, 3, 5},
-    {"STRINGRIGHT", &Engine::F_StringRight, 2, 2},
-    {"STRINGSPLIT", &Engine::F_StringSplit, 2, 3},
-    {"STRINGSTRIPCR", &Engine::F_StringStripCR, 1, 1},
-    {"STRINGSTRIPWS", &Engine::F_StringStripWS, 2, 2},
-    {"STRINGTRIMLEFT", &Engine::F_StringTrimLeft, 2, 2},
-    {"STRINGTRIMRIGHT", &Engine::F_StringTrimRight, 2, 2},
-    {"STRINGUPPER", &Engine::F_StringUpper, 1, 1},
-//    {"TAN", &Engine::F_Tan, 1, 1},
-    {"TIMERDIFF", &Engine::F_TimerDiff, 1, 1},
-    {"TIMERINIT", &Engine::F_TimerInit, 0, 0},
-    {"TIMERSTART", &Engine::F_TimerInit, 0, 0},
-    {"TIMERSTOP", &Engine::F_TimerDiff, 1, 1},
-    {"TOOLTIP", &Engine::F_ToolTip, 1, 3},
-    {"TRAYTIP", &Engine::F_TrayTip, 3, 4},
-    {"UBOUND", &Engine::F_UBound, 1, 2},
-//    {"URLDOWNLOADTOFILE", &Engine::F_InetGet, 2, 2},
-    {"VARTYPE", &Engine::F_VarType, 1, 1},
-    {"WINACTIVATE", &Engine::F_WinActivate, 1, 2},
-    {"WINACTIVE", &Engine::F_WinActive, 1, 2},
-    {"WINCLOSE", &Engine::F_WinClose, 1, 2},
-    {"WINEXISTS", &Engine::F_WinExists, 1, 2},
-    {"WINGETCARETPOS", &Engine::F_WinGetCaretPos, 0, 0},
-    {"WINGETCLASSLIST", &Engine::F_WinGetClassList, 1, 2},
-    {"WINGETCLIENTSIZE", &Engine::F_WinGetClientSize, 1, 2},
-    {"WINGETHANDLE", &Engine::F_WinGetHandle, 1, 2},
-    {"WINGETPOS", &Engine::F_WinGetPos, 1, 2},
-    {"WINGETPROCESS", &Engine::F_WinGetProcess, 1, 2},
-    {"WINGETSTATE", &Engine::F_WinGetState, 1, 2},
-    {"WINGETTEXT", &Engine::F_WinGetText, 1, 2},
-    {"WINGETTITLE", &Engine::F_WinGetTitle, 1, 2},
-    {"WINKILL", &Engine::F_WinKill, 1, 2},
-    {"WINLIST", &Engine::F_WinList, 0, 2},
-    {"WINMENUSELECTITEM", &Engine::F_WinMenuSelectItem, 3, 9},
-    {"WINMINIMIZEALL", &Engine::F_WinMinimizeAll, 0, 0},
-    {"WINMINIMIZEALLUNDO", &Engine::F_WinMinimizeAllUndo, 0, 0},
-    {"WINMOVE", &Engine::F_WinMove, 4, 6},
-    {"WINSETONTOP", &Engine::F_WinSetOnTop, 3, 3},
-    {"WINSETSTATE", &Engine::F_WinShow, 3, 3},
-    {"WINSETTITLE", &Engine::F_WinSetTitle, 3, 3},
-    {"WINSETTRANS", &Engine::F_WinSetTrans, 3, 3},
-    {"WINSHOW", &Engine::F_WinShow, 3, 3},
-    {"WINWAIT", &Engine::F_WinWait, 1, 3},
-    {"WINWAITACTIVE", &Engine::F_WinWaitActive, 1, 3},
-    {"WINWAITCLOSE", &Engine::F_WinWaitClose, 1, 3},
-    {"WINWAITNOTACTIVE", &Engine::F_WinWaitNotActive, 1, 3}
-};
+void Engine::initModules(BaseModule *modules, int size)
+{
+    // Initialize the function list (very long - thank VC6 for being buggy)
+    // Functon names to be in UPPERCASE and in ALPHABETICAL ORDER (Use the TextPad sort function or similar)
+    // Failure to observe these instructions will be very bad...
+    AU3_FuncInfo *info;
+    unsigned j;
 
-    m_nFuncListSize = sizeof(funcList) / sizeof(AU3_FuncInfo);
+    m_nFuncListSize  = 0;
+    for (unsigned idx=0; idx < size; idx++) {
+        info = modules[idx]->funcInfo();
+        j = 0;
+        while (info) {
+            if (!info->szName) { break; }
+            m_nFuncListSize++;
+            info = modules[idx]->funcInfo() + (++j);
+        }
+    }
 
     // Copy the function list into a member variable
     m_FuncList = new AU3_FuncInfo[m_nFuncListSize];
+    unsigned funcIdx = 0;
+    for (unsigned idx=0; idx < size; idx++) {
+        info = modules[idx]->funcInfo();
+        j = 0;
+        while (info) {
+            if (!info->szName) { break; }
+            m_FuncList[funcIdx].szName = Util_StrCpyAlloc(info->szName);
+            m_FuncList[funcIdx].lpFunc = info->lpFunc;
+            m_FuncList[funcIdx].nMin = info->nMin;
+            m_FuncList[funcIdx].nMax = info->nMax;
+            m_FuncList[funcIdx].lpSelf = (void*)modules[idx];
+            m_FuncList[funcIdx].lpCaller = modules[idx]->funcCaller();
+            funcIdx++;
+            info = modules[idx]->funcInfo() + (++j);
+        }
+    }
+
+    Sort(m_FuncList, funcNameSort);
+
     for (i=0; i<m_nFuncListSize; ++i) 
     {
-        m_FuncList[i].szName = Util_StrCpyAlloc(funcList[i].szName);
-        m_FuncList[i].lpFunc = funcList[i].lpFunc;
-        m_FuncList[i].nMin = funcList[i].nMin;
-        m_FuncList[i].nMax = funcList[i].nMax;
+    }
 
-#ifdef _DEBUG
+// NOTE: because Lexer search function use binary search, enable these code now
+//      but why not sort these function firstly, speed?
+//#ifdef _DEBUG
         // test to make sure that the list is in order, but only during development
         if (i>0 && strcmp(m_FuncList[i-1].szName, m_FuncList[i].szName) > 0)    // out of sequence
         {
@@ -422,13 +226,8 @@ AU3_FuncInfo funcList[] =
             AUT_DEBUGMESSAGEBOX(m_FuncList[i].szName);
             AUT_ASSERT(strcmp(m_FuncList[i-1].szName, m_FuncList[i].szName) < 0);
         }
-#endif
-
-    }
-
-    paser = new Parser();
-} // Engine()
-
+//#endif
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Destructor()
@@ -597,42 +396,42 @@ void Engine::FatalError(int iErr, const char *szText2)
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-//AUT_RESULT Engine::InitScript(char *szFile)
-//{
-//    // Check that the block structures are correct
-//    if ( AUT_FAILED(parser->VerifyBlockStructure()) )
+AUT_RESULT Engine::InitScript(char *szFile)
+{
+    // Check that the block structures are correct
+    if ( AUT_FAILED(parser->VerifyBlockStructure()) )
+        return AUT_ERR;
+
+    // Scan for user functions
+    if ( AUT_FAILED(StoreUserFuncs()) )
+        return AUT_ERR;
+
+    // Scan for plugin functions and load required DLLs
+//    if ( AUT_FAILED(StorePluginFuncs()) )
 //        return AUT_ERR;
-//
-//    // Scan for user functions
-//    if ( AUT_FAILED(StoreUserFuncs()) )
-//        return AUT_ERR;
-//
-//    // Scan for plugin functions and load required DLLs
-////    if ( AUT_FAILED(StorePluginFuncs()) )
-////        return AUT_ERR;
-//
-//    // Check user function calls refer to existing functions (or plugin functions)
-//    if ( AUT_FAILED(VerifyUserFuncCalls()) )
-//        return AUT_ERR;
-//
-//    // Make a note of the script filename (for @ScriptDir, etc)
-//    char    szFileTemp[_MAX_PATH+1];
-//    char    *szFilePart;
-//
-//    GetFullPathName(szFile, _MAX_PATH, szFileTemp, &szFilePart);
-//    m_sScriptFullPath = szFileTemp;
-//    m_sScriptName = szFilePart;
-//    szFilePart[-1] = '\0';
-//    m_sScriptDir = szFileTemp;
-//
-//    // Initialise the random number routine (must be done after the script has
-//    // loaded as the compiled script loader also uses random numbers and must
-//    // be reseeded now to get random numbers again!
-//    Util_RandInit();
-//
-//    return AUT_OK;
-//
-//} // InitScript()
+
+    // Check user function calls refer to existing functions (or plugin functions)
+    if ( AUT_FAILED(VerifyUserFuncCalls()) )
+        return AUT_ERR;
+
+    // Make a note of the script filename (for @ScriptDir, etc)
+    char    szFileTemp[_MAX_PATH+1];
+    char    *szFilePart;
+
+    GetFullPathName(szFile, _MAX_PATH, szFileTemp, &szFilePart);
+    m_sScriptFullPath = szFileTemp;
+    m_sScriptName = szFilePart;
+    szFilePart[-1] = '\0';
+    m_sScriptDir = szFileTemp;
+
+    // Initialise the random number routine (must be done after the script has
+    // loaded as the compiled script loader also uses random numbers and must
+    // be reseeded now to get random numbers again!
+    Util_RandInit();
+
+    return AUT_OK;
+
+} // InitScript()
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -894,69 +693,69 @@ AUT_RESULT Engine::FunctionExecute(int nFunction, VectorVariant &vParams, Varian
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-//AUT_RESULT Engine::StoreUserFuncs(void)
-//{
-//    uint            ivPos;                        // Position in the vector
-//    AString            sFuncName;                    // Temp function name
-//    VectorToken        LineTokens;                    // Vector (array) of tokens for a line of script
-//    int                nScriptLine = 1;            // 1 = first line
-//    const char        *szScriptLine;
-//
-//    // Check each line of the script for the FUNC keyword
-//    while ( (szScriptLine = g_oScriptFile.GetLine(nScriptLine++)) != NULL )
-//    {
-//        m_nErrorLine = nScriptLine - 1;            // Keep track for errors
-//
-//        if ( AUT_FAILED( Lexer(nScriptLine-1, szScriptLine, LineTokens) ) )
-//            return AUT_ERR;                        // Bad line
-//
-//        ivPos = 0;
-//
-//        if ( !(LineTokens[ivPos].m_nType == TOK_KEYWORD && LineTokens[ivPos].nValue == K_FUNC) )
-//            continue;                            // Next line
-//
-//        ++ivPos;                                // Skip "func" keyword
-//
-//        // Tokens should be: userfunctionname ( $variable , [ByRef] $variable , ... )
-//
-//        // Get user function name
-//        if ( LineTokens[ivPos].m_nType != TOK_USERFUNCTION )
-//        {
-//            FatalError(IDS_AUT_E_BADFUNCSTATEMENT);
-//            return AUT_ERR;
-//        }
-//
-//        // Check that this function isn't a duplicate
-//        sFuncName = LineTokens[ivPos].szValue;    // Get function name
-//        if (m_oUserFuncList.find(sFuncName.c_str()) != NULL)
-//        {
-//            FatalError(IDS_AUT_E_DUPLICATEFUNC);
-//            return AUT_ERR;
-//        }
-//
-//        ++ivPos;                                // Skip function name
-//
-//        if ( LineTokens[ivPos].m_nType != TOK_LEFTPAREN )
-//        {
-//            FatalError(IDS_AUT_E_BADFUNCSTATEMENT);
-//            return AUT_ERR;
-//        }
-//
-//        ++ivPos;                                // Skip (
-//
-//        // Parse the parameter declarations
-//        if ( AUT_FAILED(StoreUserFuncs2(LineTokens, ivPos, sFuncName, nScriptLine)) )
-//            return AUT_ERR;
-//
-//    } // End While()
-//
-//    // Finalize the list of user functions which sorts the list for speed searching. 
-//    // NO USER MORE FUNCTIONS CAN BE ADDED AFTER THIS
-//    m_oUserFuncList.createindex();
-//
-//    return AUT_OK;
-//
-//} // StoreUserFuncs()
+AUT_RESULT Engine::StoreUserFuncs(void)
+{
+    uint            ivPos;                        // Position in the vector
+    AString            sFuncName;                    // Temp function name
+    VectorToken        LineTokens;                    // Vector (array) of tokens for a line of script
+    int                nScriptLine = 1;            // 1 = first line
+    const char        *szScriptLine;
+
+    // Check each line of the script for the FUNC keyword
+    while ( (szScriptLine = g_oScriptFile.GetLine(nScriptLine++)) != NULL )
+    {
+        m_nErrorLine = nScriptLine - 1;            // Keep track for errors
+
+        if ( AUT_FAILED( Lexer(nScriptLine-1, szScriptLine, LineTokens) ) )
+            return AUT_ERR;                        // Bad line
+
+        ivPos = 0;
+
+        if ( !(LineTokens[ivPos].m_nType == TOK_KEYWORD && LineTokens[ivPos].nValue == K_FUNC) )
+            continue;                            // Next line
+
+        ++ivPos;                                // Skip "func" keyword
+
+        // Tokens should be: userfunctionname ( $variable , [ByRef] $variable , ... )
+
+        // Get user function name
+        if ( LineTokens[ivPos].m_nType != TOK_USERFUNCTION )
+        {
+            FatalError(IDS_AUT_E_BADFUNCSTATEMENT);
+            return AUT_ERR;
+        }
+
+        // Check that this function isn't a duplicate
+        sFuncName = LineTokens[ivPos].szValue;    // Get function name
+        if (m_oUserFuncList.find(sFuncName.c_str()) != NULL)
+        {
+            FatalError(IDS_AUT_E_DUPLICATEFUNC);
+            return AUT_ERR;
+        }
+
+        ++ivPos;                                // Skip function name
+
+        if ( LineTokens[ivPos].m_nType != TOK_LEFTPAREN )
+        {
+            FatalError(IDS_AUT_E_BADFUNCSTATEMENT);
+            return AUT_ERR;
+        }
+
+        ++ivPos;                                // Skip (
+
+        // Parse the parameter declarations
+        if ( AUT_FAILED(StoreUserFuncs2(LineTokens, ivPos, sFuncName, nScriptLine)) )
+            return AUT_ERR;
+
+    } // End While()
+
+    // Finalize the list of user functions which sorts the list for speed searching. 
+    // NO USER MORE FUNCTIONS CAN BE ADDED AFTER THIS
+    m_oUserFuncList.createindex();
+
+    return AUT_OK;
+
+} // StoreUserFuncs()
 
 
 ///////////////////////////////////////////////////////////////////////////////

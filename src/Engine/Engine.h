@@ -223,17 +223,28 @@ typedef struct
 #define AUT_MAXREGEXPS        8                    // Size of regular expression cache
 
 
+class BaseModule;
 // Function lookup structures
 class Engine;                            // Forward declaration of Engine
 
-typedef AUT_RESULT (Engine::*AU3_FUNCTION)(VectorVariant &vParams, Variant &vResult);
+//typedef AUT_RESULT (Engine::*AU3_FUNCTION)(VectorVariant &vParams, Variant &vResult);
+typedef AUT_RESULT (*FUNC_CALLER)(void* self, void* lpFunc, VectorVariant &vParams, Variant &vResult);
+
+typedef struct {
+    const char* szName;
+    void* lpFunc;
+    int nMin;
+    int nMax;
+} AU3_FuncType;
 
 typedef struct
 {
     const char      *szName;                    // Function name
-    AU3_FUNCTION    lpFunc;                        // Pointer to function
-    int             nMin;                        // Min params
-    int             nMax;                        // Max params
+    void*           lpFunc;                     // Pointer to function
+    int             nMin;                       // Min params
+    int             nMax;                       // Max params
+    void            *lpSelf;
+    FUNC_CALLER     *lpCaller;
 } AU3_FuncInfo;
 
 
@@ -291,6 +302,12 @@ typedef bool        (*HandleFunc)(void);
 
 ///////////////////////////////////////////////////////////////////////////////
 
+class BaseModule {
+public:
+    virtual ~BaseModule() {}
+    virtual const AU3_FuncInfo* funcInfo() const = 0;
+    virtual FUNC_CALLER funcCaller() const = 0;
+};
 
 // The AutoIt Script object
 class Engine
@@ -301,6 +318,8 @@ public:
     // Functions
     Engine();                            // Constructor
     ~Engine();                            // Destrucutor
+
+    void initModules(BaseModule* modules, int size);
 
     AUT_RESULT        InitScript(char *szFile);    // Perform setup of a loaded script
     int                ProcessMessages();

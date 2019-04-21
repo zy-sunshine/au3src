@@ -2,6 +2,17 @@
 #include "ModuleMouse.h"
 #include "Utils/WinUtil.h"
 
+AU3_FuncInfo ModuleMouse::funcInfo[] = {
+    {"MOUSECLICK", &ModuleMouse::F_MouseClick, 1, 5},
+    {"MOUSECLICKDRAG", &ModuleMouse::F_MouseClickDrag, 5, 6},
+    {"MOUSEDOWN", &ModuleMouse::F_MouseDown, 1, 1},
+    {"MOUSEGETCURSOR", &ModuleMouse::F_MouseGetCursor, 0, 0},
+    {"MOUSEGETPOS", &ModuleMouse::F_MouseGetPos, 0, 0},
+    {"MOUSEMOVE", &ModuleMouse::F_MouseMove, 2, 3},
+    {"MOUSEUP", &ModuleMouse::F_MouseUp, 1, 1},
+    {"MOUSEWHEEL", &ModuleMouse::F_MouseWheel, 1, 2},
+};
+
 ModuleMouse::ModuleMouse(Engine* engine)
     :engine(engine)
 {

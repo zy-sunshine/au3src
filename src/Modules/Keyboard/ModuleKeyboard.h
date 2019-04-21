@@ -2,7 +2,9 @@
 #include "AutoIt.h"
 #include "Engine/Engine.h"
 
-class ModuleKeyboard {
+class ModuleKeyboard: public BaseModule {
+public:
+    static AU3_FuncInfo *funcInfo;
 public:
     ModuleKeyboard(Engine* engine);
     ~ModuleKeyboard();
@@ -11,6 +13,7 @@ public:
 
     AUT_RESULT    F_HotKeySet(VectorVariant &vParams, Variant &vResult);
 
+private:
     bool HandleHotKey(); // engine loop func
 
 private:

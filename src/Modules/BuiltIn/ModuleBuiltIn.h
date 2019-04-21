@@ -2,9 +2,20 @@
 #include "AutoIt.h"
 #include "Engine/Engine.h"
 
-class ModuleBuiltIn {
+class ModuleBuiltIn: public BaseModule {
+public:
+    static const AU3_FuncInfo *funcList;
+    static AUT_RESULT FuncCaller(void* self, void* lpFunc, VectorVariant &vParams, Variant &vResult)
+    {
+        ModuleBuiltIn* _this = (ModuleBuiltIn*)self;
+        return (_this->*(ModuleBuiltIn::*)lpFunc)(vParams, vResult);
+    }
+    virtual const AU3_FuncInfo* funcInfo() const { return funcList; }
+    virtual FUNC_CALLER funcCaller() const { return FuncCaller; };
+
 public:
     ModuleBuiltIn(Engine* engine): engine(engine) {}
+    virtual ~ModuleBuiltIn() {}
     AUT_RESULT    F_BitAND(VectorVariant &vParams, Variant &vResult);
     AUT_RESULT    F_BitOR(VectorVariant &vParams, Variant &vResult);
     AUT_RESULT    F_BitNOT(VectorVariant &vParams, Variant &vResult);

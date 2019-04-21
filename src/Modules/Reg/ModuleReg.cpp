@@ -52,6 +52,13 @@
 
 #include "Utils/utility.h"
 
+AU3_FuncInfo ModuleReg::funcInfo[] = {
+    {"REGDELETE", &ModuleReg::F_RegDelete, 1, 2},
+    {"REGENUMKEY", &ModuleReg::F_RegEnumKey, 2, 2},
+    {"REGENUMVAL", &ModuleReg::F_RegEnumVal, 2, 2},
+    {"REGREAD", &ModuleReg::F_RegRead, 2, 2},
+    {"REGWRITE", &ModuleReg::F_RegWrite, 1, 4},
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 // RegSplitKey()

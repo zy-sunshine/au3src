@@ -2,7 +2,7 @@
 #include "AutoIt.h"
 #include "Engine/Engine.h"
 
-class ModuleGui {
+class ModuleGui: public BaseModule {
 public:
     ModuleGui(Engine* engine): engine(engine) {}
     // Gui related functions

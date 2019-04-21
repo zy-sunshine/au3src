@@ -2,8 +2,13 @@
 #include "AutoIt.h"
 #include "Engine/Engine.h"
 
-class ModuleFile {
+class ModuleFile: public BaseModule {
+public:
+    static AU3_FuncInfo *funcInfo;
+
+public:
     ModuleFile(Engine* engine): engine(engine) {}
+
 public:
     // File related functions (script_file.cpp)
     AUT_RESULT    F_DirCopy(VectorVariant &vParams, Variant &vResult);
@@ -19,12 +24,9 @@ public:
     AUT_RESULT    F_FileGetSize(VectorVariant &vParams, Variant &vResult);
     AUT_RESULT    F_FileOpenDialog(VectorVariant &vParams, Variant &vResult);
     AUT_RESULT    F_FileSaveDialog(VectorVariant &vParams, Variant &vResult);
-    AUT_RESULT    FileDialog(VectorVariant &vParams, Variant &vResult, uint iNumParams, int nFlag);
     AUT_RESULT    F_FileWriteLine(VectorVariant &vParams, Variant &vResult);
     AUT_RESULT    F_FileWrite(VectorVariant &vParams, Variant &vResult);
-    AUT_RESULT    FileWriteLine(VectorVariant &vParams, Variant &vResult, bool bWriteLine);
     AUT_RESULT    F_FileSelectFolder(VectorVariant &vParams, Variant &vResult);
-    static int    CALLBACK BrowseForFolderProc(HWND hWnd,UINT iMsg,LPARAM lParam,LPARAM lpData);
     AUT_RESULT    F_DriveMapAdd(VectorVariant &vParams, Variant &vResult);
     AUT_RESULT    F_DriveMapDel(VectorVariant &vParams, Variant &vResult);
     AUT_RESULT    F_DriveMapGet(VectorVariant &vParams, Variant &vResult);
@@ -56,13 +58,18 @@ public:
     AUT_RESULT    F_FileGetShortName(VectorVariant &vParams, Variant &vResult);
     AUT_RESULT    F_FileChangeDir(VectorVariant &vParams, Variant &vResult);
     AUT_RESULT    F_FileSetAttrib(VectorVariant &vParams, Variant &vResult);
-    bool        FileSetAttrib_recurse (const char *szFile, DWORD dwAdd, DWORD dwRemove, bool bRecurse);
     AUT_RESULT    F_FileSetTime(VectorVariant &vParams, Variant &vResult);
-    bool        FileSetTime_recurse (const char *szIn, FILETIME *ft, int nWhichTime, bool bRecurse);
     AUT_RESULT    F_DirMove(VectorVariant &vParams, Variant &vResult);
     AUT_RESULT    F_FileRead(VectorVariant &vParams, Variant &vResult);
     AUT_RESULT    F_FileRecycleEmpty(VectorVariant &vParams, Variant &vResult);
     AUT_RESULT    F_DirGetSize(VectorVariant &vParams, Variant &vResult);
+
+private:
+    AUT_RESULT    FileDialog(VectorVariant &vParams, Variant &vResult, uint iNumParams, int nFlag);
+    AUT_RESULT    FileWriteLine(VectorVariant &vParams, Variant &vResult, bool bWriteLine);
+    static int    CALLBACK BrowseForFolderProc(HWND hWnd,UINT iMsg,LPARAM lParam,LPARAM lpData);
+    bool        FileSetAttrib_recurse (const char *szFile, DWORD dwAdd, DWORD dwRemove, bool bRecurse);
+    bool        FileSetTime_recurse (const char *szIn, FILETIME *ft, int nWhichTime, bool bRecurse);
     bool        GetDirSize(const char *szInputPath, __int64 &nSize, __int64 &nFiles, __int64 &nDirs, bool bExt, bool bRec);
 
 private:

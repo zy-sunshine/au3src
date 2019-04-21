@@ -2,7 +2,9 @@
 #include "AutoIt.h"
 #include "Engine/Engine.h"
 
-class ModuleSys {
+class ModuleSys: public BaseModule {
+public:
+    static AU3_FuncInfo *funcInfo;
 public:
     ModuleSys(Engine* engine);
     ~ModuleSys();
@@ -11,16 +13,12 @@ public:
     AUT_RESULT    F_Run(VectorVariant &vParams, Variant &vResult);
     AUT_RESULT    F_RunWait(VectorVariant &vParams, Variant &vResult);
     AUT_RESULT    F_RunAsSet(VectorVariant &vParams, Variant &vResult);
-    AUT_RESULT    Run(int nFunction, VectorVariant &vParams, uint iNumParams, Variant &vResult);
     AUT_RESULT    F_ProcessClose(VectorVariant &vParams, Variant &vResult);
     AUT_RESULT    F_ProcessExists(VectorVariant &vParams, Variant &vResult);
-    AUT_RESULT    F_ProcessWait(VectorVariant &vParams, Variant &vResult);
     // TODO: open
     //AUT_RESULT    F_ProcessWaitClose(VectorVariant &vParams, Variant &vResult);
-    bool HandleProcessWait(int type, AString &sProcessSearchTitle, int nProcessWaitTimeout,
-        int tProcessTimerStarted, Variant &vResult);
+    AUT_RESULT    F_ProcessWait(VectorVariant &vParams, Variant &vResult);
 
-    void        ProcessWaitInit(VectorVariant &vParams, uint iNumParams);
     AUT_RESULT    F_Shutdown(VectorVariant &vParams, Variant &vResult);
     AUT_RESULT    F_ProcessSetPriority(VectorVariant &vParams, Variant &vResult);
     AUT_RESULT    F_ProcessList(VectorVariant &vParams, Variant &vResult);
@@ -56,6 +54,11 @@ public:
 
 private:
     int loopCheckProcess();
+    AUT_RESULT    Run(int nFunction, VectorVariant &vParams, uint iNumParams, Variant &vResult);
+    bool HandleProcessWait(int type, AString &sProcessSearchTitle, int nProcessWaitTimeout,
+        int tProcessTimerStarted, Variant &vResult);
+
+    void        ProcessWaitInit(VectorVariant &vParams, uint iNumParams);
 
 private:
     Engine* engine;

@@ -2,7 +2,9 @@
 #include "AutoIt.h"
 #include "Engine/Engine.h"
 
-class ModuleSound {
+class ModuleSound: public BaseModule {
+public:
+    static AU3_FuncInfo *funcInfo;
 public:
     ModuleSound(Engine* engine): engine(engine) {}
 

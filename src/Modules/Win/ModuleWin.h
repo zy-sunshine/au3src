@@ -3,6 +3,7 @@
 #include "Engine/Engine.h"
 
 class ModuleWin {
+    static AU3_FuncInfo *funcInfo;
 public:
     ModuleWin(Engine* engine);
     ~ModuleWin();
@@ -37,6 +38,7 @@ public:
     AUT_RESULT    F_ControlCommand(VectorVariant &vParams, Variant &vResult);
     AUT_RESULT    F_ControlListView(VectorVariant &vParams,  Variant &vResult);
     //void        ControlLVSelect(bool bSelect, int nFromIndex, int nToIndex);
+    // NOTE: not expose
     AUT_RESULT    F_ControlTreeView(VectorVariant &vParams,  Variant &vResult);
     AUT_RESULT    F_ControlEnable(VectorVariant &vParams, Variant &vResult);
     AUT_RESULT    F_ControlDisable(VectorVariant &vParams, Variant &vResult);
@@ -73,12 +75,14 @@ public:
     AUT_RESULT    F_SplashImageOn(VectorVariant &vParams, Variant &vResult);
     AUT_RESULT    F_SplashTextOn(VectorVariant &vParams, Variant &vResult);
     AUT_RESULT    F_SplashOff(VectorVariant &vParams, Variant &vResult);
-    AUT_RESULT    Splash(VectorVariant &vParams, uint iNumParams, int nFlag);
     AUT_RESULT    F_ProgressOn(VectorVariant &vParams, Variant &vResult);
     AUT_RESULT    F_ProgressOff(VectorVariant &vParams, Variant &vResult);
     AUT_RESULT    F_ProgressSet(VectorVariant &vParams, Variant &vResult);
-    AUT_RESULT    Progress(VectorVariant &vParams, uint iNumParams, int nFlag);
     AUT_RESULT    F_InputBox(VectorVariant &vParams, Variant &vResult);
+
+private:
+    AUT_RESULT    Splash(VectorVariant &vParams, uint iNumParams, int nFlag);
+    AUT_RESULT    Progress(VectorVariant &vParams, uint iNumParams, int nFlag);
 
 private:
     Engine* engine;
