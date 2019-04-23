@@ -44,6 +44,7 @@
 
 // Includes
 #include "StdAfx.h"                                // Pre-compiled headers
+#include "Engine/Engine.h"
 #include "ModuleBuiltIn.h"
 
 #ifndef _MSC_VER                                // Includes for non-MS compilers

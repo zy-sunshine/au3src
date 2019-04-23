@@ -67,7 +67,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::Lexer(int nLineNum, const char *szLine, VectorToken &vLineToks)
+AUT_RESULT Lexer::doLexer(int nLineNum, const char *szLine, VectorToken &vLineToks)
 {
 
 #ifdef AUT_CONFIG_LEXERCACHE
@@ -352,7 +352,7 @@ AUT_RESULT AutoIt_Script::Lexer(int nLineNum, const char *szLine, VectorToken &v
 // Lexer_String()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::Lexer_String(const char *szLine, uint &iPos, char *szResult)
+AUT_RESULT Lexer::Lexer_String(const char *szLine, uint &iPos, char *szResult)
 {
     uint    iPosTemp = 0;
     bool    bComplete = false;
@@ -406,7 +406,7 @@ AUT_RESULT AutoIt_Script::Lexer_String(const char *szLine, uint &iPos, char *szR
 // Lexer_Number()
 ///////////////////////////////////////////////////////////////////////////////
 
-bool AutoIt_Script::Lexer_Number(const char *szLine, uint &iPos, Token &rtok, char *szTemp)
+bool Lexer::Lexer_Number(const char *szLine, uint &iPos, Token &rtok, char *szTemp)
 {
     uint    iPosTemp = 0;
 
@@ -495,7 +495,7 @@ bool AutoIt_Script::Lexer_Number(const char *szLine, uint &iPos, Token &rtok, ch
 // Lexer_KeywordOrFunc()
 ///////////////////////////////////////////////////////////////////////////////
 
-void AutoIt_Script::Lexer_KeywordOrFunc(const char *szLine, uint &iPos, Token &rtok, char *szTemp)
+void Lexer::Lexer_KeywordOrFunc(const char *szLine, uint &iPos, Token &rtok, char *szTemp)
 {
     int        i;
     uint    iPosTemp = 0;

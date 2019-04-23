@@ -46,14 +46,12 @@
 
 // Includes
 #include "StdAfx.h"                                // Pre-compiled headers
+#include "AString.h"
 
 #ifndef _MSC_VER                                // Includes for non-MS compilers
     #include <string.h>
     #include <windows.h>
 #endif
-
-#include "astring_datatype.h"
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // Constructor()

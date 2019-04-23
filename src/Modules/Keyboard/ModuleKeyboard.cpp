@@ -1,10 +1,12 @@
 #include "StdAfx.h"                                // Pre-compiled headers
+#include "Engine/Engine.h"
+#include "Engine/Parser/Parser.h"
 #include "ModuleKeyboard.h"
 
-AU3_FuncInfo ModuleKeyboard::funcInfo[] = {
-    {"SEND", &ModuleKeyboard::F_Send, 1, 2},
-    {"HOTKEYSET", &ModuleKeyboard::F_HotKeySet, 1, 2},
-};
+//AU3_FuncInfo ModuleKeyboard::funcInfo[] = {
+//    {"SEND", &ModuleKeyboard::F_Send, 1, 2},
+//    {"HOTKEYSET", &ModuleKeyboard::F_HotKeySet, 1, 2},
+//};
 
 ModuleKeyboard::ModuleKeyboard(Engine* engine)
     : engine(engine) 

@@ -1,9 +1,10 @@
 #pragma once
 #include "AutoIt.h"
-#include "Engine/Engine.h"
+#include "Engine/BaseModule.h"
+#include "Engine/type/VectorVariant.h"
 
+class Engine;
 class ModuleWin {
-    static AU3_FuncInfo *funcInfo;
 public:
     ModuleWin(Engine* engine);
     ~ModuleWin();

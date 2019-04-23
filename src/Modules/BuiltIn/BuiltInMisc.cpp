@@ -1,4 +1,5 @@
 #include "StdAfx.h"                                // Pre-compiled headers
+#include "Engine/Engine.h"
 #include "ModuleBuiltIn.h"
 
 ///////////////////////////////////////////////////////////////////////////////

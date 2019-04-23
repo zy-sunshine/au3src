@@ -43,6 +43,7 @@
 
 // Includes
 #include "StdAfx.h"                                // Pre-compiled headers
+#include "Variant.h"
 
 #ifndef _MSC_VER                                // Includes for non-MS compilers
     #include <stdio.h>
@@ -50,9 +51,6 @@
     #include <string.h>
     #include <windef.h>
 #endif
-
-#include "variant_datatype.h"
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // Copy constructor

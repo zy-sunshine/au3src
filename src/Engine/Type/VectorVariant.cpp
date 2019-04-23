@@ -46,13 +46,11 @@
 
 // Includes
 #include "StdAfx.h"                                // Pre-compiled headers
+#include "VectorVariant.h"
 
 #ifndef _MSC_VER                                // Includes for non-MS compilers
     #include <stdio.h>
 #endif
-
-#include "vector_variant_datatype.h"
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // Constructor()

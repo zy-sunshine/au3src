@@ -45,10 +45,16 @@
 // Includes
 #include "StdAfx.h"                                // Pre-compiled headers
 #include "Parser.h"
+#include "Engine/Engine.h"
+#include "Engine/Parser/ParserExp.h"
 
 #ifndef _MSC_VER                                // Includes for non-MS compilers
     #include <windows.h>
 #endif
+
+Pasrser::Parser(Engine *engine)
+    :engine(engine)
+{ parserExp = new ParserExp(); }
 
 ///////////////////////////////////////////////////////////////////////////////
 // Parser()
@@ -143,7 +149,7 @@ AUT_RESULT Parser::FunctionCall(VectorToken &vLineToks, uint &ivPos, Variant &vR
     }
 
     // Call the function
-    if ( AUT_FAILED( FunctionExecute(nFunction, vParams, vResult) ) )
+    if ( AUT_FAILED( engine->FunctionExecute(nFunction, vParams, vResult) ) )
         return AUT_ERR;
 
     return AUT_OK;

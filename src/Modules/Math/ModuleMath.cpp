@@ -44,6 +44,7 @@
 
 // Includes
 #include "StdAfx.h"                                // Pre-compiled headers
+#include "Engine/Engine.h"
 #include "ModuleMath.h"
 
 #ifndef _MSC_VER                                // Includes for non-MS compilers
@@ -58,21 +59,21 @@
 #include "Utils/utility.h"
 
 
-AU3_FuncInfo ModuleMath::funcList[] = 
-//    {"EXP", &ModuleMath::F_Exp, 1, 1},
-//    {"TAN", &ModuleMath::F_Tan, 1, 1},
-//    {"SQRT", &ModuleMath::F_Sqrt, 1, 1},
-//    {"SIN", &ModuleMath::F_Sin, 1, 1},
-//    {"LOG", &ModuleMath::F_Log, 1, 1},
-//    {"ABS", &ModuleMath::F_Abs, 1, 1},
-//    {"ACOS", &ModuleMath::F_ACos, 1, 1},
-//    {"ASIN", &ModuleMath::F_ASin, 1, 1},
-//    {"ATAN", &ModuleMath::F_ATan, 1, 1},
-//    {"COS", &ModuleMath::F_Cos, 1, 1},
-//    {"MOD", &ModuleMath::F_Mod, 2, 2},
-//    {"ROUND", &ModuleMath::F_Round, 1, 2},
-    {"HEX", &ModuleMath::F_Hex, 2, 2},
-}
+//AU3_FuncInfo ModuleMath::funcList[] = 
+////    {"EXP", &ModuleMath::F_Exp, 1, 1},
+////    {"TAN", &ModuleMath::F_Tan, 1, 1},
+////    {"SQRT", &ModuleMath::F_Sqrt, 1, 1},
+////    {"SIN", &ModuleMath::F_Sin, 1, 1},
+////    {"LOG", &ModuleMath::F_Log, 1, 1},
+////    {"ABS", &ModuleMath::F_Abs, 1, 1},
+////    {"ACOS", &ModuleMath::F_ACos, 1, 1},
+////    {"ASIN", &ModuleMath::F_ASin, 1, 1},
+////    {"ATAN", &ModuleMath::F_ATan, 1, 1},
+////    {"COS", &ModuleMath::F_Cos, 1, 1},
+////    {"MOD", &ModuleMath::F_Mod, 2, 2},
+////    {"ROUND", &ModuleMath::F_Round, 1, 2},
+//    {"HEX", &ModuleMath::F_Hex, 2, 2},
+//}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Exp()

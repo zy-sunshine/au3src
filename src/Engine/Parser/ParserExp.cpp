@@ -44,6 +44,7 @@
 
 // Includes
 #include "StdAfx.h"                                // Pre-compiled headers
+#include "Engine/Engine.h"
 #include "ParserExp.h"
 
 #ifndef _MSC_VER                                // Includes for non-MS compilers
@@ -280,7 +281,7 @@ void ParserExp::ExpandVarString(Variant &vString)
                 ++nLine;                        // Skip the closing %
 
                 // Get the value of this variable and copy it to our result string
-                g_oVarTable.GetRef(sName.c_str(), &pvTemp, bConst);
+                engine->g_oVarTable.GetRef(sName.c_str(), &pvTemp, bConst);
                 if (pvTemp != NULL)
                     sResult += pvTemp->szValue();
             }
@@ -336,10 +337,10 @@ AUT_RESULT ParserExp::EvaluateVariable(VectorToken &vLineToks, unsigned int &ivP
     Variant        vTemp;
 
     // Get a reference to the variant
-    g_oVarTable.GetRef(vLineToks[ivPos].szValue, &pvTemp, bConst);
+    engine->g_oVarTable.GetRef(vLineToks[ivPos].szValue, &pvTemp, bConst);
     if (pvTemp == NULL)
     {
-        FatalError(IDS_AUT_E_VARNOTFOUND, vLineToks[ivPos].m_nCol);
+        engine->FatalError(IDS_AUT_E_VARNOTFOUND, vLineToks[ivPos].m_nCol);
         return AUT_ERR;
     }
 
@@ -354,7 +355,7 @@ AUT_RESULT ParserExp::EvaluateVariable(VectorToken &vLineToks, unsigned int &ivP
         // If next token is [ then trying to use a non array as an array
         if (pvTemp->type() != VAR_ARRAY && vLineToks[ivPos].m_nType == TOK_LEFTSUBSCRIPT)
         {
-            FatalError(IDS_AUT_E_NONARRAYWITHSUBSCRIPT, vLineToks[ivPos].m_nCol);
+            engine->FatalError(IDS_AUT_E_NONARRAYWITHSUBSCRIPT, vLineToks[ivPos].m_nCol);
             return AUT_ERR;
         }
         else
@@ -419,14 +420,14 @@ AUT_RESULT ParserExp::GetArrayElement(VectorToken &vLineToks, uint &ivPos, Varia
         // Parse expression for subscript
         if ( AUT_FAILED( EvaluateExpression(vLineToks, ivPos, vTemp) ) )
         {
-            //FatalError(IDS_AUT_E_PARSESUBSCRIPT, nColTemp);
+            //engine->FatalError(IDS_AUT_E_PARSESUBSCRIPT, nColTemp);
             return AUT_ERR;
         }
 
         // Subscript cannot be < 0
         if ( vTemp.nValue() < 0 )
         {
-            FatalError(IDS_AUT_E_PARSESUBSCRIPT, nColTemp);
+            engine->FatalError(IDS_AUT_E_PARSESUBSCRIPT, nColTemp);
             return AUT_ERR;
         }
 
@@ -434,7 +435,7 @@ AUT_RESULT ParserExp::GetArrayElement(VectorToken &vLineToks, uint &ivPos, Varia
         if (vLineToks[ivPos].m_nType != TOK_RIGHTSUBSCRIPT)
         {
             //AUT_MSGBOX("", "Thisone")
-            FatalError(IDS_AUT_E_PARSESUBSCRIPT, vLineToks[ivPos-1].m_nCol);
+            engine->FatalError(IDS_AUT_E_PARSESUBSCRIPT, vLineToks[ivPos-1].m_nCol);
             return AUT_ERR;
         }
 
@@ -456,7 +457,7 @@ AUT_RESULT ParserExp::GetArrayElement(VectorToken &vLineToks, uint &ivPos, Varia
 
     if ((*ppvTemp) == NULL)
     {
-        FatalError(IDS_AUT_E_BADSUBSCRIPT, nColVar);    // Use the initial variable for the error message
+        engine->FatalError(IDS_AUT_E_BADSUBSCRIPT, nColVar);    // Use the initial variable for the error message
         return AUT_ERR;
     }
 
@@ -504,7 +505,7 @@ AUT_RESULT ParserExp::EvaluateMacro(const char *szName, Variant &vResult)
 
         sNewMacro += sMacro;
 
-        g_oVarTable.GetRef(sNewMacro, &pvTemp, bConst);
+        engine->g_oVarTable.GetRef(sNewMacro, &pvTemp, bConst);
         if (pvTemp == NULL)
             return AUT_ERR;
         else
@@ -723,29 +724,29 @@ AUT_RESULT ParserExp::EvaluateMacro(const char *szName, Variant &vResult)
             break;
 
         case M_OSTYPE:
-            if ( g_oVersion.IsWinNT() == true )
+            if ( engine->g_oVersion.IsWinNT() == true )
                 vResult = "WIN32_NT";
             else
                 vResult = "WIN32_WINDOWS";
             break;
 
         case M_OSVERSION:
-            if ( g_oVersion.IsWinNT() == true )
+            if ( engine->g_oVersion.IsWinNT() == true )
             {
-                if (g_oVersion.IsWin2003() == true)
+                if (engine->g_oVersion.IsWin2003() == true)
                     vResult = "WIN_2003";
-                else if (g_oVersion.IsWinXP() == true)
+                else if (engine->g_oVersion.IsWinXP() == true)
                     vResult = "WIN_XP";
-                else if (g_oVersion.IsWin2000() == true)
+                else if (engine->g_oVersion.IsWin2000() == true)
                     vResult = "WIN_2000";
                 else
                     vResult = "WIN_NT4";
             }
             else
             {
-                if (g_oVersion.IsWin95() == true)
+                if (engine->g_oVersion.IsWin95() == true)
                     vResult = "WIN_95";
-                else if (g_oVersion.IsWin98() == true)
+                else if (engine->g_oVersion.IsWin98() == true)
                     vResult = "WIN_98";
                 else
                     vResult = "WIN_ME";
@@ -753,18 +754,18 @@ AUT_RESULT ParserExp::EvaluateMacro(const char *szName, Variant &vResult)
             break;
 
         case M_OSBUILD:
-            vResult = (int)g_oVersion.BuildNumber();
+            vResult = (int)engine->g_oVersion.BuildNumber();
             break;
 
         case M_OSSERVICEPACK:
-            vResult = g_oVersion.CSD();
+            vResult = engine->g_oVersion.CSD();
 
             break;
 
         case M_OSLANG:
-            if ( g_oVersion.IsWinNT() == true )
+            if ( engine->g_oVersion.IsWinNT() == true )
             {
-                if ( g_oVersion.IsWin2000orLater() == true )
+                if ( engine->g_oVersion.IsWin2000orLater() == true )
                     Util_RegReadString(HKEY_LOCAL_MACHINE,"SYSTEM\\CurrentControlSet\\Control\\Nls\\Language", "InstallLanguage", _MAX_PATH, szValue);
                 else      // WinNT4
                     Util_RegReadString(HKEY_LOCAL_MACHINE,"SYSTEM\\CurrentControlSet\\Control\\Nls\\Language", "Default", _MAX_PATH, szValue);
@@ -861,7 +862,7 @@ AUT_RESULT ParserExp::EvaluateMacro(const char *szName, Variant &vResult)
 
         case M_USERPROFILEDIR:
             // Deceptively difficult as all the API functions for obtaining this rely on IE4+
-            if (g_oVersion.IsWinNT())
+            if (engine->g_oVersion.IsWinNT())
                 GetEnvironmentVariable("USERPROFILE", szValue, _MAX_PATH);
             else
             {
@@ -1128,7 +1129,7 @@ AUT_RESULT ParserExp::EvaluateExpression(VectorToken &vLineToks, unsigned int &i
             case TOK_MACRO:
                 if ( AUT_FAILED(EvaluateMacro(vLineToks[ivPos++].szValue, vTemp)) )
                 {
-                    FatalError(IDS_AUT_E_MACROUNKNOWN, vLineToks[ivPos-1].m_nCol);
+                    engine->FatalError(IDS_AUT_E_MACROUNKNOWN, vLineToks[ivPos-1].m_nCol);
                     return AUT_ERR;
                 }
 
@@ -1172,7 +1173,7 @@ AUT_RESULT ParserExp::EvaluateExpression(VectorToken &vLineToks, unsigned int &i
                     if ( AUT_FAILED( OprReduce(opStack, valStack) ) )
                     {
                         // Print message and quit
-                        FatalError(IDS_AUT_E_EXPRESSION, nColTemp);
+                        engine->FatalError(IDS_AUT_E_EXPRESSION, nColTemp);
                         return AUT_ERR;
                     }
                     bLastOpWasReduce = true;        // Loop again with this operator
@@ -1184,7 +1185,7 @@ AUT_RESULT ParserExp::EvaluateExpression(VectorToken &vLineToks, unsigned int &i
                     {
                         if (opStack.top() == OPR_END)
                         {
-                            FatalError(IDS_AUT_E_UNBALANCEDPAREN, nColTemp);
+                            engine->FatalError(IDS_AUT_E_UNBALANCEDPAREN, nColTemp);
                             return AUT_ERR;
                         }
                         else
@@ -1193,7 +1194,7 @@ AUT_RESULT ParserExp::EvaluateExpression(VectorToken &vLineToks, unsigned int &i
                             if ( AUT_FAILED( OprReduce(opStack, valStack) ) )
                             {
                                 // Print message and quit
-                                FatalError(IDS_AUT_E_EXPRESSION, nColTemp);
+                                engine->FatalError(IDS_AUT_E_EXPRESSION, nColTemp);
                                 return AUT_ERR;
                             }
                         }
@@ -1209,7 +1210,7 @@ AUT_RESULT ParserExp::EvaluateExpression(VectorToken &vLineToks, unsigned int &i
                     if (valStack.size() != 1)
                     {
                         // Syntax error, print message and quit
-                        FatalError(IDS_AUT_E_EXPRESSION, nColTemp);
+                        engine->FatalError(IDS_AUT_E_EXPRESSION, nColTemp);
                         return AUT_ERR;
                     }
                     else
@@ -1220,13 +1221,13 @@ AUT_RESULT ParserExp::EvaluateExpression(VectorToken &vLineToks, unsigned int &i
                     }
 
                 case E1:
-                    FatalError(IDS_AUT_E_RIGHTPAREN, nColTemp);
+                    engine->FatalError(IDS_AUT_E_RIGHTPAREN, nColTemp);
                     return AUT_ERR;
                 case E2:
-                    FatalError(IDS_AUT_E_MISSINGOP, nColTemp);
+                    engine->FatalError(IDS_AUT_E_MISSINGOP, nColTemp);
                     return AUT_ERR;
                 case E3:
-                    FatalError(IDS_AUT_E_UNBALANCEDPAREN, nColTemp);
+                    engine->FatalError(IDS_AUT_E_UNBALANCEDPAREN, nColTemp);
                     return AUT_ERR;
 
             } // End Switch
@@ -1249,7 +1250,7 @@ AUT_RESULT ParserExp::EvaluateExpression(VectorToken &vLineToks, unsigned int &i
             {
                 if ( AUT_FAILED( SkipBoolean(vLineToks, ivPos) ) )
                 {
-                    FatalError(IDS_AUT_E_EXPRESSION, nColTemp);    // Unbalanced () usually causes an error
+                    engine->FatalError(IDS_AUT_E_EXPRESSION, nColTemp);    // Unbalanced () usually causes an error
                     return AUT_ERR;
                 }
 

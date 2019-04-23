@@ -1,13 +1,13 @@
 #pragma once
 #include "AutoIt.h"
-#include "Engine/Engine.h"
+#include "Engine/BaseModule.h"
+#include "Engine/type/VectorVariant.h"
 
+class Engine;
 class ModuleFile: public BaseModule {
 public:
-    static AU3_FuncInfo *funcInfo;
-
-public:
-    ModuleFile(Engine* engine): engine(engine) {}
+    ModuleFile(Engine* engine);
+    ~ModuleFile();
 
 public:
     // File related functions (script_file.cpp)

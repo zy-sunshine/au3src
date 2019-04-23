@@ -47,6 +47,18 @@
 #include "Engine/Engine.h"
 #include "Engine/CmdLine.h"
 
+class ModuleBuiltIn;
+class ModuleFile;
+class ModuleGui;
+class ModuleKeyboard;
+class ModuleMath;
+class ModuleMouse;
+class ModuleNet;
+class ModuleReg;
+class ModuleSound;
+class ModuleSys;
+class ModuleWin;
+
 class Application
 {
 public:
@@ -89,12 +101,26 @@ private:
     void        SetTrayIconToolTip(void);
     void        NotifyIcon (HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
 
+    void registerModules();
+    void unregisterModules();
+
 public:
     Engine      *engine;
+
+    ModuleBuiltIn   *_builtIn;
+    ModuleFile      *_file;
+    ModuleGui       *_gui;
+    ModuleKeyboard  *_keyboard;
+    ModuleMath      *_math;
+    ModuleMouse     *_mouse;
+    ModuleNet       *_net;
+    ModuleReg       *_reg;
+    ModuleSound     *_sound;
+    ModuleSys       *_sys;
+    ModuleWin       *_win;
 
 public:
     CmdLine                 g_oCmdLine;             // CmdLine object
 };
-
 
 ///////////////////////////////////////////////////////////////////////////////

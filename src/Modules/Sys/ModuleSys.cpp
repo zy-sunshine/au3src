@@ -44,6 +44,7 @@
 
 // Includes
 #include "StdAfx.h"                                // Pre-compiled headers
+#include "Engine/Engine.h"
 #include "ModuleSys.h"
 
 #ifndef _MSC_VER                                // Includes for non-MS compilers
@@ -57,41 +58,41 @@
 #include "Utils/utility.h"
 #include "Utils/WinUtil.h"
 
-ModuleSys::funcInfo[] = {
-    {"RUN", &Engine::F_Run, 1, 3},
-    {"RUNWAIT", &Engine::F_RunWait, 1, 3},
-    {"RUNASSET", &Engine::F_RunAsSet, 0, 4},
-    {"PROCESSCLOSE", &Engine::F_ProcessClose, 1, 1},
-    {"PROCESSEXISTS", &Engine::F_ProcessExists, 1, 1},
-    {"PROCESSWAITCLOSE", &Engine::F_ProcessWaitClose, 1, 2},
-    {"PROCESSWAIT", &Engine::F_ProcessWait, 1, 2},
-    {"SHUTDOWN", &Engine::F_Shutdown, 1, 1},
-    {"PROCESSSETPRIORITY", &Engine::F_ProcessSetPriority, 2, 2},
-    {"PROCESSLIST", &Engine::F_ProcessList, 0, 1},
-//    {"DLLCALL", &Engine::F_DllCall, 3, 255},
-//    {"DLLCLOSE", &Engine::F_DllClose, 1, 1},
-//    {"DLLOPEN", &Engine::F_DllOpen, 1, 1},
-    {"ENVGET", &Engine::F_EnvGet, 1, 1},
-    {"ENVSET", &Engine::F_EnvSet, 1, 2},
-    {"ENVUPDATE", &Engine::F_EnvUpdate, 0, 0},
-    {"SLEEP", &Engine::F_Sleep, 1, 1},
-    {"BLOCKINPUT", &Engine::F_BlockInput, 1, 1},
-    {"ADLIBDISABLE", &Engine::F_AdlibDisable, 0, 0},
-    {"ADLIBENABLE", &Engine::F_AdlibEnable, 1, 2},
-    {"CLIPGET", &Engine::F_ClipGet, 0, 0},
-    {"CLIPPUT", &Engine::F_ClipPut, 1, 1},
-    {"ISADMIN", &Engine::F_IsAdmin, 0, 0},
-    {"SETERROR", &Engine::F_SetError, 1, 1},
-    {"SETEXTENDED", &Engine::F_SetExtended, 1, 1},
-    {"BREAK", &Engine::F_Break, 1, 1},
-    {"OPT", &Engine::F_AutoItSetOption, 2, 2},
-    {"AUTOITSETOPTION", &Engine::F_AutoItSetOption, 2, 2},
-    {"TIMERINIT", &Engine::F_TimerInit, 0, 0},
-    {"TIMERSTART", &Engine::F_TimerInit, 0, 0},
-    {"TIMERDIFF", &Engine::F_TimerDiff, 1, 1},
-    {"TIMERSTOP", &Engine::F_TimerDiff, 1, 1},
-    {"MEMGETSTATS", &Engine::F_MemGetStats, 0, 0},
-};
+//ModuleSys::funcInfo[] = {
+//    {"RUN", &Engine::F_Run, 1, 3},
+//    {"RUNWAIT", &Engine::F_RunWait, 1, 3},
+//    {"RUNASSET", &Engine::F_RunAsSet, 0, 4},
+//    {"PROCESSCLOSE", &Engine::F_ProcessClose, 1, 1},
+//    {"PROCESSEXISTS", &Engine::F_ProcessExists, 1, 1},
+//    {"PROCESSWAITCLOSE", &Engine::F_ProcessWaitClose, 1, 2},
+//    {"PROCESSWAIT", &Engine::F_ProcessWait, 1, 2},
+//    {"SHUTDOWN", &Engine::F_Shutdown, 1, 1},
+//    {"PROCESSSETPRIORITY", &Engine::F_ProcessSetPriority, 2, 2},
+//    {"PROCESSLIST", &Engine::F_ProcessList, 0, 1},
+////    {"DLLCALL", &Engine::F_DllCall, 3, 255},
+////    {"DLLCLOSE", &Engine::F_DllClose, 1, 1},
+////    {"DLLOPEN", &Engine::F_DllOpen, 1, 1},
+//    {"ENVGET", &Engine::F_EnvGet, 1, 1},
+//    {"ENVSET", &Engine::F_EnvSet, 1, 2},
+//    {"ENVUPDATE", &Engine::F_EnvUpdate, 0, 0},
+//    {"SLEEP", &Engine::F_Sleep, 1, 1},
+//    {"BLOCKINPUT", &Engine::F_BlockInput, 1, 1},
+//    {"ADLIBDISABLE", &Engine::F_AdlibDisable, 0, 0},
+//    {"ADLIBENABLE", &Engine::F_AdlibEnable, 1, 2},
+//    {"CLIPGET", &Engine::F_ClipGet, 0, 0},
+//    {"CLIPPUT", &Engine::F_ClipPut, 1, 1},
+//    {"ISADMIN", &Engine::F_IsAdmin, 0, 0},
+//    {"SETERROR", &Engine::F_SetError, 1, 1},
+//    {"SETEXTENDED", &Engine::F_SetExtended, 1, 1},
+//    {"BREAK", &Engine::F_Break, 1, 1},
+//    {"OPT", &Engine::F_AutoItSetOption, 2, 2},
+//    {"AUTOITSETOPTION", &Engine::F_AutoItSetOption, 2, 2},
+//    {"TIMERINIT", &Engine::F_TimerInit, 0, 0},
+//    {"TIMERSTART", &Engine::F_TimerInit, 0, 0},
+//    {"TIMERDIFF", &Engine::F_TimerDiff, 1, 1},
+//    {"TIMERSTOP", &Engine::F_TimerDiff, 1, 1},
+//    {"MEMGETSTATS", &Engine::F_MemGetStats, 0, 0},
+//};
 
 // Dynamic function declarations
 typedef BOOL (WINAPI *MyCreateProcessWithLogonW)(

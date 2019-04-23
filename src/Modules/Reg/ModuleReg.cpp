@@ -44,6 +44,7 @@
 
 // Includes
 #include "StdAfx.h"                                // Pre-compiled headers
+#include "Engine/Engine.h"
 #include "ModuleReg.h"
 
 #ifndef _MSC_VER                                // Includes for non-MS compilers
@@ -52,13 +53,13 @@
 
 #include "Utils/utility.h"
 
-AU3_FuncInfo ModuleReg::funcInfo[] = {
-    {"REGDELETE", &ModuleReg::F_RegDelete, 1, 2},
-    {"REGENUMKEY", &ModuleReg::F_RegEnumKey, 2, 2},
-    {"REGENUMVAL", &ModuleReg::F_RegEnumVal, 2, 2},
-    {"REGREAD", &ModuleReg::F_RegRead, 2, 2},
-    {"REGWRITE", &ModuleReg::F_RegWrite, 1, 4},
-};
+//AU3_FuncInfo ModuleReg::funcInfo[] = {
+//    {"REGDELETE", &ModuleReg::F_RegDelete, 1, 2},
+//    {"REGENUMKEY", &ModuleReg::F_RegEnumKey, 2, 2},
+//    {"REGENUMVAL", &ModuleReg::F_RegEnumVal, 2, 2},
+//    {"REGREAD", &ModuleReg::F_RegRead, 2, 2},
+//    {"REGWRITE", &ModuleReg::F_RegWrite, 1, 4},
+//};
 
 ///////////////////////////////////////////////////////////////////////////////
 // RegSplitKey()

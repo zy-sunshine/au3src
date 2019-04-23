@@ -1,11 +1,12 @@
 #pragma once
 #include "AutoIt.h"
-#include "Engine/Engine.h"
-#include "Engine/Parser/ParserExp.h"
+#include "VectorToken.h"
 
+class Engine;
+class ParserExp;
 class Parser {
 public:
-    Parser() { parserExp = new ParserExp(); }
+    Parser(Engine *engine);
     // Parser functions (script_parser.cpp)
     AUT_RESULT  VerifyBlockStructure(void);
     AUT_RESULT  VerifyBlockStructure2(int nDo, int nWhile, int nFor, int nSelect, int nIf);
@@ -15,7 +16,6 @@ public:
     void        StartWithKeyword(VectorToken &vLineToks, uint &ivPos, int &nScriptLine);
     AUT_RESULT  FunctionCall(VectorToken &vLineToks, uint &ivPos, Variant &vResult);
     AUT_RESULT  GetFunctionCallParams(VectorVariant &vParams, VectorToken &vLineToks, uint &ivPos, int &nNumParams);
-    AUT_RESULT  FunctionExecute(int nFunction, VectorVariant &vParams, Variant &vResult);
     bool        FindUserFunction(const char *szName, int &nLineNum, int &nNumParams,int &nNumParamsMin, int &nEndLineNum);
     AUT_RESULT  UserFunctionCall(VectorToken &vLineToks, uint &ivPos, Variant &vResult);
     bool        PluginFunctionCall(VectorToken &vLineToks, uint &ivPos, Variant &vResult);

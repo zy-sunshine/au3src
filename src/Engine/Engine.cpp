@@ -45,6 +45,8 @@
 // Includes
 #include "StdAfx.h"                                // Pre-compiled headers
 #include "Engine.h"
+#include "Engine/Parser/Parser.h"
+#include "Engine/Parser/Lexer.h"
 
 #ifndef _MSC_VER                                // Includes for non-MS compilers
     #include <stdio.h>
@@ -88,6 +90,7 @@ const char * Engine::m_szKeywords[K_MAX] =    {
 ///////////////////////////////////////////////////////////////////////////////
 
 Engine::Engine()
+    :g_oScriptFile(this)
 {
     int i;
 
@@ -151,11 +154,6 @@ Engine::Engine()
     for (i=0; i<AUT_LEXER_CACHESIZE; ++i)
         m_LexerCache[i].nLineNum = -1;
     
-    // Initialise file handles to NULL
-    m_nNumFileHandles = 0;                        // Initalise file handle count
-    for (i=0; i<AUT_MAXOPENFILES; ++i)
-        m_FileHandleDetails[i] = NULL;
-
     // Initialise DLL handles to NULL
     for (i=0; i<AUT_MAXOPENFILES; ++i)
         m_DLLHandleDetails[i] = NULL;
@@ -164,58 +162,26 @@ Engine::Engine()
     m_InetGetDetails.bInProgress    = false;
     m_InetGetDetails.nBytesRead        = -1;
 
-    paser = new Parser();
+    _handleAdlib = NULL;
+    _handleHotkey = NULL;
+    _handleGuiEvent = NULL;
+
+    _parser = new Parser(this);
+    _lexer = new Lexer();
+
 } // Engine()
 
 static int funcNameSort(AU3_FuncInfo *a0,  AU3_FuncInfo *a1)
 {
-    return strcmp(a->szName, b->szName);
+    return strcmp(a0->szName, a1->szName);
 }
 
-void Engine::initModules(BaseModule *modules, int size)
+void Engine::initModules(AU3_FuncInfo * funcList, int size)
 {
-    // Initialize the function list (very long - thank VC6 for being buggy)
-    // Functon names to be in UPPERCASE and in ALPHABETICAL ORDER (Use the TextPad sort function or similar)
-    // Failure to observe these instructions will be very bad...
-    AU3_FuncInfo *info;
-    unsigned j;
+    m_FuncList = funcList;
+    m_nFuncListSize = size;
 
-    m_nFuncListSize  = 0;
-    for (unsigned idx=0; idx < size; idx++) {
-        info = modules[idx]->funcInfo();
-        j = 0;
-        while (info) {
-            if (!info->szName) { break; }
-            m_nFuncListSize++;
-            info = modules[idx]->funcInfo() + (++j);
-        }
-    }
-
-    // Copy the function list into a member variable
-    m_FuncList = new AU3_FuncInfo[m_nFuncListSize];
-    unsigned funcIdx = 0;
-    for (unsigned idx=0; idx < size; idx++) {
-        info = modules[idx]->funcInfo();
-        j = 0;
-        while (info) {
-            if (!info->szName) { break; }
-            m_FuncList[funcIdx].szName = Util_StrCpyAlloc(info->szName);
-            m_FuncList[funcIdx].lpFunc = info->lpFunc;
-            m_FuncList[funcIdx].nMin = info->nMin;
-            m_FuncList[funcIdx].nMax = info->nMax;
-            m_FuncList[funcIdx].lpSelf = (void*)modules[idx];
-            m_FuncList[funcIdx].lpCaller = modules[idx]->funcCaller();
-            funcIdx++;
-            info = modules[idx]->funcInfo() + (++j);
-        }
-    }
-
-    Sort(m_FuncList, funcNameSort);
-
-    for (i=0; i<m_nFuncListSize; ++i) 
-    {
-    }
-
+    for (int i=0; i<m_nFuncListSize; ++i) {
 // NOTE: because Lexer search function use binary search, enable these code now
 //      but why not sort these function firstly, speed?
 //#ifdef _DEBUG
@@ -227,6 +193,7 @@ void Engine::initModules(BaseModule *modules, int size)
             AUT_ASSERT(strcmp(m_FuncList[i-1].szName, m_FuncList[i].szName) < 0);
         }
 //#endif
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -247,25 +214,6 @@ Engine::~Engine()
 // NOTE: The above code was causing hanging in rare cases when SoundPlay wasn't even used
     mciSendString("close all", NULL, 0, NULL);
 
-    // Close any file handles that script writer has not closed (naughty!)
-    for (i=0; i<AUT_MAXOPENFILES; ++i)
-    {
-        if (m_FileHandleDetails[i] != NULL)
-        {
-            if (m_FileHandleDetails[i]->nType == AUT_FILEOPEN)
-            {
-                fclose(m_FileHandleDetails[i]->fptr);    // Close file
-            }
-            else
-            {
-                FindClose(m_FileHandleDetails[i]->hFind);
-                delete [] m_FileHandleDetails[i]->szFind;
-            }
-
-            delete m_FileHandleDetails[i];            // Delete memory
-        }
-    }
-
     // Close any dll handles that script writer has not closed (naughty!)
     for (i=0; i<AUT_MAXOPENFILES; ++i)
     {
@@ -274,10 +222,10 @@ Engine::~Engine()
     }
 
     // Free up memory used in our function list
-    for (i=0; i<m_nFuncListSize; ++i) 
-        delete [] m_FuncList[i].szName;                // Free allocated string
+    //for (i=0; i<m_nFuncListSize; ++i) 
+    //    delete [] m_FuncList[i].szName;                // Free allocated string
 
-    delete [] m_FuncList;                            // Delete the entire list
+    //delete [] m_FuncList;                            // Delete the entire list
 
 }
 
@@ -399,7 +347,7 @@ void Engine::FatalError(int iErr, const char *szText2)
 AUT_RESULT Engine::InitScript(char *szFile)
 {
     // Check that the block structures are correct
-    if ( AUT_FAILED(parser->VerifyBlockStructure()) )
+    if ( AUT_FAILED(_parser->VerifyBlockStructure()) )
         return AUT_ERR;
 
     // Scan for user functions
@@ -539,10 +487,10 @@ AUT_RESULT Engine::Execute(int nScriptLine)
         }
 
         // Do the lexing (convert the line into tokens) - stored in LineTokens
-        Lexer(nScriptLine-1, szScriptLine, LineTokens);                // No need to check for errors, already lexed in InitScript()
+        _lexer->doLexer(nScriptLine-1, szScriptLine, LineTokens);                // No need to check for errors, already lexed in InitScript()
 
         // Parse and execute the line
-        Parser(LineTokens, nScriptLine);
+        _parser->Parse(LineTokens, nScriptLine);
 
     } // End While
 
@@ -628,7 +576,7 @@ int Engine::processEvents()
     }
 
     // Handle hotkeys first (even if paused - eventually we will and an unpause function to make this useful)
-    if (_handleHotKey && _handleHotKey() == true) {
+    if (_handleHotkey && _handleHotkey() == true) {
         return msg;
     }
 
@@ -677,7 +625,8 @@ AUT_RESULT Engine::FunctionExecute(int nFunction, VectorVariant &vParams, Varian
     SetFuncExtCode(0);                            // Default extended code is zero
 
     // Lookup the function and execute
-    return (this->*m_FuncList[nFunction].lpFunc)(vParams, vResult);    
+    AU3_FuncInfo* info = &m_FuncList[nFunction];
+    return info->lpFunc(info->lpSelf, vParams, vResult);
 
 } // FunctionExecute()
 
@@ -706,7 +655,7 @@ AUT_RESULT Engine::StoreUserFuncs(void)
     {
         m_nErrorLine = nScriptLine - 1;            // Keep track for errors
 
-        if ( AUT_FAILED( Lexer(nScriptLine-1, szScriptLine, LineTokens) ) )
+        if ( AUT_FAILED( _lexer->doLexer(nScriptLine-1, szScriptLine, LineTokens) ) )
             return AUT_ERR;                        // Bad line
 
         ivPos = 0;
@@ -923,7 +872,7 @@ AUT_RESULT Engine::StoreUserFuncsFindEnd(int &nScriptLine)
         ++nScriptLine;
         m_nErrorLine = nScriptLine - 1;            // Keep track for errors
 
-        if ( AUT_FAILED( Lexer(nScriptLine-1, szScriptLine, LineTokens) ) )
+        if ( AUT_FAILED( _lexer->doLexer(nScriptLine-1, szScriptLine, LineTokens) ) )
             return AUT_ERR;                        // Bad line
 
         ivPos = 0;
@@ -964,7 +913,7 @@ AUT_RESULT Engine::VerifyUserFuncCalls(void)
     {
         m_nErrorLine = nScriptLine - 1;            // Keep track for errors
         
-        Lexer(nScriptLine-1, szScriptLine, LineTokens);        // No need to test for errors, already done in StoreUserFuncs()
+        _lexer->doLexer(nScriptLine-1, szScriptLine, LineTokens);        // No need to test for errors, already done in StoreUserFuncs()
 
         ivPos = 0;
 
@@ -1024,58 +973,59 @@ AUT_RESULT Engine::StorePluginFuncs(void)
 // Handles the processing of Adlid
 ///////////////////////////////////////////////////////////////////////////////
 
-bool Engine::HandleAdlib(void)
-{
-    // Only continue if adlibbing is enabled AND we are not currently adlibing already!
-    if (m_bAdlibEnabled == false || m_bAdlibInProgress == true)
-        return false;
-
-    // Check the timer - we only run the adlib every so often as it is a strain on the
-    // CPU otherwise
-    DWORD    dwDiff;
-    DWORD    dwCur = timeGetTime();
-
-    if (dwCur < m_tAdlibTimerStarted)
-        dwDiff = (UINT_MAX - m_tAdlibTimerStarted) + dwCur; // timer wraps at 2^32
-    else
-        dwDiff = dwCur - m_tAdlibTimerStarted;
-
-    // Timer elapsed?
-    if (dwDiff < m_nAdlibTimeout)
-        return false;                            // Not time yet
-
-    // Reset the timer
-    m_tAdlibTimerStarted = dwCur;
-
-
-    // Get the details of the function (we should have previously checked that it
-    // exists)
-    int        nLineNum, nNumParams, nNumParamsMin, nEndLineNum;
-
-    _parser->FindUserFunction(m_sAdlibFuncName.c_str(), nLineNum, nNumParams, nNumParamsMin, nEndLineNum);
-    ++nLineNum;                                    // Skip function declaration
-
-    // Save current operation (may be waiting)
-    int nCurrentOperation    = m_nCurrentOperation;
-
-    // Continue execution with the user function (using recursive call of Execute() )
-    m_nCurrentOperation = AUT_RUN;                // Change mode to run script (may have been waiting)
-    m_bAdlibInProgress    = true;                    // True if we are currently running adlib function
-
-    SaveExecute(nLineNum, true, true);            // Save state and recursively call Execute()
-
-    m_bAdlibInProgress    = false;
-
-    // If the function caused the script to end, we must honour the request rather than restoring
-    if (m_nCurrentOperation != AUT_QUIT)
-    {
-        m_nCurrentOperation    = nCurrentOperation;
-        return false;                            // Continue Execute() (to give script a chance to run!)
-    }
-
-    return true;                                // Returning true will stop further
-                                                // progress in Execute() and restart the loop
-} // HandleAdlib()
+// TODO:
+//bool Engine::HandleAdlib(void)
+//{
+//    // Only continue if adlibbing is enabled AND we are not currently adlibing already!
+//    if (m_bAdlibEnabled == false || m_bAdlibInProgress == true)
+//        return false;
+//
+//    // Check the timer - we only run the adlib every so often as it is a strain on the
+//    // CPU otherwise
+//    DWORD    dwDiff;
+//    DWORD    dwCur = timeGetTime();
+//
+//    if (dwCur < m_tAdlibTimerStarted)
+//        dwDiff = (UINT_MAX - m_tAdlibTimerStarted) + dwCur; // timer wraps at 2^32
+//    else
+//        dwDiff = dwCur - m_tAdlibTimerStarted;
+//
+//    // Timer elapsed?
+//    if (dwDiff < m_nAdlibTimeout)
+//        return false;                            // Not time yet
+//
+//    // Reset the timer
+//    m_tAdlibTimerStarted = dwCur;
+//
+//
+//    // Get the details of the function (we should have previously checked that it
+//    // exists)
+//    int        nLineNum, nNumParams, nNumParamsMin, nEndLineNum;
+//
+//    _parser->FindUserFunction(m_sAdlibFuncName.c_str(), nLineNum, nNumParams, nNumParamsMin, nEndLineNum);
+//    ++nLineNum;                                    // Skip function declaration
+//
+//    // Save current operation (may be waiting)
+//    int nCurrentOperation    = m_nCurrentOperation;
+//
+//    // Continue execution with the user function (using recursive call of Execute() )
+//    m_nCurrentOperation = AUT_RUN;                // Change mode to run script (may have been waiting)
+//    m_bAdlibInProgress    = true;                    // True if we are currently running adlib function
+//
+//    SaveExecute(nLineNum, true, true);            // Save state and recursively call Execute()
+//
+//    m_bAdlibInProgress    = false;
+//
+//    // If the function caused the script to end, we must honour the request rather than restoring
+//    if (m_nCurrentOperation != AUT_QUIT)
+//    {
+//        m_nCurrentOperation    = nCurrentOperation;
+//        return false;                            // Continue Execute() (to give script a chance to run!)
+//    }
+//
+//    return true;                                // Returning true will stop further
+//                                                // progress in Execute() and restart the loop
+//} // HandleAdlib()
 
 ///////////////////////////////////////////////////////////////////////////////
 // HandleGuiEvent()
@@ -1083,69 +1033,70 @@ bool Engine::HandleAdlib(void)
 // Handles the processing of GUI events
 ///////////////////////////////////////////////////////////////////////////////
 
-bool Engine::HandleGuiEvent(void)
-{
-#ifdef AUT_CONFIG_GUI
-
-    // Only continue if GUI event is enabled AND we are not currently running a GUI function
-    if (g_oGUI.m_bGuiEventEnabled == false || m_bGuiEventInProgress == true)
-        return false;
-
-    GUIEVENT   Event;
-    int        nLineNum, nNumParams, nNumParamsMin, nEndLineNum;
-
-    // Get the messages until there are no more
-    while (g_oGUI.GetMsg(Event))
-    {
-        // Is the event a callback?
-        if (Event.sCallback.empty())
-            continue;
-
-        // Callback
-
-        // Check that this user function exists
-        if (_parser->FindUserFunction(Event.sCallback.c_str(),
-                nLineNum, nNumParams, nNumParamsMin, nEndLineNum) == false)
-            continue;
-        else
-        {
-            Variant        vTemp;
-
-            // Set global vars for - Note these names CANNOT usually
-            // exist because they start with @ :)
-            vTemp = Event.nGlobalID;
-            g_oVarTable.Assign("@GUI_CTRLID", vTemp, true, VARTABLE_FORCEGLOBAL);
-
-            vTemp = Event.hWnd;
-            g_oVarTable.Assign("@GUI_WINHANDLE", vTemp, true, VARTABLE_FORCEGLOBAL);
-
-            vTemp = Event.hCtrl;
-            g_oVarTable.Assign("@GUI_CTRLHANDLE", vTemp, true, VARTABLE_FORCEGLOBAL);
-
-            // Save current operation (may be waiting)
-            int nCurrentOperation    = m_nCurrentOperation;
-
-            // Continue execution with the user function (using recursive call of Execute() )
-            m_nCurrentOperation = AUT_RUN;                // Change mode to run script (may have been waiting)
-            m_bGuiEventInProgress    = true;                // True if we are currently running adlib function
-
-            SaveExecute(nLineNum+1, true, true);        // Save state and recursively call Execute()
-
-            m_bGuiEventInProgress    = false;
-
-            // If the function caused the script to end, we must honour the request rather than restoring
-            if (m_nCurrentOperation != AUT_QUIT)
-                m_nCurrentOperation    = nCurrentOperation;
-            else
-                return true;                            // Restart the messageloop in order to check the quit condition
-        }
-    }
-
-#endif
-    
-    return false;
-
-} // HandleGuiEvent()
+// TODO:
+//bool Engine::HandleGuiEvent(void)
+//{
+//#ifdef AUT_CONFIG_GUI
+//
+//    // Only continue if GUI event is enabled AND we are not currently running a GUI function
+//    if (g_oGUI.m_bGuiEventEnabled == false || m_bGuiEventInProgress == true)
+//        return false;
+//
+//    GUIEVENT   Event;
+//    int        nLineNum, nNumParams, nNumParamsMin, nEndLineNum;
+//
+//    // Get the messages until there are no more
+//    while (g_oGUI.GetMsg(Event))
+//    {
+//        // Is the event a callback?
+//        if (Event.sCallback.empty())
+//            continue;
+//
+//        // Callback
+//
+//        // Check that this user function exists
+//        if (_parser->FindUserFunction(Event.sCallback.c_str(),
+//                nLineNum, nNumParams, nNumParamsMin, nEndLineNum) == false)
+//            continue;
+//        else
+//        {
+//            Variant        vTemp;
+//
+//            // Set global vars for - Note these names CANNOT usually
+//            // exist because they start with @ :)
+//            vTemp = Event.nGlobalID;
+//            g_oVarTable.Assign("@GUI_CTRLID", vTemp, true, VARTABLE_FORCEGLOBAL);
+//
+//            vTemp = Event.hWnd;
+//            g_oVarTable.Assign("@GUI_WINHANDLE", vTemp, true, VARTABLE_FORCEGLOBAL);
+//
+//            vTemp = Event.hCtrl;
+//            g_oVarTable.Assign("@GUI_CTRLHANDLE", vTemp, true, VARTABLE_FORCEGLOBAL);
+//
+//            // Save current operation (may be waiting)
+//            int nCurrentOperation    = m_nCurrentOperation;
+//
+//            // Continue execution with the user function (using recursive call of Execute() )
+//            m_nCurrentOperation = AUT_RUN;                // Change mode to run script (may have been waiting)
+//            m_bGuiEventInProgress    = true;                // True if we are currently running adlib function
+//
+//            SaveExecute(nLineNum+1, true, true);        // Save state and recursively call Execute()
+//
+//            m_bGuiEventInProgress    = false;
+//
+//            // If the function caused the script to end, we must honour the request rather than restoring
+//            if (m_nCurrentOperation != AUT_QUIT)
+//                m_nCurrentOperation    = nCurrentOperation;
+//            else
+//                return true;                            // Restart the messageloop in order to check the quit condition
+//        }
+//    }
+//
+//#endif
+//    
+//    return false;
+//
+//} // HandleGuiEvent()
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1296,5 +1247,5 @@ AUT_RESULT Engine::assign(const char* szName, Variant &vValue, int nReqScope,
 
 int Engine::isDeclared(const char* szName)
 {
-    return g_oVarTable.isDeclared(vParams[0].szValue());
+    return g_oVarTable.isDeclared(szName);
 }

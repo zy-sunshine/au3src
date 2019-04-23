@@ -60,7 +60,6 @@
 #include "Engine/StackStatement.h"
 #include "Engine/Parser/StackInt.h"
 #include "Engine/Parser/StackVariant.h"
-#include "Engine/Parser/Parser.h"
 #include "Engine/VariableTable.h"
 #include "Engine/UserFuncList.h"
 #include "Engine/ScriptFile.h"
@@ -228,23 +227,25 @@ class BaseModule;
 class Engine;                            // Forward declaration of Engine
 
 //typedef AUT_RESULT (Engine::*AU3_FUNCTION)(VectorVariant &vParams, Variant &vResult);
-typedef AUT_RESULT (*FUNC_CALLER)(void* self, void* lpFunc, VectorVariant &vParams, Variant &vResult);
+typedef AUT_RESULT (*FUNC_CALLER)(void* self, VectorVariant &vParams, Variant &vResult);
 
-typedef struct {
-    const char* szName;
-    void* lpFunc;
-    int nMin;
-    int nMax;
-} AU3_FuncType;
+//typedef struct {
+//    void* self;
+//    const char* szModule;
+//    const char* szName;
+//    FUNC_CALLER lpFunc;
+//    int nMin;
+//    int nMax;
+//} AU3_FuncType;
 
 typedef struct
 {
+    void*           lpSelf;
+    const char*     szModule;
     const char      *szName;                    // Function name
-    void*           lpFunc;                     // Pointer to function
+    FUNC_CALLER     lpFunc;                     // Pointer to function
     int             nMin;                       // Min params
     int             nMax;                       // Max params
-    void            *lpSelf;
-    FUNC_CALLER     *lpCaller;
 } AU3_FuncInfo;
 
 
@@ -302,13 +303,8 @@ typedef bool        (*HandleFunc)(void);
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class BaseModule {
-public:
-    virtual ~BaseModule() {}
-    virtual const AU3_FuncInfo* funcInfo() const = 0;
-    virtual FUNC_CALLER funcCaller() const = 0;
-};
-
+class Parser;
+class Lexer;
 // The AutoIt Script object
 class Engine
 {
@@ -319,7 +315,7 @@ public:
     Engine();                            // Constructor
     ~Engine();                            // Destrucutor
 
-    void initModules(BaseModule* modules, int size);
+    void initModules(AU3_FuncInfo * funcList, int size);
 
     AUT_RESULT        InitScript(char *szFile);    // Perform setup of a loaded script
     int                ProcessMessages();
@@ -453,9 +449,9 @@ private:
 
     // WinList() structs and vars
 
-    HandleFunc *_handleAdlib;
-    HandleFunc *_handleHotkey;
-    HandleFunc *_handleGuiEvent;
+    HandleFunc _handleAdlib;
+    HandleFunc _handleHotkey;
+    HandleFunc _handleGuiEvent;
 
 public:
     int nWindowSearchMatchMode() { return m_nWindowSearchMatchMode; }
@@ -486,7 +482,8 @@ public:
     void setAdlibTimeout(DWORD timeout) { m_nAdlibTimeout = timeout; }
 
 private:
-    Parser*      _parser;
+    Parser*     _parser;
+    Lexer*      _lexer;
 
 public:
     inline Parser* parser() { return _parser; }
@@ -518,6 +515,7 @@ public:
     void        SetFuncExtCode(int nCode)
                     {m_nFuncExtCode = nCode;};                        // Set script extended info (@extended code)
 
+    AUT_RESULT  FunctionExecute(int nFunction, VectorVariant &vParams, Variant &vResult);
     AUT_RESULT    StoreUserFuncs(void);                                // Get all user function details
     AUT_RESULT    StoreUserFuncs2(VectorToken &LineTokens, uint &ivPos, const AString &sFuncName, int &nScriptLine);
     AUT_RESULT    StoreUserFuncsFindEnd(int &nScriptLine);            // Finds a matching endfunc during the StoreUserFuncs functions
@@ -529,9 +527,9 @@ public:
 
     int         processEvents(void);
 
-    void setHandleAdlib(HandleFunc *func) { _handleAdlib = func; }
-    void sethandleHotkey(HandleFunc *func) { _handleHotkey = func; }
-    void setHandleGuiEvent(HandleFunc *func) { _handleGuiEvent = func; }
+    void setHandleAdlib(HandleFunc func) { _handleAdlib = func; }
+    void sethandleHotkey(HandleFunc func) { _handleHotkey = func; }
+    void setHandleGuiEvent(HandleFunc func) { _handleGuiEvent = func; }
 
 public:
     // Global data
@@ -561,7 +559,7 @@ public:
     
     SetForegroundWinEx      g_oSetForeWinEx;        // Foreground window hack object
     
-    //VariableTable         g_oVarTable;            // Object for accessing autoit variables
+    VariableTable           g_oVarTable;            // Object for accessing autoit variables
     ScriptFile              g_oScriptFile;          // The script file object
     
     

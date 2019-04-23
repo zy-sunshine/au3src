@@ -56,6 +56,7 @@
 #include "Engine/Engine.h"
 #include "Utils/utility.h"
 
+static Application *gApp = NULL;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Constructor()
@@ -69,6 +70,7 @@ Application::Application()
 
     m_hIconSmall        = NULL;
     engine = new Engine();
+    gApp = this;
 
 } // Application()
 
@@ -83,6 +85,7 @@ Application::~Application()
     if (m_hIconSmall)
         DestroyIcon(m_hIconSmall);
 
+    unregisterModules();
 } // Application()
 
 
@@ -137,6 +140,8 @@ void Application::Run(void)
 
     // Save the current working directory
     GetCurrentDirectory(_MAX_PATH, szOldWorkingDir);
+
+    registerModules();
 
     // Register our classes (including the GUI class) and create the main windows
     RegisterClass();
@@ -504,7 +509,7 @@ void Application::ParseCmdLine(void)
 
 LRESULT CALLBACK Application::WndProc (HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
-    return WndProcHandler(hWnd, iMsg, wParam, lParam);
+    return gApp->WndProcHandler(hWnd, iMsg, wParam, lParam);
 
 } // WndProc()
 
@@ -912,3 +917,41 @@ void Application::NotifyIcon (HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam
 
 } // NotifyIcon()
 
+#include "gen/ModulesGen.h"
+void Application::registerModules()
+{
+    _builtIn  = new ModuleBuiltIn(engine);
+    _file     = new ModuleFile(engine);
+    _gui      = new ModuleGui(engine);
+    _keyboard = new ModuleKeyboard(engine);
+    _math     = new ModuleMath(engine);
+    _mouse    = new ModuleMouse(engine);
+    _net      = new ModuleNet(engine);
+    _reg      = new ModuleReg(engine);
+    _sound    = new ModuleSound(engine);
+    _sys      = new ModuleSys(engine);
+    _win      = new ModuleWin(engine);
+
+    int length = sizeof(funcInfo) / sizeof(AU3_FuncInfo);
+    for(int idx=0; idx<length; idx++) {
+        if (!strcmp(funcInfo[idx].szModule, "ModuleBuiltIn")) {
+            funcInfo[idx].lpSelf = _builtIn;
+        }
+    }
+    engine->initModules(funcInfo, length);
+}
+
+void Application::unregisterModules()
+{
+    delete(_builtIn);
+    delete(_file);
+    delete(_gui);
+    delete(_keyboard);
+    delete(_math);
+    delete(_mouse);
+    delete(_net);
+    delete(_reg);
+    delete(_sound);
+    delete(_sys);
+    delete(_win);
+}

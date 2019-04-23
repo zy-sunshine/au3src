@@ -44,6 +44,7 @@
 
 // Includes
 #include "StdAfx.h"                                // Pre-compiled headers
+#include "Engine/Engine.h"
 #include "ModuleFile.h"
 
 #ifndef _MSC_VER                                // Includes for non-MS compilers
@@ -53,67 +54,98 @@
 
 #include "Utils/utility.h"
 
-AU3_FuncInfo ModuleFile:funcInfo[] = {
-    {"DIRCOPY", &ModuleFile::F_DirCopy, 2, 3},
-    {"DIRCREATE", &ModuleFile::F_DirCreate, 1, 1},
-    {"DIRGETSIZE", &ModuleFile::F_DirGetSize, 1, 2},
-    {"DIRMOVE", &ModuleFile::F_DirMove, 2, 3},
-    {"DIRREMOVE", &ModuleFile::F_DirRemove, 1, 2},
-    {"INIDELETE", &ModuleFile::F_IniDelete, 2, 3},
-    {"INIREAD", &ModuleFile::F_IniRead, 4, 4},
-    {"INIREADSECTION", &ModuleFile::F_IniReadSection, 2, 2},
-    {"INIREADSECTIONNAMES", &ModuleFile::F_IniReadSectionNames, 1, 1},
-    {"INIWRITE", &ModuleFile::F_IniWrite, 4, 4},
-    {"FILECHANGEDIR", &ModuleFile::F_FileChangeDir, 1, 1},
-    {"FILECLOSE", &ModuleFile::F_FileClose, 1, 1},
-    {"FILECOPY", &ModuleFile::F_FileCopy, 2, 3},
-    {"FILECREATESHORTCUT", &ModuleFile::F_FileCreateShortcut, 2, 9},
-    {"FILEDELETE", &ModuleFile::F_FileDelete, 1, 1},
-    {"FILEEXISTS", &ModuleFile::F_FileExists, 1, 1},
-    {"FILEFINDFIRSTFILE", &ModuleFile::F_FileFindFirstFile, 1, 1},
-    {"FILEFINDNEXTFILE", &ModuleFile::F_FileFindNextFile, 1, 1},
-    {"FILEGETATTRIB", &ModuleFile::F_FileGetAttrib, 1, 1},
-    {"FILEGETLONGNAME", &ModuleFile::F_FileGetLongName, 1, 1},
-    {"FILEGETSHORTCUT", &ModuleFile::F_FileGetShortcut, 1, 1},
-    {"FILEGETSHORTNAME", &ModuleFile::F_FileGetShortName, 1, 1},
-    {"FILEGETSIZE", &ModuleFile::F_FileGetSize, 1, 1},
-    {"FILEGETTIME", &ModuleFile::F_FileGetTime, 1, 3},
-    {"FILEGETVERSION", &ModuleFile::F_FileGetVersion, 1, 1},
-    {"FILEINSTALL", &ModuleFile::F_FileInstall, 2, 3},
-    {"FILEMOVE", &ModuleFile::F_FileMove, 2, 3},
-    {"FILEOPEN", &ModuleFile::F_FileOpen, 2, 2},
-    {"FILEOPENDIALOG", &ModuleFile::F_FileOpenDialog, 3, 5},
-    {"FILEREAD", &ModuleFile::F_FileRead, 2, 2},
-    {"FILEREADLINE", &ModuleFile::F_FileReadLine, 1, 2},
-    {"FILERECYCLE", &ModuleFile::F_FileRecycle, 1, 1},
-    {"FILERECYCLEEMPTY", &ModuleFile::F_FileRecycleEmpty, 0, 1},
-    {"FILESAVEDIALOG", &ModuleFile::F_FileSaveDialog, 3, 5},
-    {"FILESELECTFOLDER", &ModuleFile::F_FileSelectFolder, 2, 4},
-    {"FILESETATTRIB", &ModuleFile::F_FileSetAttrib, 2, 3},
-    {"FILESETTIME", &ModuleFile::F_FileSetTime, 2, 4},
-    {"FILEWRITE", &ModuleFile::F_FileWrite, 2, 2},
-    {"FILEWRITELINE", &ModuleFile::F_FileWriteLine, 2, 2},
-
-    {"DRIVEGETDRIVE", &ModuleFile::F_DriveGetDrive, 1, 1},
-    {"DRIVEGETFILESYSTEM", &ModuleFile::F_DriveGetFileSystem, 1, 1},
-    {"DRIVEGETLABEL", &ModuleFile::F_DriveGetLabel, 1, 1},
-    {"DRIVEGETSERIAL", &ModuleFile::F_DriveGetSerial, 1, 1},
-    {"DRIVEGETTYPE", &ModuleFile::F_DriveGetType, 1, 1},
-    {"DRIVEMAPADD", &ModuleFile::F_DriveMapAdd, 2, 5},
-    {"DRIVEMAPDEL", &ModuleFile::F_DriveMapDel, 1, 1},
-    {"DRIVEMAPGET", &ModuleFile::F_DriveMapGet, 1, 1},
-    {"DRIVESETLABEL", &ModuleFile::F_DriveSetLabel, 2, 2},
-    {"DRIVESPACEFREE", &ModuleFile::F_DriveSpaceFree, 1, 1},
-    {"DRIVESPACETOTAL", &ModuleFile::F_DriveSpaceTotal, 1, 1},
-    {"DRIVESTATUS", &ModuleFile::F_DriveStatus, 1, 1},
-
-    {"CDTRAY", &ModuleFile::F_CDTray, 2, 2},
-};
+//AU3_FuncInfo ModuleFile:funcInfo[] = {
+//    {"DIRCOPY", &ModuleFile::F_DirCopy, 2, 3},
+//    {"DIRCREATE", &ModuleFile::F_DirCreate, 1, 1},
+//    {"DIRGETSIZE", &ModuleFile::F_DirGetSize, 1, 2},
+//    {"DIRMOVE", &ModuleFile::F_DirMove, 2, 3},
+//    {"DIRREMOVE", &ModuleFile::F_DirRemove, 1, 2},
+//    {"INIDELETE", &ModuleFile::F_IniDelete, 2, 3},
+//    {"INIREAD", &ModuleFile::F_IniRead, 4, 4},
+//    {"INIREADSECTION", &ModuleFile::F_IniReadSection, 2, 2},
+//    {"INIREADSECTIONNAMES", &ModuleFile::F_IniReadSectionNames, 1, 1},
+//    {"INIWRITE", &ModuleFile::F_IniWrite, 4, 4},
+//    {"FILECHANGEDIR", &ModuleFile::F_FileChangeDir, 1, 1},
+//    {"FILECLOSE", &ModuleFile::F_FileClose, 1, 1},
+//    {"FILECOPY", &ModuleFile::F_FileCopy, 2, 3},
+//    {"FILECREATESHORTCUT", &ModuleFile::F_FileCreateShortcut, 2, 9},
+//    {"FILEDELETE", &ModuleFile::F_FileDelete, 1, 1},
+//    {"FILEEXISTS", &ModuleFile::F_FileExists, 1, 1},
+//    {"FILEFINDFIRSTFILE", &ModuleFile::F_FileFindFirstFile, 1, 1},
+//    {"FILEFINDNEXTFILE", &ModuleFile::F_FileFindNextFile, 1, 1},
+//    {"FILEGETATTRIB", &ModuleFile::F_FileGetAttrib, 1, 1},
+//    {"FILEGETLONGNAME", &ModuleFile::F_FileGetLongName, 1, 1},
+//    {"FILEGETSHORTCUT", &ModuleFile::F_FileGetShortcut, 1, 1},
+//    {"FILEGETSHORTNAME", &ModuleFile::F_FileGetShortName, 1, 1},
+//    {"FILEGETSIZE", &ModuleFile::F_FileGetSize, 1, 1},
+//    {"FILEGETTIME", &ModuleFile::F_FileGetTime, 1, 3},
+//    {"FILEGETVERSION", &ModuleFile::F_FileGetVersion, 1, 1},
+//    {"FILEINSTALL", &ModuleFile::F_FileInstall, 2, 3},
+//    {"FILEMOVE", &ModuleFile::F_FileMove, 2, 3},
+//    {"FILEOPEN", &ModuleFile::F_FileOpen, 2, 2},
+//    {"FILEOPENDIALOG", &ModuleFile::F_FileOpenDialog, 3, 5},
+//    {"FILEREAD", &ModuleFile::F_FileRead, 2, 2},
+//    {"FILEREADLINE", &ModuleFile::F_FileReadLine, 1, 2},
+//    {"FILERECYCLE", &ModuleFile::F_FileRecycle, 1, 1},
+//    {"FILERECYCLEEMPTY", &ModuleFile::F_FileRecycleEmpty, 0, 1},
+//    {"FILESAVEDIALOG", &ModuleFile::F_FileSaveDialog, 3, 5},
+//    {"FILESELECTFOLDER", &ModuleFile::F_FileSelectFolder, 2, 4},
+//    {"FILESETATTRIB", &ModuleFile::F_FileSetAttrib, 2, 3},
+//    {"FILESETTIME", &ModuleFile::F_FileSetTime, 2, 4},
+//    {"FILEWRITE", &ModuleFile::F_FileWrite, 2, 2},
+//    {"FILEWRITELINE", &ModuleFile::F_FileWriteLine, 2, 2},
+//
+//    {"DRIVEGETDRIVE", &ModuleFile::F_DriveGetDrive, 1, 1},
+//    {"DRIVEGETFILESYSTEM", &ModuleFile::F_DriveGetFileSystem, 1, 1},
+//    {"DRIVEGETLABEL", &ModuleFile::F_DriveGetLabel, 1, 1},
+//    {"DRIVEGETSERIAL", &ModuleFile::F_DriveGetSerial, 1, 1},
+//    {"DRIVEGETTYPE", &ModuleFile::F_DriveGetType, 1, 1},
+//    {"DRIVEMAPADD", &ModuleFile::F_DriveMapAdd, 2, 5},
+//    {"DRIVEMAPDEL", &ModuleFile::F_DriveMapDel, 1, 1},
+//    {"DRIVEMAPGET", &ModuleFile::F_DriveMapGet, 1, 1},
+//    {"DRIVESETLABEL", &ModuleFile::F_DriveSetLabel, 2, 2},
+//    {"DRIVESPACEFREE", &ModuleFile::F_DriveSpaceFree, 1, 1},
+//    {"DRIVESPACETOTAL", &ModuleFile::F_DriveSpaceTotal, 1, 1},
+//    {"DRIVESTATUS", &ModuleFile::F_DriveStatus, 1, 1},
+//
+//    {"CDTRAY", &ModuleFile::F_CDTray, 2, 2},
+//};
 
 ///////////////////////////////////////////////////////////////////////////////
 // IniRead()
 // $var = IniRead(filename, sectionname, keyname, default)
 ///////////////////////////////////////////////////////////////////////////////
+
+ModuleFile::ModuleFile(Engine* engine)
+    : engine(engine)
+{
+    // Initialise file handles to NULL
+    m_nNumFileHandles = 0;                        // Initalise file handle count
+    for (int i=0; i<AUT_MAXOPENFILES; ++i)
+        m_FileHandleDetails[i] = NULL;
+}
+
+ModuleFile::~ModuleFile()
+{
+    // Close any file handles that script writer has not closed (naughty!)
+    for (int i=0; i<AUT_MAXOPENFILES; ++i)
+    {
+        if (m_FileHandleDetails[i] != NULL)
+        {
+            if (m_FileHandleDetails[i]->nType == AUT_FILEOPEN)
+            {
+                fclose(m_FileHandleDetails[i]->fptr);    // Close file
+            }
+            else
+            {
+                FindClose(m_FileHandleDetails[i]->hFind);
+                delete [] m_FileHandleDetails[i]->szFind;
+            }
+
+            delete m_FileHandleDetails[i];            // Delete memory
+        }
+    }
+}
 
 AUT_RESULT ModuleFile::F_IniRead(VectorVariant &vParams, Variant &vResult)
 {
