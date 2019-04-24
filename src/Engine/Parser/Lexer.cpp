@@ -55,6 +55,37 @@
 
 #include "Utils/utility.h"
 
+Lexer::Lexer(Engine* engine)
+    :engine(engine)
+{
+    // Make sure our lexer cache is set to empty defaults
+    for (int i=0; i<AUT_LEXER_CACHESIZE; ++i)
+        m_LexerCache[i].nLineNum = -1;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Initialize static data variables
+//
+// Note: the order of these keywords is critical and needs to match the order
+// in script.h
+//
+///////////////////////////////////////////////////////////////////////////////
+
+// Keyword values (must match the order as in script.cpp)
+// Must be in UPPERCASE
+const char * Lexer::m_szKeywords[K_MAX] =    {
+    "AND", "OR", "NOT",
+    "IF", "THEN", "ELSE", "ELSEIF", "ENDIF",
+    "WHILE", "WEND",
+    "DO", "UNTIL",
+    "FOR", "NEXT", "TO", "STEP",
+    "EXITLOOP", "CONTINUELOOP",
+    "SELECT", "CASE", "ENDSELECT",
+    "DIM", "REDIM", "LOCAL", "GLOBAL", "CONST",
+    "FUNC", "ENDFUNC", "RETURN",
+    "EXIT",
+    "BYREF"
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 // Lexer()
@@ -149,7 +180,7 @@ AUT_RESULT Lexer::doLexer(int nLineNum, const char *szLine, VectorToken &vLineTo
 
                 if (iPosTemp == 0)                // No variable given!
                 {
-                    FatalError(IDS_AUT_E_VARBADFORMAT, iPos-1);
+                    engine->FatalError(IDS_AUT_E_VARBADFORMAT, iPos-1);
                     return AUT_ERR;
                 }
 
@@ -173,7 +204,7 @@ AUT_RESULT Lexer::doLexer(int nLineNum, const char *szLine, VectorToken &vLineTo
 
                 if (iPosTemp == 0)                // No macro given!
                 {
-                    FatalError(IDS_AUT_E_VARBADFORMAT, iPos-1);
+                    engine->FatalError(IDS_AUT_E_VARBADFORMAT, iPos-1);
                     return AUT_ERR;
                 }
 
@@ -321,7 +352,7 @@ AUT_RESULT Lexer::doLexer(int nLineNum, const char *szLine, VectorToken &vLineTo
 
             default:
                 // no match with anything - not good
-                FatalError(IDS_AUT_E_GENPARSE, iPos);
+                engine->FatalError(IDS_AUT_E_GENPARSE, iPos);
                 tok.settype(TOK_END);        // Add an end token for safety if someone tries to use this vector
                 vLineToks.push_back(tok);
                 return AUT_ERR;                // Abort
@@ -390,7 +421,7 @@ AUT_RESULT Lexer::Lexer_String(const char *szLine, uint &iPos, char *szResult)
 
     if (bComplete == false)
     {
-        FatalError(IDS_AUT_E_MISSINGQUOTE, iPosStart);
+        engine->FatalError(IDS_AUT_E_MISSINGQUOTE, iPosStart);
         return AUT_ERR;
     }
 
@@ -530,14 +561,14 @@ void Lexer::Lexer_KeywordOrFunc(const char *szLine, uint &iPos, Token &rtok, cha
 
     // The built-in function list is in alphabetical order so we can do a binary search :)
     int nFirst = 0;
-    int nLast = m_nFuncListSize - 1;
+    int nLast = engine->m_nFuncListSize - 1;
     int nRes;
 
     while (nFirst <= nLast)
     {
         i = (nFirst + nLast) / 2;            // Truncated to an integer!
 
-        nRes = strcmp(szTemp, m_FuncList[i].szName);
+        nRes = strcmp(szTemp, engine->m_FuncList[i].szName);
 
         if ( nRes < 0 )
             nLast = i - 1;

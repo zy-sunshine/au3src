@@ -59,32 +59,6 @@
 #include "Utils/utility.h"
 #include "Utils/StrUtil.h"
 
-
-///////////////////////////////////////////////////////////////////////////////
-// Initialize static data variables
-//
-// Note: the order of these keywords is critical and needs to match the order
-// in script.h
-//
-///////////////////////////////////////////////////////////////////////////////
-
-// Keyword values (must match the order as in script.cpp)
-// Must be in UPPERCASE
-const char * Engine::m_szKeywords[K_MAX] =    {
-    "AND", "OR", "NOT",
-    "IF", "THEN", "ELSE", "ELSEIF", "ENDIF",
-    "WHILE", "WEND",
-    "DO", "UNTIL",
-    "FOR", "NEXT", "TO", "STEP",
-    "EXITLOOP", "CONTINUELOOP",
-    "SELECT", "CASE", "ENDSELECT",
-    "DIM", "REDIM", "LOCAL", "GLOBAL", "CONST",
-    "FUNC", "ENDFUNC", "RETURN",
-    "EXIT",
-    "BYREF"
-};
-
-
 ///////////////////////////////////////////////////////////////////////////////
 // Constructor()
 ///////////////////////////////////////////////////////////////////////////////
@@ -149,11 +123,7 @@ Engine::Engine()
     m_nMouseClickDragDelay        = 250;            // The delay at the start and end of a drag operation
 
     m_oSendKeys.Init();                            // Init sendkeys to defaults
-
-    // Make sure our lexer cache is set to empty defaults
-    for (i=0; i<AUT_LEXER_CACHESIZE; ++i)
-        m_LexerCache[i].nLineNum = -1;
-    
+ 
     // Initialise DLL handles to NULL
     for (i=0; i<AUT_MAXOPENFILES; ++i)
         m_DLLHandleDetails[i] = NULL;
@@ -167,7 +137,7 @@ Engine::Engine()
     _handleGuiEvent = NULL;
 
     _parser = new Parser(this);
-    _lexer = new Lexer();
+    _lexer = new Lexer(this);
 
 } // Engine()
 
@@ -351,15 +321,15 @@ AUT_RESULT Engine::InitScript(char *szFile)
         return AUT_ERR;
 
     // Scan for user functions
-    if ( AUT_FAILED(StoreUserFuncs()) )
+    if ( AUT_FAILED(_parser->StoreUserFuncs()) )
         return AUT_ERR;
 
     // Scan for plugin functions and load required DLLs
-//    if ( AUT_FAILED(StorePluginFuncs()) )
+//    if ( AUT_FAILED(_parser->StorePluginFuncs()) )
 //        return AUT_ERR;
 
     // Check user function calls refer to existing functions (or plugin functions)
-    if ( AUT_FAILED(VerifyUserFuncCalls()) )
+    if ( AUT_FAILED(_parser->VerifyUserFuncCalls()) )
         return AUT_ERR;
 
     // Make a note of the script filename (for @ScriptDir, etc)
@@ -630,343 +600,6 @@ AUT_RESULT Engine::FunctionExecute(int nFunction, VectorVariant &vParams, Varian
 
 } // FunctionExecute()
 
-
-///////////////////////////////////////////////////////////////////////////////
-// StoreUserFuncs()
-//
-// Make a note of the location and details of the user functions
-// (name, line number, parameters, end line number)
-//
-// This function also "sanity checks" the function declaration so that we
-// can make assumptions during user function calls
-//
-///////////////////////////////////////////////////////////////////////////////
-
-AUT_RESULT Engine::StoreUserFuncs(void)
-{
-    uint            ivPos;                        // Position in the vector
-    AString            sFuncName;                    // Temp function name
-    VectorToken        LineTokens;                    // Vector (array) of tokens for a line of script
-    int                nScriptLine = 1;            // 1 = first line
-    const char        *szScriptLine;
-
-    // Check each line of the script for the FUNC keyword
-    while ( (szScriptLine = g_oScriptFile.GetLine(nScriptLine++)) != NULL )
-    {
-        m_nErrorLine = nScriptLine - 1;            // Keep track for errors
-
-        if ( AUT_FAILED( _lexer->doLexer(nScriptLine-1, szScriptLine, LineTokens) ) )
-            return AUT_ERR;                        // Bad line
-
-        ivPos = 0;
-
-        if ( !(LineTokens[ivPos].m_nType == TOK_KEYWORD && LineTokens[ivPos].nValue == K_FUNC) )
-            continue;                            // Next line
-
-        ++ivPos;                                // Skip "func" keyword
-
-        // Tokens should be: userfunctionname ( $variable , [ByRef] $variable , ... )
-
-        // Get user function name
-        if ( LineTokens[ivPos].m_nType != TOK_USERFUNCTION )
-        {
-            FatalError(IDS_AUT_E_BADFUNCSTATEMENT);
-            return AUT_ERR;
-        }
-
-        // Check that this function isn't a duplicate
-        sFuncName = LineTokens[ivPos].szValue;    // Get function name
-        if (m_oUserFuncList.find(sFuncName.c_str()) != NULL)
-        {
-            FatalError(IDS_AUT_E_DUPLICATEFUNC);
-            return AUT_ERR;
-        }
-
-        ++ivPos;                                // Skip function name
-
-        if ( LineTokens[ivPos].m_nType != TOK_LEFTPAREN )
-        {
-            FatalError(IDS_AUT_E_BADFUNCSTATEMENT);
-            return AUT_ERR;
-        }
-
-        ++ivPos;                                // Skip (
-
-        // Parse the parameter declarations
-        if ( AUT_FAILED(StoreUserFuncs2(LineTokens, ivPos, sFuncName, nScriptLine)) )
-            return AUT_ERR;
-
-    } // End While()
-
-    // Finalize the list of user functions which sorts the list for speed searching. 
-    // NO USER MORE FUNCTIONS CAN BE ADDED AFTER THIS
-    m_oUserFuncList.createindex();
-
-    return AUT_OK;
-
-} // StoreUserFuncs()
-
-
-///////////////////////////////////////////////////////////////////////////////
-// StoreUserFuncs2()
-//
-// More StoreUserFuncs - split to aid readabilty
-//
-///////////////////////////////////////////////////////////////////////////////
-
-AUT_RESULT Engine::StoreUserFuncs2(VectorToken &LineTokens, uint &ivPos, const AString &sFuncName, int &nScriptLine)
-{
-    UserFuncDetails    tFuncDetails;
-
-    // Tokens should be: [ByRef] $variable , ... [ByRef] $variable , ... )
-
-    int    nNumParamsMin = -1;
-
-    int nNumParams = 0;
-    int nFuncStart = nScriptLine - 1;                // Make a note of the Func line
-
-    for (;;)
-    {
-        // Is it )
-        if ( LineTokens[ivPos].m_nType == TOK_RIGHTPAREN )
-        {
-            // Finishing parsing function, next token must be end
-            ++ivPos;                            // Skip )
-
-            if (LineTokens[ivPos].m_nType != TOK_END)
-            {
-                FatalError(IDS_AUT_E_EXTRAONLINE);
-                return AUT_ERR;
-            }
-            else
-                break;                            // Exit while loop
-        }
-
-        // Is it the ByRef keyword 
-        if ( LineTokens[ivPos].m_nType == TOK_KEYWORD && LineTokens[ivPos].nValue == K_BYREF )
-        {
-            // We don't need to do anything except skip the ByRef keyword, but check that the next 
-            // token is a variable
-            ++ivPos;                            // Skip ByRef keyword
-
-            if ((LineTokens[ivPos].m_nType != TOK_VARIABLE) || (nNumParamsMin != -1) )
-            {
-                FatalError(IDS_AUT_E_BADFUNCSTATEMENT);
-                return AUT_ERR;
-            }
-        }
-
-        // Is is a variable?
-        if ( LineTokens[ivPos].m_nType == TOK_VARIABLE )
-        {
-            ++ivPos;                            // Skip variable name
-
-            // Is it the Optional parameter
-            if ( LineTokens[ivPos].m_nType == TOK_EQUAL )
-            {
-                ++ivPos;                        // Skip TOK_EQUAL
-
-                // May be an optional sign (TOK_PLUS/TOK_MINUS next)
-                if (LineTokens[ivPos].m_nType == TOK_PLUS || LineTokens[ivPos].m_nType == TOK_MINUS)
-                    ++ivPos;                    // Skip sign
-
-                // Then a literal or macro
-                if (LineTokens[ivPos].isliteral())
-                {
-                    ++ivPos;                    // Skip literal
-                    if (nNumParamsMin == -1)
-                        nNumParamsMin = nNumParams;            // Memorize min number of Param
-                }
-                else
-                {
-                    FatalError(IDS_AUT_E_BADFUNCSTATEMENT);
-                    return AUT_ERR;
-                }
-            }
-            else
-            {
-                // Not a default value, so check if any previous were (once a default param
-                // is used all following params must also have a default param)
-                if (nNumParamsMin != -1) // optional par without default value
-                {
-                    FatalError(IDS_AUT_E_BADFUNCSTATEMENT);
-                    return AUT_ERR;
-                }
-            }
-        
-            ++nNumParams;                        // Increase the number of parameters
-
-            // Must be a , or ) next
-            if ( LineTokens[ivPos].m_nType != TOK_COMMA && LineTokens[ivPos].m_nType != TOK_RIGHTPAREN )
-            {
-                FatalError(IDS_AUT_E_BADFUNCSTATEMENT);
-                return AUT_ERR;
-            }
-            else
-                continue;                        // Next loop
-        }
-
-        // Is it a , ?
-        if ( LineTokens[ivPos].m_nType == TOK_COMMA )
-        {
-            ++ivPos;                            // Skip ,
-
-            // Must be a variable or ByRef keyword next
-            if ( LineTokens[ivPos].m_nType != TOK_VARIABLE && 
-                !(LineTokens[ivPos].m_nType == TOK_KEYWORD && LineTokens[ivPos].nValue == K_BYREF) )
-            {
-                FatalError(IDS_AUT_E_BADFUNCSTATEMENT);
-                return AUT_ERR;
-            }
-            else
-                continue;                        // Next loop
-        }
-
-        // no match
-        FatalError(IDS_AUT_E_BADFUNCSTATEMENT, LineTokens[ivPos].m_nCol);
-        return AUT_ERR;
-
-
-    } // End While (getting parameters)
-
-
-
-    // Now we have the funcline,  and number of parameters (the function would have
-    // already returned if there were errors
-
-    // Search for EndFunc keyword - fatal error if not found
-    if ( AUT_FAILED(StoreUserFuncsFindEnd(nScriptLine)) )
-        return AUT_ERR;
-    
-    // Complete user function found, store
-    tFuncDetails.sName = sFuncName;
-    tFuncDetails.nFuncLineNum = nFuncStart;
-    tFuncDetails.nEndFuncLineNum = nScriptLine - 1;        // Line contained EndFunc
-    tFuncDetails.nNumParams = nNumParams;
-    if (nNumParamsMin == -1)
-        nNumParamsMin = nNumParams;        // no optional parameters
-    tFuncDetails.nNumParamsMin = nNumParamsMin;
-    m_oUserFuncList.add(tFuncDetails);
-
-    return AUT_OK;
-
-} // StoreUserFuncs2()
-
-
-///////////////////////////////////////////////////////////////////////////////
-// StoreUserFuncsFindEnd()
-//
-// Looks for a valid matching EndFunc, returns the line number of the endfunc (+1)
-//
-///////////////////////////////////////////////////////////////////////////////
-
-AUT_RESULT Engine::StoreUserFuncsFindEnd(int &nScriptLine)
-{
-    VectorToken    LineTokens;                        // Vector (array) of tokens for a line of script
-    uint        ivPos;
-    const char    *szScriptLine;
-
-    bool bEndFuncFound = false;
-    while ( bEndFuncFound == false && (szScriptLine = g_oScriptFile.GetLine(nScriptLine)) != NULL )
-    {
-        ++nScriptLine;
-        m_nErrorLine = nScriptLine - 1;            // Keep track for errors
-
-        if ( AUT_FAILED( _lexer->doLexer(nScriptLine-1, szScriptLine, LineTokens) ) )
-            return AUT_ERR;                        // Bad line
-
-        ivPos = 0;
-
-        if (LineTokens[ivPos].m_nType == TOK_KEYWORD && LineTokens[ivPos].nValue == K_FUNC)
-        {
-            FatalError(IDS_AUT_E_MISSINGENDFUNC);
-            return AUT_ERR;
-        }
-
-        if (LineTokens[ivPos].m_nType == TOK_KEYWORD && LineTokens[ivPos].nValue == K_ENDFUNC)
-            bEndFuncFound = true;            // Break out of endfunc while loop
-
-    } // End While
-
-    return AUT_OK;
-
-} // StoreUserFuncsFindEnd
-
-
-///////////////////////////////////////////////////////////////////////////////
-// VerifyUserFuncCalls()
-//
-// Checks that each user function call refers to a defined user function
-//
-///////////////////////////////////////////////////////////////////////////////
-
-AUT_RESULT Engine::VerifyUserFuncCalls(void)
-{
-    uint            ivPos;                        // Position in the vector
-    VectorToken        LineTokens;                    // Vector (array) of tokens for a line of script
-    int                nScriptLine = 1;            // 1 = first line
-    const char        *szScriptLine;
-    int                nLineNum, nNumParams, nNumParamsMin, nEndLineNum;
-
-    // Check each line for user function calls
-    while ( (szScriptLine = g_oScriptFile.GetLine(nScriptLine++)) != NULL )
-    {
-        m_nErrorLine = nScriptLine - 1;            // Keep track for errors
-        
-        _lexer->doLexer(nScriptLine-1, szScriptLine, LineTokens);        // No need to test for errors, already done in StoreUserFuncs()
-
-        ivPos = 0;
-
-        while (LineTokens[ivPos].m_nType != TOK_END)
-        {
-            if (LineTokens[ivPos].m_nType == TOK_USERFUNCTION)
-            {
-                if (_parser->FindUserFunction(LineTokens[ivPos].szValue, nLineNum, nNumParams, nNumParamsMin, nEndLineNum) == false)
-                {
-                    FatalError(IDS_AUT_E_UNKNOWNUSERFUNC, LineTokens[ivPos].m_nCol);
-                    return AUT_ERR;
-                }
-            }
-
-            ++ivPos;
-        }
-
-    } // End While()
-
-    return AUT_OK;
-
-} // VerifyUserFuncCalls()
-
-
-///////////////////////////////////////////////////////////////////////////////
-// StorePluginFuncs()
-//
-// Query the scriptfile object for all the plugin dlls specified, load each one
-// and make a note of all the function names it supplies.
-//
-///////////////////////////////////////////////////////////////////////////////
-
-AUT_RESULT Engine::StorePluginFuncs(void)
-{
-/*    HINSTANCE hDll = LoadLibrary("example.dll");
-    
-    if (hDll == NULL)
-        return AUT_ERR;
-
-    PluginFuncs *lpEntry = new PluginFuncs;
-    
-    lpEntry->hDll = hDll;
-    lpEntry->sFuncName = "PluginTest";
-    lpEntry->lpNext = NULL;
-
-    // Add to the list
-
-*/
-    return AUT_OK;
-
-} // StorePluginFuncs()
-
-
 ///////////////////////////////////////////////////////////////////////////////
 // HandleAdlib()
 //
@@ -1127,7 +760,7 @@ void Engine::SaveExecute(int nScriptLine, bool bRaiseScope, bool bRestoreErrorCo
     // we have on the go just in case the user function is naughty (return function in the
     // middle of a loop) and leaves the statement stacks in an incorrect state - we will
     // have to correct this after Execute() returns
-    uint    nStackSize        = m_StatementStack.size();
+    uint    nStackSize        = _parser->getStatementStackSize();
 
 
     // Continue execution with the user function (using recursive call of Execute() )
@@ -1143,8 +776,7 @@ void Engine::SaveExecute(int nScriptLine, bool bRaiseScope, bool bRestoreErrorCo
 
     // Make sure the statement stacks are the same as before the user function was called, 
     // if not we fix them
-    while (nStackSize < m_StatementStack.size())
-        m_StatementStack.pop();
+    _parser->restoreStackmentStackSize(nStackSize);
 
     m_nNumParams            = nNumParams;
     m_nErrorLine            = nErrorLine;

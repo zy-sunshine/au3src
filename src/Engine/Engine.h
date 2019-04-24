@@ -265,19 +265,6 @@ typedef struct _PluginFuncs
 #define AUT_PROXY_DIRECT    1
 #define AUT_PROXY_PROXY        2
 
-
-// Lexer caching
-// Assuming an average of 7 tokens per line at 256 bytes per line
-// 256 lines of buffer = 64KB.
-#define AUT_LEXER_CACHESIZE    256                    // Must be power of 2
-#define AUT_LEXER_CACHEMASK    255                    // size - 1
-typedef struct
-{
-    int            nLineNum;                        // Line cached here (or -1)
-    VectorToken    vLine;                            // Cached line of tokens
-} LexerCache;
-
-
 // InetGet handles
 typedef struct
 {
@@ -308,6 +295,8 @@ class Lexer;
 // The AutoIt Script object
 class Engine
 {
+    friend class Lexer;
+    friend class Parser;
 public:
     // Variables
 
@@ -318,9 +307,9 @@ public:
     void initModules(AU3_FuncInfo * funcList, int size);
 
     AUT_RESULT        InitScript(char *szFile);    // Perform setup of a loaded script
-    int                ProcessMessages();
+    int               ProcessMessages();
     AUT_RESULT        Execute(int nScriptLine=0);    // Run script at this line number
-    int             GetCurLineNumber (void) const { return m_nErrorLine; }  // Return current line number for TrayTip debugging
+    int               GetCurLineNumber (void) const { return m_nErrorLine; }  // Return current line number for TrayTip debugging
 
 private:
     // Variables
@@ -400,8 +389,9 @@ private:
 
 
     // User functions variables
-    UserFuncList    m_oUserFuncList;            // Details (line numbers, num params) for user defined functions
+    // TODO: remove m_vUserRetVal
     Variant         m_vUserRetVal;                // Temp storage for return value of a user function (or winwait result)
+
     bool            m_bUserFuncReturned;        // Becomes true when userfunctions end (return or endfunc)
     int             m_nFuncErrorCode;            // Extended error code
     int             m_nFuncExtCode;                // Extended code
@@ -411,19 +401,10 @@ private:
     // Plugin variables
     //PluginFuncs        *m_PluginFuncs;                // Linked list of plugin functions
 
-    // Statement stacks
-    StackStatement    m_StatementStack;            // Stack for tracking If/Func/Select/Loop statements
-
     // DLL variables
     HINSTANCE            m_DLLHandleDetails[AUT_MAXOPENFILES];
 
-    // Lexing and parsing vars
-#ifdef AUT_CONFIG_LEXERCACHE
-    LexerCache         m_LexerCache[AUT_LEXER_CACHESIZE];
-#endif
-    static char        m_PrecOpRules[OPR_MAXOPR][OPR_MAXOPR];    // Table for precedence rules
-    static const char  *m_szKeywords[];            // Valid keywords
-    static const char  *m_szMacros[];                // Valid functions
+    // module register function list
     AU3_FuncInfo       *m_FuncList;                // List of functions and details for each
     int                m_nFuncListSize;            // Number of functions
 
@@ -516,12 +497,6 @@ public:
                     {m_nFuncExtCode = nCode;};                        // Set script extended info (@extended code)
 
     AUT_RESULT  FunctionExecute(int nFunction, VectorVariant &vParams, Variant &vResult);
-    AUT_RESULT    StoreUserFuncs(void);                                // Get all user function details
-    AUT_RESULT    StoreUserFuncs2(VectorToken &LineTokens, uint &ivPos, const AString &sFuncName, int &nScriptLine);
-    AUT_RESULT    StoreUserFuncsFindEnd(int &nScriptLine);            // Finds a matching endfunc during the StoreUserFuncs functions
-    AUT_RESULT    VerifyUserFuncCalls(void);                            // Ensures user function calls are defined
-
-    AUT_RESULT    StorePluginFuncs(void);                                // Get all plugin function details
 
     //bool        HandleDelayedFunctions(void);                        // Handle delayed commands
 

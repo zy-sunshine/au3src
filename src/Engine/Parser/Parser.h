@@ -38,6 +38,21 @@ public:
     void        Keyword_RETURN(VectorToken &vLineToks, uint &ivPos);
     void        Keyword_EXIT(VectorToken &vLineToks, uint &ivPos);
 
+    AUT_RESULT    StoreUserFuncs(void);                                // Get all user function details
+    AUT_RESULT    StoreUserFuncs2(VectorToken &LineTokens, uint &ivPos, const AString &sFuncName, int &nScriptLine);
+    AUT_RESULT    StoreUserFuncsFindEnd(int &nScriptLine);            // Finds a matching endfunc during the StoreUserFuncs functions
+    AUT_RESULT    VerifyUserFuncCalls(void);                            // Ensures user function calls are defined
+
+    AUT_RESULT    StorePluginFuncs(void);                                // Get all plugin function details
+
+    uint getStatementStackSize();
+    void restoreStackmentStackSize(uint size);
+
 private:
+    Engine *engine;
     ParserExp* parserExp;
+
+    UserFuncList    m_oUserFuncList;            // Details (line numbers, num params) for user defined functions
+    // Statement stacks
+    StackStatement    m_StatementStack;            // Stack for tracking If/Func/Select/Loop statements
 };
