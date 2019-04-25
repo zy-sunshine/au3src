@@ -46,7 +46,8 @@
 #include "StdAfx.h"                                // Pre-compiled headers
 #include "Parser.h"
 #include "Engine/Engine.h"
-#include "Engine/Parser/ParserExp.h"
+#include "ParserExp.h"
+#include "Lexer.h"
 
 #ifndef _MSC_VER                                // Includes for non-MS compilers
     #include <windows.h>
@@ -54,13 +55,18 @@
 
 Parser::Parser(Engine *engine)
     :engine(engine)
-{ parserExp = new ParserExp(engine); }
+{
+    m_nErrorLine                = 0;            // Set last line read as 0 by default (application.cpp may try reading it)
+    m_nNumParams                = 0;            // Number of UDF parameters initially 0
+    m_nCurrentOperation            = AUT_RUN;        // Current operation is to run the script
+    parserExp = new ParserExp(this, engine);
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Parser()
 ///////////////////////////////////////////////////////////////////////////////
 
-void Parser::Parse(VectorToken &vLineToks, int &nScriptLine)
+void Parser::Parse(VectorToken &vLineToks, int nScriptLineCurrent, int &nScriptLine)
 {
     uint    ivPos;                        // Position in the vector
     Variant    vTemp;                        // Temp variant for operations
@@ -72,6 +78,8 @@ void Parser::Parse(VectorToken &vLineToks, int &nScriptLine)
 
     ivPos = 0;
 
+    m_nErrorLine = nScriptLine;                // Keep track for errors
+
     switch ( vLineToks[ivPos].m_nType )
     {
         case TOK_VARIABLE:
@@ -79,7 +87,7 @@ void Parser::Parse(VectorToken &vLineToks, int &nScriptLine)
             break;
 
         case TOK_KEYWORD:
-            StartWithKeyword(vLineToks, ivPos, nScriptLine);
+            StartWithKeyword(vLineToks, ivPos, nScriptLineCurrent, nScriptLine);
             break;
 
         case TOK_FUNCTION:
@@ -432,7 +440,7 @@ AUT_RESULT Parser::UserFunctionCall(VectorToken &vLineToks, uint &ivPos, Variant
                 return AUT_ERR;
             }
 
-            if (engine->g_oVarTable.GetRef(vFuncToks[ivFuncPos].szValue, &pvTemp, bConst) == false)
+            if (m_oVarTable.GetRef(vFuncToks[ivFuncPos].szValue, &pvTemp, bConst) == false)
             {
                 engine->FatalError(IDS_AUT_E_VARNOTFOUND, vFuncToks[ivFuncPos].m_nCol);
                 return AUT_ERR;
@@ -522,7 +530,7 @@ AUT_RESULT Parser::UserFunctionCall(VectorToken &vLineToks, uint &ivPos, Variant
     ivFuncDecPos += 3;                            // Skip "Func", funcname and "("
     ivParamPos = 0;                                // Back to the start of our parameter list
 
-    engine->g_oVarTable.ScopeIncrease();                // Increase scope
+    m_oVarTable.ScopeIncrease();                // Increase scope
 
     // Create new variables with the values we worked out above
     for (i=1; i<=nNumParamsMax; ++i)
@@ -533,7 +541,7 @@ AUT_RESULT Parser::UserFunctionCall(VectorToken &vLineToks, uint &ivPos, Variant
             // Reference, create a reference
             ++ivFuncDecPos;    // Skip ByRef keyword
 
-            if (engine->g_oVarTable.CreateRef(vFuncDecToks[ivFuncDecPos].szValue, vParams[ivParamPos].pValue() ) == false)
+            if (m_oVarTable.CreateRef(vFuncDecToks[ivFuncDecPos].szValue, vParams[ivParamPos].pValue() ) == false)
             {
                 engine->FatalError(IDS_AUT_E_VARNOTFOUND, vFuncDecToks[ivFuncDecPos].m_nCol);
                 return AUT_ERR;
@@ -565,12 +573,12 @@ AUT_RESULT Parser::UserFunctionCall(VectorToken &vLineToks, uint &ivPos, Variant
                 // Evaluate this simple expression
                 parserExp->EvaluateExpression(vTempExp, ivTempExpPos, vTemp);
 
-                engine->g_oVarTable.Assign(vFuncDecToks[ivFuncDecPos].szValue, vTemp, false, VARTABLE_FORCELOCAL);
+                m_oVarTable.Assign(vFuncDecToks[ivFuncDecPos].szValue, vTemp, false, VARTABLE_FORCELOCAL);
             }
             else
             {
                 // Value
-                engine->g_oVarTable.Assign(vFuncDecToks[ivFuncDecPos].szValue, vParams[ivParamPos], false, VARTABLE_FORCELOCAL);
+                m_oVarTable.Assign(vFuncDecToks[ivFuncDecPos].szValue, vParams[ivParamPos], false, VARTABLE_FORCELOCAL);
             }
 
             // We need to skip either 2 places ($var ,) or if the declaration contained a default then we
@@ -596,18 +604,17 @@ AUT_RESULT Parser::UserFunctionCall(VectorToken &vLineToks, uint &ivPos, Variant
     m_StatementStack.push(tFuncDetails);        // Store details of the func on the stack so we can track what
                                                 // function we are currently executing
     m_nNumParams = nNumParams;                    // memorize number of parameters to be return by @NUMPARAMS
-    // TODO: remove m_vUserRetVal
-    engine->m_vUserRetVal = 0;                            // Default userfunction return value is zero
+    m_vUserRetVal = 0;                            // Default userfunction return value is zero
     SetFuncErrorCode(0);                        // As with built in functions, reset the @error values
     SetFuncExtCode(0);
     SaveExecute(nLineNum+1, false, false);        // Save state and run the user function (line after the Func declaration)
-    vResult = engine->m_vUserRetVal;                    // Get the return value
+    vResult = m_vUserRetVal;                    // Get the return value
 
     // Pop the function
     m_StatementStack.pop();
 
     // Descrease the variable scope - deletes function local variables
-    engine->g_oVarTable.ScopeDecrease();
+    m_oVarTable.ScopeDecrease();
 
     return AUT_OK;
 
@@ -683,7 +690,7 @@ void Parser::StartWithVariable(VectorToken &vLineToks, uint &ivPos)
 
     // Get a reference to the variable, if it doesn't exist, then create it.  If the
     // variable is a constant then give an error
-    engine->g_oVarTable.GetRef(sVarName, &pvTemp, bConst);
+    m_oVarTable.GetRef(sVarName, &pvTemp, bConst);
     if (pvTemp == NULL)
     {
         // Variable does not exist yet
@@ -755,8 +762,8 @@ void Parser::StartWithVariable(VectorToken &vLineToks, uint &ivPos)
     if (bNeedToCreate)
     {
         Variant vTempCreate;
-        engine->g_oVarTable.Assign(sVarName, vTempCreate);
-        engine->g_oVarTable.GetRef(sVarName, &pvTemp, bConst);
+        m_oVarTable.Assign(sVarName, vTempCreate);
+        m_oVarTable.GetRef(sVarName, &pvTemp, bConst);
     }
 
     // Change the value in the variable table to this resulting value
@@ -769,7 +776,7 @@ void Parser::StartWithVariable(VectorToken &vLineToks, uint &ivPos)
 // StartWithKeyword()
 ///////////////////////////////////////////////////////////////////////////////
 
-void Parser::StartWithKeyword(VectorToken &vLineToks, uint &ivPos, int &nScriptLine)
+void Parser::StartWithKeyword(VectorToken &vLineToks, uint &ivPos, int nScriptLineCurrent, int &nScriptLine)
 {
     int nTemp1, nTemp2, nTemp3, nTemp4;
 
@@ -777,7 +784,7 @@ void Parser::StartWithKeyword(VectorToken &vLineToks, uint &ivPos, int &nScriptL
     switch (vLineToks[ivPos].nValue)
     {
         case K_IF:
-            Keyword_IF(vLineToks, ivPos, nScriptLine);
+            Keyword_IF(vLineToks, ivPos, nScriptLineCurrent, nScriptLine);
             break;
         case K_ELSE:
         case K_ELSEIF:
@@ -875,7 +882,7 @@ void Parser::StartWithKeyword(VectorToken &vLineToks, uint &ivPos, int &nScriptL
 // Keyword_IF()
 ///////////////////////////////////////////////////////////////////////////////
 
-void Parser::Keyword_IF(VectorToken &vLineToks, uint &ivPos, int &nScriptLine)
+void Parser::Keyword_IF(VectorToken &vLineToks, uint &ivPos, int nScriptLineCurrent, int &nScriptLine)
 {
     bool            bCondition;
     VectorToken    vIFToks;
@@ -918,7 +925,7 @@ void Parser::Keyword_IF(VectorToken &vLineToks, uint &ivPos, int &nScriptLine)
 
             vIFToks.push_back(vLineToks[ivPos]);    // And the end token as well :)
 
-            Parse(vIFToks, nScriptLine);            // Run the parser on this as a "new line"
+            Parse(vIFToks, nScriptLineCurrent, nScriptLine);            // Run the parser on this as a "new line"
         }
 
         return;
@@ -1516,12 +1523,12 @@ void Parser::Keyword_FOR(VectorToken &vLineToks, uint &ivPos, int &nScriptLine)
     // Get a reference to the variable (must be a local), if it doesn't exist, then create it as a local.
     // If the variable is a constant then don't allow it either. Note: Even in Opt("MustDeclareVars") mode
     // we allow the automatic creation here.
-    engine->g_oVarTable.GetRef(sVarName, &pvTemp, bConst, VARTABLE_FORCELOCAL);
+    m_oVarTable.GetRef(sVarName, &pvTemp, bConst, VARTABLE_FORCELOCAL);
     if (pvTemp == NULL)
     {
         vTemp = 0;
-        engine->g_oVarTable.Assign(sVarName, vTemp, false, VARTABLE_FORCELOCAL);
-        engine->g_oVarTable.GetRef(sVarName, &pvTemp, bConst, VARTABLE_FORCELOCAL);
+        m_oVarTable.Assign(sVarName, vTemp, false, VARTABLE_FORCELOCAL);
+        m_oVarTable.GetRef(sVarName, &pvTemp, bConst, VARTABLE_FORCELOCAL);
     }
     else if (bConst)
     {
@@ -1698,7 +1705,7 @@ void Parser::Keyword_NEXT(VectorToken &vLineToks, uint &ivPos, int &nScriptLine)
     szTempScriptLine = engine->g_oScriptFile.GetLine(tFORDetails.nLoopStart);
     Lexer(tFORDetails.nLoopStart, szTempScriptLine, vForToks);
     AString sVarName = vForToks[1].szValue;    // FOR = 0, Var = 1,
-    engine->g_oVarTable.GetRef(sVarName, &pvTemp, bConst);
+    m_oVarTable.GetRef(sVarName, &pvTemp, bConst);
 
 
     (*pvTemp) += tFORDetails.vForStep;    // Increment with the STEP value
@@ -1950,7 +1957,7 @@ void Parser::Keyword_DIM(VectorToken &vLineToks, uint &ivPos, int nReqScope)
 
         // Get a reference to the variable in the requested scope, if it doesn't exist, then create it.
         AString sVarName = vLineToks[ivPos].szValue;
-        engine->g_oVarTable.GetRef(sVarName, &pvTemp, bConst, nReqScope);
+        m_oVarTable.GetRef(sVarName, &pvTemp, bConst, nReqScope);
         if (pvTemp == NULL)
         {
             if (bReDim)
@@ -1961,8 +1968,8 @@ void Parser::Keyword_DIM(VectorToken &vLineToks, uint &ivPos, int nReqScope)
             }
 
             vTemp = "";                                // Let the uninitialised value be "" (equates to 0.0 for numbers)
-            engine->g_oVarTable.Assign(sVarName, vTemp, false, nReqScope);
-            engine->g_oVarTable.GetRef(sVarName, &pvTemp, bConst, nReqScope);
+            m_oVarTable.Assign(sVarName, vTemp, false, nReqScope);
+            m_oVarTable.GetRef(sVarName, &pvTemp, bConst, nReqScope);
         }
         else if (bConst)
         {
@@ -2113,13 +2120,13 @@ void Parser::Keyword_CONST(VectorToken &vLineToks, uint &ivPos, int nReqScope)
 
         // Get a reference to the variable in the requested scope, if it doesn't exist, then create it.
         AString sVarName = vLineToks[ivPos].szValue;
-        engine->g_oVarTable.GetRef(sVarName, &pvTemp, bConst, nReqScope);
+        m_oVarTable.GetRef(sVarName, &pvTemp, bConst, nReqScope);
         if (pvTemp == NULL)
         {
             // Doesn't already exist
             vTemp = "";                                // Let the uninitialised value be "" (equates to 0.0 for numbers)
-            engine->g_oVarTable.Assign(sVarName, vTemp, true, nReqScope);
-            engine->g_oVarTable.GetRef(sVarName, &pvTemp, bConst, nReqScope);
+            m_oVarTable.Assign(sVarName, vTemp, true, nReqScope);
+            m_oVarTable.GetRef(sVarName, &pvTemp, bConst, nReqScope);
         }
         else
         {
@@ -2595,7 +2602,7 @@ AUT_RESULT Parser::StoreUserFuncs(void)
     {
         m_nErrorLine = nScriptLine - 1;            // Keep track for errors
 
-        if ( AUT_FAILED( _lexer->doLexer(nScriptLine-1, szScriptLine, LineTokens) ) )
+        if ( AUT_FAILED( engine->_lexer->doLexer(nScriptLine-1, szScriptLine, LineTokens) ) )
             return AUT_ERR;                        // Bad line
 
         ivPos = 0;
@@ -2812,7 +2819,7 @@ AUT_RESULT Parser::StoreUserFuncsFindEnd(int &nScriptLine)
         ++nScriptLine;
         m_nErrorLine = nScriptLine - 1;            // Keep track for errors
 
-        if ( AUT_FAILED( _lexer->doLexer(nScriptLine-1, szScriptLine, LineTokens) ) )
+        if ( AUT_FAILED( engine->_lexer->doLexer(nScriptLine-1, szScriptLine, LineTokens) ) )
             return AUT_ERR;                        // Bad line
 
         ivPos = 0;
@@ -2853,7 +2860,7 @@ AUT_RESULT Parser::VerifyUserFuncCalls(void)
     {
         m_nErrorLine = nScriptLine - 1;            // Keep track for errors
         
-        _lexer->doLexer(nScriptLine-1, szScriptLine, LineTokens);        // No need to test for errors, already done in StoreUserFuncs()
+        engine->_lexer->doLexer(nScriptLine-1, szScriptLine, LineTokens);        // No need to test for errors, already done in StoreUserFuncs()
 
         ivPos = 0;
 
@@ -2906,14 +2913,228 @@ AUT_RESULT Parser::StorePluginFuncs(void)
 
 } // StorePluginFuncs()
 
-uint Parser::getStatementStackSize()
+///////////////////////////////////////////////////////////////////////////////
+// SaveExecute()
+//
+// Saves the current state of the script and then performs a recursive
+// call to Execute() and then restores state. Not all the items saved in state
+// are required for every usage but the function is used from many parts of the
+// code and needs to be safe for all of them.
+// The current scope can optionally be raised/lowered too.
+// This function is used by UserFunction calling, Adlib, Hotkey, Call
+///////////////////////////////////////////////////////////////////////////////
+
+void Engine::SaveExecute(int nScriptLine, bool bRaiseScope, bool bRestoreErrorCode)
 {
-    return m_StatementStack.size();
+    // Saved state vars - Control related
+    Variant            vControlSearchValue;                        // The ID, classname or text to search for 
+
+    // Function call related
+    int                nNumParams = m_nNumParams;    // Number of parameters passed to a UDF
+
+    // Main vars
+    int                nErrorLine        = m_nErrorLine;            // Line number used to generate error messages
+    int                nFuncErrorCode    = m_nFuncErrorCode;        // Extended error code
+    int                nFuncExtCode    = m_nFuncExtCode;        // Extended code
+
+    // We also need to keep track of how many statements (if, while, etc)
+    // we have on the go just in case the user function is naughty (return function in the
+    // middle of a loop) and leaves the statement stacks in an incorrect state - we will
+    // have to correct this after Execute() returns
+    uint    nStackSize        = _parser->getStatementStackSize();
+
+
+    // Continue execution with the user function (using recursive call of Execute() )
+
+    if (bRaiseScope)
+        m_oVarTable.ScopeIncrease();                // Increase scope
+
+    Execute(nScriptLine);
+
+    // Descrease the variable scope - deletes function local variables
+    if (bRaiseScope)
+        m_oVarTable.ScopeDecrease();
+
+    // Make sure the statement stacks are the same as before the user function was called, 
+    // if not we fix them
+    _parser->restoreStackmentStackSize(nStackSize);
+
+    m_nNumParams            = nNumParams;
+    m_nErrorLine            = nErrorLine;
+
+    // Only restore the @error code in certain situations (adlib/hotkey)
+    if (bRestoreErrorCode)
+    {
+        m_nFuncErrorCode    = nFuncErrorCode;
+        m_nFuncExtCode        = nFuncExtCode;
+    }
+
+} // SaveExecute()
+
+///////////////////////////////////////////////////////////////////////////////
+// FatalError()
+//
+// This function will print a message box giving the line and line number
+// of any script stopping errors, it will also set the flag that makes the
+// script quit.
+//
+// The line used to print the error is the last one stored in m_nErrorLine,
+// if the column number is < zero, this is also used in the error message
+///////////////////////////////////////////////////////////////////////////////
+
+void Engine::FatalError(int iErr, int nCol)
+{
+    char        szTitle[AUT_MAX_LINESIZE];
+    char        szText[AUT_MAX_LINESIZE];
+    char        szOutput[AUT_MAX_LINESIZE*3];
+    char        szOutput2[AUT_MAX_LINESIZE*3];
+
+    LoadString(g_hInstance, IDS_AUT_E_TITLE, szTitle, AUT_MAX_LINESIZE);
+    LoadString(g_hInstance, iErr, szText, AUT_MAX_LINESIZE);
+
+    // Get the line and include file
+    const char *szScriptLine = g_oScriptFile.GetLine(m_nErrorLine);
+    int nAutScriptLine = g_oScriptFile.GetAutLineNumber(m_nErrorLine);
+    int nIncludeID = g_oScriptFile.GetIncludeID(m_nErrorLine);
+    const char *szInclude = g_oScriptFile.GetIncludeName(nIncludeID);
+
+    if (szInclude == NULL)
+        sprintf(szOutput, "Line %d:\n\n", nAutScriptLine);
+    else
+        sprintf(szOutput, "Line %d  (File \"%s\"):\n\n", nAutScriptLine, szInclude);
+
+    strcat(szOutput, szScriptLine);
+    strcat(szOutput, "\n");
+
+    if (nCol >= 0)
+    {
+        strcpy(szOutput2, szScriptLine);
+        szOutput2[nCol] = '\0';
+        strcat(szOutput2, "^ ERROR");
+        
+        strcat(szOutput, szOutput2);
+        strcat(szOutput, "\n");
+    }
+
+    strcat(szOutput, "\nError: ");
+    strcat(szOutput, szText);
+
+    if (g_bStdOut)
+        printf("%s (%d) : ==> %s: \n%s \n%s\n",szInclude, nAutScriptLine, szText, szScriptLine, szOutput2 );
+    else
+        MessageBox(g_hWnd, szOutput, szTitle, MB_ICONSTOP | MB_OK | MB_SYSTEMMODAL | MB_SETFOREGROUND);
+
+    // Signal that we want to quit as soon as possible
+    m_nCurrentOperation = AUT_QUIT;
+
+} // FatalError()
+
+
+///////////////////////////////////////////////////////////////////////////////
+// FatalError()
+//
+// This function will print a message box giving the line and line number
+// of any script stopping errors, it will also set the flag that makes the
+// script quit.
+//
+// The line used to print the error is the last one stored in m_nErrorLine
+//
+///////////////////////////////////////////////////////////////////////////////
+
+void Engine::FatalError(int iErr, const char *szText2)
+{
+    char    szTitle[AUT_MAX_LINESIZE];
+    char    szText[AUT_MAX_LINESIZE];
+    char    szOutput[AUT_MAX_LINESIZE*3];
+
+    LoadString(g_hInstance, IDS_AUT_E_TITLE, szTitle, AUT_MAX_LINESIZE);
+    LoadString(g_hInstance, iErr, szText, AUT_MAX_LINESIZE);
+
+    // Get the line
+    const char *szScriptLine = g_oScriptFile.GetLine(m_nErrorLine);
+    int nAutScriptLine = g_oScriptFile.GetAutLineNumber(m_nErrorLine);
+    int nIncludeID = g_oScriptFile.GetIncludeID(m_nErrorLine);
+    const char *szInclude = g_oScriptFile.GetIncludeName(nIncludeID);
+
+    if (szInclude == NULL)
+        sprintf(szOutput, "Line %d:\n\n", nAutScriptLine);
+    else
+        sprintf(szOutput, "Line %d  (File \"%s\"):\n\n", nAutScriptLine, szInclude);
+
+    strcat(szOutput, szScriptLine);
+    strcat(szOutput, "\n\nError: ");
+    strcat(szOutput, szText);
+    strcat(szOutput, "\n\n");
+    strcat(szOutput, szText2);
+
+    if (g_bStdOut)
+        printf("%s (%d) : ==> %s: \n%s \n%s\n",szInclude, nAutScriptLine, szText, szScriptLine, szText2);
+    else
+        MessageBox(g_hWnd, szOutput, szTitle, MB_ICONSTOP | MB_OK | MB_SYSTEMMODAL | MB_SETFOREGROUND);
+
+    // Signal that we want to quit as soon as possible
+    m_nCurrentOperation = AUT_QUIT;
+
+} // FatalError()
+
+///////////////////////////////////////////////////////////////////////////////
+// FunctionExecute()
+///////////////////////////////////////////////////////////////////////////////
+
+AUT_RESULT Engine::FunctionExecute(int nFunction, VectorVariant &vParams, Variant &vResult)
+{
+    vResult        = 1;                            // Default return value is 1
+    SetFuncErrorCode(0);                        // Default extended error code is zero
+    SetFuncExtCode(0);                            // Default extended code is zero
+
+    // Lookup the function and execute
+    AU3_FuncInfo* info = &m_FuncList[nFunction];
+    return info->lpFunc(info->lpSelf, vParams, vResult);
+
+} // FunctionExecute()
+
+AUT_RESULT Engine::call(const char* szName, Variant &vResult)
+{
+    int nLineNum, nNumParams, nNumParamsMin, nEndLineNum;
+
+    // Check that this user function exists
+    if (_parser->FindUserFunction(szName, nLineNum, nNumParams, nNumParamsMin, nEndLineNum) == false)
+    {
+        SetFuncErrorCode(1);                // Silent error even though function not valid
+        return AUT_OK;                        // As will probably be used this way
+    }
+    else
+    {
+        _parser->m_vUserRetVal = 1;                    // Default return value is 1
+        _parser->SaveExecute(nLineNum+1, true, false);    // Run the user function (line after the Func declaration)
+        vResult = _parser->m_vUserRetVal;            // Get return value (0 = timed out)
+        return AUT_OK;
+    }
 }
 
-void Parser::restoreStackmentStackSize(uint size)
+AUT_RESULT Engine::interruptCall(const char* szName, Variant &vResult)
 {
-    while (nStackSize < m_StatementStack.size())
-        m_StatementStack.pop();
-}
+    // Get the details of the function (we should have previously checked that it
+    // exists!)
+    int        nLineNum, nNumParams, nNumParamsMin, nEndLineNum;
+    if (_parser->FindUserFunction(szName, nLineNum, nNumParams, nNumParamsMin, nEndLineNum) == false) {
+        SetFuncErrorCode(1);                // Silent error even though function not valid
+        return AUT_OK;                      // As will probably be used this way
+    }
 
+    // Save current operation (may be waiting)
+    int nCurrentOperation    = m_nCurrentOperation;
+
+    // Continue execution with the user function (using recursive call of Execute() )
+    m_nCurrentOperation = AUT_RUN;                // Change mode to run script (may have been waiting)
+
+    // Skip function declaration
+    _parser->m_vUserRetVal = 1;                     // Default return value is 1
+    _parser->SaveExecute(nLineNum+1, true, true);   // Save state and recursively call Execute()
+    vResult = _parser->m_vUserRetVal;               // Get return value (0 = timed out)
+
+    // If the function caused the script to end, we must honour the request rather than restoring
+    if (m_nCurrentOperation != AUT_QUIT)
+        m_nCurrentOperation    = nCurrentOperation;
+    return AUT_OK;
+}

@@ -54,15 +54,9 @@
 #include "AutoIt.h"
 #include "Engine/Type/AString.h"
 #include "Engine/Type/Variant.h"
-#include "Engine/Parser/Token.h"
 #include "Engine/Type/VectorVariant.h"
-#include "Engine/Parser/VectorToken.h"
-#include "Engine/StackStatement.h"
-#include "Engine/Parser/StackInt.h"
-#include "Engine/Parser/StackVariant.h"
-#include "Engine/VariableTable.h"
-#include "Engine/UserFuncList.h"
 #include "Engine/ScriptFile.h"
+#include "Engine/Parser/Parser.h"
 
 #include "Utils/OSVersion.h"
 #include "Utils/SendKeys.h"
@@ -222,7 +216,6 @@ typedef struct
 #define AUT_MAXREGEXPS        8                    // Size of regular expression cache
 
 
-class BaseModule;
 // Function lookup structures
 class Engine;                            // Forward declaration of Engine
 
@@ -290,7 +283,6 @@ typedef bool        (*HandleFunc)(void);
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class Parser;
 class Lexer;
 // The AutoIt Script object
 class Engine
@@ -309,7 +301,7 @@ public:
     AUT_RESULT        InitScript(char *szFile);    // Perform setup of a loaded script
     int               ProcessMessages();
     AUT_RESULT        Execute(int nScriptLine=0);    // Run script at this line number
-    int               GetCurLineNumber (void) const { return m_nErrorLine; }  // Return current line number for TrayTip debugging
+    int               GetCurLineNumber (void) const;
 
 private:
     // Variables
@@ -319,8 +311,6 @@ private:
     AString         m_sScriptDir;                // Directory the script is in
 
     int             m_nExecuteRecursionLevel;    // Keeps track of the recursive calls of Execute()
-    int             m_nErrorLine;                // Line number used to generate error messages
-    int             m_nCurrentOperation;        // The current state of the script (RUN, WAIT, SLEEP, etc)
     bool            m_bWinQuitProcessed;        // True when windows WM_QUIT message has been processed
 
     // Options (AutoItSetOption)
@@ -387,15 +377,7 @@ private:
     // Net download details
     InetGetDetails  m_InetGetDetails;
 
-
-    // User functions variables
-    // TODO: remove m_vUserRetVal
-    Variant         m_vUserRetVal;                // Temp storage for return value of a user function (or winwait result)
-
     bool            m_bUserFuncReturned;        // Becomes true when userfunctions end (return or endfunc)
-    int             m_nFuncErrorCode;            // Extended error code
-    int             m_nFuncExtCode;                // Extended code
-    int             m_nNumParams;                // Number of parameters when calling a user function
 
 
     // Plugin variables
@@ -468,35 +450,29 @@ private:
 
 public:
     inline Parser* parser() { return _parser; }
-    inline void quit() { m_nCurrentOperation = AUT_QUIT; }
-    //inline void setUserRetVal(Variant &v) { m_vUserRetVal = v; }
-    //inline Variant userRetVal() { return m_vUserRetVal; }
-    AUT_RESULT call(const char* szName, Variant &vResult);
-
-    AUT_RESULT interruptCall(const char* szName, Variant &vResult);
-
-    AUT_RESULT eval(const char* szName, Variant &vResult);
-
-    AUT_RESULT assign(const char* szName, Variant &vValue, int nReqScope, bool bCreate, Variant &vResult);
-
-    int isDeclared(const char* szName);
+    void quit();
 
     HS_SendKeys& oSendKeys() { return m_oSendKeys; }
 
+    AUT_RESULT AssignVar(const char* szName, Variant &vValue, int nReqScope, bool bCreate, Variant &vResult);
+
 public:
-    // Functions
-    void        SaveExecute(int nScriptLine, bool bRaiseScope, bool bRestoreErrorCode);        // Save state and then Execute()
-    void        FatalError(int iErr, int nCol = -1);                // Output an error and signal quit (String resource errors)
-    void        FatalError(int iErr, const char *szText2);            // Output an error and signal quit (passed text errors)
+    // === export engine function ===
+    // Assign variable
+    inline bool Assign(const AString &sVarName, const Variant &vVariant, bool bConst = false, int nReqScope = VARTABLE_ANY)
+    { return _parser->m_oVarTable.Assign(sVarName, vVariant, bConst, nReqScope); }
+    // Get pointer to a variable
+    inline bool GetRef(const AString &sVarName, Variant **pvVariant, bool &bConst, int nReqScope = VARTABLE_ANY)
+    { return _parser->m_oVarTable.GetRef(sVarName, pvVariant, bConst, nReqScope); }
 
-    void        SetFuncErrorCode(int nCode)
-                    {m_nFuncErrorCode = nCode;}                    // Set script error info (@error code)
-    inline int nFuncErrorCode() { return m_nFuncErrorCode; }
+    // Return true if the reference variable exists (and type of variable, global/local etc)
+    inline int isDeclared(const AString &sVarName)
+    { return _parser->m_oVarTable.isDeclared(sVarName); }
 
-    void        SetFuncExtCode(int nCode)
-                    {m_nFuncExtCode = nCode;};                        // Set script extended info (@extended code)
+    inline void SetFuncErrorCode(int nCode)
+    { return _parser->SetFuncErrorCode(nCode); }
 
-    AUT_RESULT  FunctionExecute(int nFunction, VectorVariant &vParams, Variant &vResult);
+public:
 
     //bool        HandleDelayedFunctions(void);                        // Handle delayed commands
 
@@ -534,7 +510,6 @@ public:
     
     SetForegroundWinEx      g_oSetForeWinEx;        // Foreground window hack object
     
-    VariableTable           g_oVarTable;            // Object for accessing autoit variables
     ScriptFile              g_oScriptFile;          // The script file object
     
     

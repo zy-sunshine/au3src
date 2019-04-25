@@ -49,7 +49,7 @@
 
 
 // Includes
-#include "Engine/StackVarList.h"
+#include "StackVarList.h"
 
 // Magic numbers used in assigning/getting vars, sometimes we want force local/global operations
 #define VARTABLE_ANY            0                // Any type (local first, then global)
@@ -71,7 +71,7 @@ public:
 
     void    ScopeIncrease(void);                // Increase scope (user function call)
     void    ScopeDecrease(void);                // Decrease scope (return from user function)
-    int        isDeclared(AString sVarName);        // Return true if the reference variable exists (and type of variable, global/local etc)
+    int     isDeclared(AString sVarName);        // Return true if the reference variable exists (and type of variable, global/local etc)
     bool    IsGlobalLevel(void)                    // Returns true when vartable is in base/global state
                 { return m_Locals.empty(); }
 };

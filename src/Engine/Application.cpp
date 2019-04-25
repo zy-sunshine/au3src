@@ -261,13 +261,15 @@ void Application::ParseCmdLine(void)
 
     // Create the variable $CmdLineRaw which holds the original command line
     vTemp = g_oCmdLine.GetCmdLine();
-    engine->g_oVarTable.Assign("CmdLineRaw", vTemp, true);
+
+    engine->assignConst("CmdLineRaw", vTemp);
+
     vTemp = 0;                                    // Will be used later as a dummy var so make 0 to save space
 
     // Create a single variable called $CmdLine to hold cmdline details
     // We will dimension it to the correct size later.
-    engine->g_oVarTable.Assign("CmdLine", vTemp, true);        // vTemp is dummy variable for array
-    engine->g_oVarTable.GetRef("CmdLine", &pvTemp, bConst);
+    engine->Assign("CmdLine", vTemp, true);        // vTemp is dummy variable for array
+    engine->GetRef("CmdLine", &pvTemp, bConst);
 
     nNumParams = g_oCmdLine.GetNumParams();
 
@@ -390,13 +392,13 @@ void Application::ParseCmdLine(void)
 
     // Create the variable $CmdLineRaw which holds the original command line
     vTemp = g_oCmdLine.GetCmdLine();
-    g_oVarTable.Assign("CmdLineRaw", vTemp, true);
+    engine->Assign("CmdLineRaw", vTemp, true);
     vTemp = 0;                                    // Will be used later as a dummy var so make 0 to save space
 
     // Create a single variable called "CmdLine" to hold cmdline details
     // We will dimension it to the correct size later.
-    g_oVarTable.Assign("CmdLine", vTemp, true);    // vTemp is dummy variable for array
-    g_oVarTable.GetRef("CmdLine", &pvTemp, bConst);
+    engine->Assign("CmdLine", vTemp, true);    // vTemp is dummy variable for array
+    engine->GetRef("CmdLine", &pvTemp, bConst);
 
     nNumParams = g_oCmdLine.GetNumParams();
 

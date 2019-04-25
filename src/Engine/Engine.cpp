@@ -89,14 +89,11 @@ Engine::Engine()
     g_bKillWorkerThreads    = false;
     g_HotKeyNext        = 0;                    // Initial position in hot key buffer
 
+    // execute control variables
     m_bWinQuitProcessed            = false;
-
-    m_nCurrentOperation            = AUT_RUN;        // Current operation is to run the script
     m_nExecuteRecursionLevel    = 0;            // Reset our recursion tracker for the Execute() function
-
-    m_nErrorLine                = 0;            // Set last line read as 0 by default (application.cpp may try reading it)
-    m_nNumParams                = 0;            // Number of UDF parameters initially 0
-    
+ 
+    // settings
     m_nCoordMouseMode            = AUT_COORDMODE_SCREEN;        // Mouse functions use screen coords by default
     m_nCoordPixelMode            = AUT_COORDMODE_SCREEN;        // Pixel functions use screen coords by default
     m_nCoordCaretMode            = AUT_COORDMODE_SCREEN;
@@ -199,113 +196,6 @@ Engine::~Engine()
 
 }
 
-
-///////////////////////////////////////////////////////////////////////////////
-// FatalError()
-//
-// This function will print a message box giving the line and line number
-// of any script stopping errors, it will also set the flag that makes the
-// script quit.
-//
-// The line used to print the error is the last one stored in m_nErrorLine,
-// if the column number is < zero, this is also used in the error message
-///////////////////////////////////////////////////////////////////////////////
-
-void Engine::FatalError(int iErr, int nCol)
-{
-    char        szTitle[AUT_MAX_LINESIZE];
-    char        szText[AUT_MAX_LINESIZE];
-    char        szOutput[AUT_MAX_LINESIZE*3];
-    char        szOutput2[AUT_MAX_LINESIZE*3];
-
-    LoadString(g_hInstance, IDS_AUT_E_TITLE, szTitle, AUT_MAX_LINESIZE);
-    LoadString(g_hInstance, iErr, szText, AUT_MAX_LINESIZE);
-
-    // Get the line and include file
-    const char *szScriptLine = g_oScriptFile.GetLine(m_nErrorLine);
-    int nAutScriptLine = g_oScriptFile.GetAutLineNumber(m_nErrorLine);
-    int nIncludeID = g_oScriptFile.GetIncludeID(m_nErrorLine);
-    const char *szInclude = g_oScriptFile.GetIncludeName(nIncludeID);
-
-    if (szInclude == NULL)
-        sprintf(szOutput, "Line %d:\n\n", nAutScriptLine);
-    else
-        sprintf(szOutput, "Line %d  (File \"%s\"):\n\n", nAutScriptLine, szInclude);
-
-    strcat(szOutput, szScriptLine);
-    strcat(szOutput, "\n");
-
-    if (nCol >= 0)
-    {
-        strcpy(szOutput2, szScriptLine);
-        szOutput2[nCol] = '\0';
-        strcat(szOutput2, "^ ERROR");
-        
-        strcat(szOutput, szOutput2);
-        strcat(szOutput, "\n");
-    }
-
-    strcat(szOutput, "\nError: ");
-    strcat(szOutput, szText);
-
-    if (g_bStdOut)
-        printf("%s (%d) : ==> %s: \n%s \n%s\n",szInclude, nAutScriptLine, szText, szScriptLine, szOutput2 );
-    else
-        MessageBox(g_hWnd, szOutput, szTitle, MB_ICONSTOP | MB_OK | MB_SYSTEMMODAL | MB_SETFOREGROUND);
-
-    // Signal that we want to quit as soon as possible
-    m_nCurrentOperation = AUT_QUIT;
-
-} // FatalError()
-
-
-///////////////////////////////////////////////////////////////////////////////
-// FatalError()
-//
-// This function will print a message box giving the line and line number
-// of any script stopping errors, it will also set the flag that makes the
-// script quit.
-//
-// The line used to print the error is the last one stored in m_nErrorLine
-//
-///////////////////////////////////////////////////////////////////////////////
-
-void Engine::FatalError(int iErr, const char *szText2)
-{
-    char    szTitle[AUT_MAX_LINESIZE];
-    char    szText[AUT_MAX_LINESIZE];
-    char    szOutput[AUT_MAX_LINESIZE*3];
-
-    LoadString(g_hInstance, IDS_AUT_E_TITLE, szTitle, AUT_MAX_LINESIZE);
-    LoadString(g_hInstance, iErr, szText, AUT_MAX_LINESIZE);
-
-    // Get the line
-    const char *szScriptLine = g_oScriptFile.GetLine(m_nErrorLine);
-    int nAutScriptLine = g_oScriptFile.GetAutLineNumber(m_nErrorLine);
-    int nIncludeID = g_oScriptFile.GetIncludeID(m_nErrorLine);
-    const char *szInclude = g_oScriptFile.GetIncludeName(nIncludeID);
-
-    if (szInclude == NULL)
-        sprintf(szOutput, "Line %d:\n\n", nAutScriptLine);
-    else
-        sprintf(szOutput, "Line %d  (File \"%s\"):\n\n", nAutScriptLine, szInclude);
-
-    strcat(szOutput, szScriptLine);
-    strcat(szOutput, "\n\nError: ");
-    strcat(szOutput, szText);
-    strcat(szOutput, "\n\n");
-    strcat(szOutput, szText2);
-
-    if (g_bStdOut)
-        printf("%s (%d) : ==> %s: \n%s \n%s\n",szInclude, nAutScriptLine, szText, szScriptLine, szText2);
-    else
-        MessageBox(g_hWnd, szOutput, szTitle, MB_ICONSTOP | MB_OK | MB_SYSTEMMODAL | MB_SETFOREGROUND);
-
-    // Signal that we want to quit as soon as possible
-    m_nCurrentOperation = AUT_QUIT;
-
-} // FatalError()
-
 ///////////////////////////////////////////////////////////////////////////////
 // InitScript()
 //
@@ -368,7 +258,7 @@ int    Engine::ProcessMessages()
         if (msg.message == WM_QUIT)
         {
             m_bWinQuitProcessed = true;
-            m_nCurrentOperation = AUT_QUIT;    // Script to end (if not already)
+            _parser->m_nCurrentOperation = AUT_QUIT;    // Script to end (if not already)
             break;                            // Exit this while loop
         }
 
@@ -391,12 +281,12 @@ int    Engine::ProcessMessages()
         g_bScriptPaused = false;            // Force unpause (clicking the tray pauses the script)    
         g_nExitMethod = AUT_EXITBY_TRAY;
         g_bTrayExitClicked = false;            // To stop re-triggering which would disrupte any OnExit() func
-        m_nCurrentOperation = AUT_QUIT;
+        _parser->m_nCurrentOperation = AUT_QUIT;
     }
 
     // This return value is not used in the Execute() function - just from functions like
     // DirGetSize() that need to know when to quit/pause
-    if (m_nCurrentOperation == AUT_QUIT)
+    if (_parser->m_nCurrentOperation == AUT_QUIT)
         return AUT_QUIT;
     else if (g_bScriptPaused)
         return AUT_PAUSED;
@@ -435,38 +325,37 @@ AUT_RESULT Engine::Execute(int nScriptLine)
         int    nTemp1, nTemp2, nTemp3, nTemp4;
 
         if (_parser->FindUserFunction("OnAutoItStart", nTemp1, nTemp2, nTemp3, nTemp4) == true)
-            SaveExecute(nTemp1+1, true, false);    // Run the user function (line after the Func declaration)
+            _parser->SaveExecute(nTemp1+1, true, false);    // Run the user function (line after the Func declaration)
     }
 
 
-    m_bUserFuncReturned = false;                // When this becomes true, a user function (or winwait
+    _parser->m_bUserFuncReturned = false;                // When this becomes true, a user function (or winwait
                                                 // operation has requested to return (or EndFunc encountered)
 
     // Run our Execute() loop
-    while(m_bWinQuitProcessed == false && m_bUserFuncReturned == false)
+    while(_parser->m_bWinQuitProcessed == false && _parser->m_bUserFuncReturned == false)
     {
         processEvents();
 
         // Get the next line, or quit if none left
-        m_nErrorLine = nScriptLine;                // Keep track for errors
         szScriptLine = g_oScriptFile.GetLine(nScriptLine++);
         if ( szScriptLine == NULL )
         {
-            m_nCurrentOperation = AUT_QUIT;
+            _parser->m_nCurrentOperation = AUT_QUIT;
             continue;                            // Back to the start of the while loop
         }
 
         // Do the lexing (convert the line into tokens) - stored in LineTokens
-        _lexer->doLexer(nScriptLine-1, szScriptLine, LineTokens);                // No need to check for errors, already lexed in InitScript()
+        _lexer->doLexer(nScriptLine-1, szScriptLine, LineTokens);  // No need to check for errors, already lexed in InitScript()
 
         // Parse and execute the line
-        _parser->Parse(LineTokens, nScriptLine);
+        _parser->Parse(LineTokens, nScriptLine-1, nScriptLine);
 
     } // End While
 
 
     // Reset the UserFunction flag before returning (in case Execute() was called recursively)
-    m_bUserFuncReturned = false;
+    _parser->m_bUserFuncReturned = false;
 
     // Is this the final call of Execute() - Level = 1 when finishing completely
     if (m_nExecuteRecursionLevel != 1)
@@ -509,13 +398,13 @@ AUT_RESULT Engine::Execute(int nScriptLine)
         Variant        vTemp;
 
         vTemp = g_nExitCode;
-        g_oVarTable.Assign("@ExitCode", vTemp, true, VARTABLE_FORCEGLOBAL);
+        _parser->m_oVarTable.Assign("@ExitCode", vTemp, true, VARTABLE_FORCEGLOBAL);
         vTemp = g_nExitMethod;
-        g_oVarTable.Assign("@ExitMethod", vTemp, true, VARTABLE_FORCEGLOBAL);
+        _parser->m_oVarTable.Assign("@ExitMethod", vTemp, true, VARTABLE_FORCEGLOBAL);
 
-        m_nCurrentOperation = AUT_RUN;        // Get back into a run state for the final push :)
-        SaveExecute(nTemp1+1, true, false);    // Run the user function (line after the Func declaration)
-        m_nCurrentOperation = AUT_QUIT;
+        _parser->m_nCurrentOperation = AUT_RUN;        // Get back into a run state for the final push :)
+        _parser->SaveExecute(nTemp1+1, true, false);    // Run the user function (line after the Func declaration)
+        _parser->m_nCurrentOperation = AUT_QUIT;
     }
 
 
@@ -583,23 +472,6 @@ int Engine::processEvents()
 //
 //} // HandleDelayedFunctions()
 
-
-///////////////////////////////////////////////////////////////////////////////
-// FunctionExecute()
-///////////////////////////////////////////////////////////////////////////////
-
-AUT_RESULT Engine::FunctionExecute(int nFunction, VectorVariant &vParams, Variant &vResult)
-{
-    vResult        = 1;                            // Default return value is 1
-    SetFuncErrorCode(0);                        // Default extended error code is zero
-    SetFuncExtCode(0);                            // Default extended code is zero
-
-    // Lookup the function and execute
-    AU3_FuncInfo* info = &m_FuncList[nFunction];
-    return info->lpFunc(info->lpSelf, vParams, vResult);
-
-} // FunctionExecute()
-
 ///////////////////////////////////////////////////////////////////////////////
 // HandleAdlib()
 //
@@ -639,20 +511,20 @@ AUT_RESULT Engine::FunctionExecute(int nFunction, VectorVariant &vParams, Varian
 //    ++nLineNum;                                    // Skip function declaration
 //
 //    // Save current operation (may be waiting)
-//    int nCurrentOperation    = m_nCurrentOperation;
+//    int nCurrentOperation    = _parser->m_nCurrentOperation;
 //
 //    // Continue execution with the user function (using recursive call of Execute() )
-//    m_nCurrentOperation = AUT_RUN;                // Change mode to run script (may have been waiting)
+//    _parser->m_nCurrentOperation = AUT_RUN;                // Change mode to run script (may have been waiting)
 //    m_bAdlibInProgress    = true;                    // True if we are currently running adlib function
 //
-//    SaveExecute(nLineNum, true, true);            // Save state and recursively call Execute()
+//    _parser->SaveExecute(nLineNum, true, true);            // Save state and recursively call Execute()
 //
 //    m_bAdlibInProgress    = false;
 //
 //    // If the function caused the script to end, we must honour the request rather than restoring
-//    if (m_nCurrentOperation != AUT_QUIT)
+//    if (_parser->m_nCurrentOperation != AUT_QUIT)
 //    {
-//        m_nCurrentOperation    = nCurrentOperation;
+//        _parser->m_nCurrentOperation    = nCurrentOperation;
 //        return false;                            // Continue Execute() (to give script a chance to run!)
 //    }
 //
@@ -698,28 +570,28 @@ AUT_RESULT Engine::FunctionExecute(int nFunction, VectorVariant &vParams, Varian
 //            // Set global vars for - Note these names CANNOT usually
 //            // exist because they start with @ :)
 //            vTemp = Event.nGlobalID;
-//            g_oVarTable.Assign("@GUI_CTRLID", vTemp, true, VARTABLE_FORCEGLOBAL);
+//            _parser->m_oVarTable.Assign("@GUI_CTRLID", vTemp, true, VARTABLE_FORCEGLOBAL);
 //
 //            vTemp = Event.hWnd;
-//            g_oVarTable.Assign("@GUI_WINHANDLE", vTemp, true, VARTABLE_FORCEGLOBAL);
+//            _parser->m_oVarTable.Assign("@GUI_WINHANDLE", vTemp, true, VARTABLE_FORCEGLOBAL);
 //
 //            vTemp = Event.hCtrl;
-//            g_oVarTable.Assign("@GUI_CTRLHANDLE", vTemp, true, VARTABLE_FORCEGLOBAL);
+//            _parser->m_oVarTable.Assign("@GUI_CTRLHANDLE", vTemp, true, VARTABLE_FORCEGLOBAL);
 //
 //            // Save current operation (may be waiting)
-//            int nCurrentOperation    = m_nCurrentOperation;
+//            int nCurrentOperation    = _parser->m_nCurrentOperation;
 //
 //            // Continue execution with the user function (using recursive call of Execute() )
-//            m_nCurrentOperation = AUT_RUN;                // Change mode to run script (may have been waiting)
+//            _parser->m_nCurrentOperation = AUT_RUN;                // Change mode to run script (may have been waiting)
 //            m_bGuiEventInProgress    = true;                // True if we are currently running adlib function
 //
-//            SaveExecute(nLineNum+1, true, true);        // Save state and recursively call Execute()
+//            _parser->SaveExecute(nLineNum+1, true, true);        // Save state and recursively call Execute()
 //
 //            m_bGuiEventInProgress    = false;
 //
 //            // If the function caused the script to end, we must honour the request rather than restoring
-//            if (m_nCurrentOperation != AUT_QUIT)
-//                m_nCurrentOperation    = nCurrentOperation;
+//            if (_parser->m_nCurrentOperation != AUT_QUIT)
+//                _parser->m_nCurrentOperation    = nCurrentOperation;
 //            else
 //                return true;                            // Restart the messageloop in order to check the quit condition
 //        }
@@ -731,153 +603,20 @@ AUT_RESULT Engine::FunctionExecute(int nFunction, VectorVariant &vParams, Varian
 //
 //} // HandleGuiEvent()
 
-
-///////////////////////////////////////////////////////////////////////////////
-// SaveExecute()
-//
-// Saves the current state of the script and then performs a recursive
-// call to Execute() and then restores state. Not all the items saved in state
-// are required for every usage but the function is used from many parts of the
-// code and needs to be safe for all of them.
-// The current scope can optionally be raised/lowered too.
-// This function is used by UserFunction calling, Adlib, Hotkey, Call
-///////////////////////////////////////////////////////////////////////////////
-
-void Engine::SaveExecute(int nScriptLine, bool bRaiseScope, bool bRestoreErrorCode)
-{
-    // Saved state vars - Control related
-    Variant            vControlSearchValue;                        // The ID, classname or text to search for 
-
-    // Function call related
-    int                nNumParams = m_nNumParams;    // Number of parameters passed to a UDF
-
-    // Main vars
-    int                nErrorLine        = m_nErrorLine;            // Line number used to generate error messages
-    int                nFuncErrorCode    = m_nFuncErrorCode;        // Extended error code
-    int                nFuncExtCode    = m_nFuncExtCode;        // Extended code
-
-    // We also need to keep track of how many statements (if, while, etc)
-    // we have on the go just in case the user function is naughty (return function in the
-    // middle of a loop) and leaves the statement stacks in an incorrect state - we will
-    // have to correct this after Execute() returns
-    uint    nStackSize        = _parser->getStatementStackSize();
-
-
-    // Continue execution with the user function (using recursive call of Execute() )
-
-    if (bRaiseScope)
-        g_oVarTable.ScopeIncrease();                // Increase scope
-
-    Execute(nScriptLine);
-
-    // Descrease the variable scope - deletes function local variables
-    if (bRaiseScope)
-        g_oVarTable.ScopeDecrease();
-
-    // Make sure the statement stacks are the same as before the user function was called, 
-    // if not we fix them
-    _parser->restoreStackmentStackSize(nStackSize);
-
-    m_nNumParams            = nNumParams;
-    m_nErrorLine            = nErrorLine;
-
-    // Only restore the @error code in certain situations (adlib/hotkey)
-    if (bRestoreErrorCode)
-    {
-        m_nFuncErrorCode    = nFuncErrorCode;
-        m_nFuncExtCode        = nFuncExtCode;
-    }
-
-} // SaveExecute()
-
-
-AUT_RESULT Engine::call(const char* szName, Variant &vResult)
-{
-    int nTemp1, nTemp2, nTemp3, nTemp4;
-
-    // Check that this user function exists
-    if (_parser->FindUserFunction(szName, nTemp1, nTemp2, nTemp3, nTemp4) == false)
-    {
-        SetFuncErrorCode(1);                // Silent error even though function not valid
-        return AUT_OK;                        // As will probably be used this way
-    }
-    else
-    {
-        m_vUserRetVal = 1;                    // Default return value is 1
-        SaveExecute(nTemp1+1, true, false);    // Run the user function (line after the Func declaration)
-        vResult = m_vUserRetVal;            // Get return value (0 = timed out)
-        return AUT_OK;
-    }
-}
-
-AUT_RESULT Engine::interruptCall(const char* szName, Variant &vResult)
-{
-    // Get the details of the function (we should have previously checked that it
-    // exists!)
-    int        nLineNum, nNumParams, nNumParamsMin, nEndLineNum;
-    if (_parser->FindUserFunction(szName, nLineNum, nNumParams, nNumParamsMin, nEndLineNum) == false) {
-        SetFuncErrorCode(1);                // Silent error even though function not valid
-        return AUT_OK;                      // As will probably be used this way
-    }
-
-    // Save current operation (may be waiting)
-    int nCurrentOperation    = m_nCurrentOperation;
-
-    // Continue execution with the user function (using recursive call of Execute() )
-    m_nCurrentOperation = AUT_RUN;                // Change mode to run script (may have been waiting)
-
-    // Skip function declaration
-    m_vUserRetVal = 1;                     // Default return value is 1
-    SaveExecute(nLineNum+1, true, true);   // Save state and recursively call Execute()
-    vResult = m_vUserRetVal;               // Get return value (0 = timed out)
-
-    // If the function caused the script to end, we must honour the request rather than restoring
-    if (m_nCurrentOperation != AUT_QUIT)
-        m_nCurrentOperation    = nCurrentOperation;
-    return AUT_OK;
-}
-
-AUT_RESULT Engine::eval(const char* szName, Variant &vResult)
-{
-    bool    bConst = false;
-
-     if (g_oVarTable.isDeclared(szName))
-     {
-         Variant *pvTemp;
-         g_oVarTable.GetRef(szName, &pvTemp, bConst);
-         vResult = *pvTemp;
-         return AUT_OK;
-     }
-     else
-     {
-         SetFuncErrorCode(1);            // Silent error even though variable not valid
-         vResult = "";
-         return AUT_OK;
-     }
-}
-
-AUT_RESULT Engine::assign(const char* szName, Variant &vValue, int nReqScope,
+AUT_RESULT Engine::AssignVar(const char* szName, Variant &vValue, int nReqScope,
         bool bCreate, Variant &vResult)
 {
-    Variant *pvTemp;
-    bool    bConst = false;
-
-    // Get a reference to the variable in the requested scope, if it doesn't exist, then create it.
-    g_oVarTable.GetRef(szName, &pvTemp, bConst, nReqScope);
-    if (pvTemp == NULL)
-    {
-        if (bCreate)
-            g_oVarTable.Assign(szName, vValue, false, nReqScope);
-        else
-            vResult = 0;                        // Default is 1
-    }
-    else
-        *pvTemp = vValue;
-
-    return AUT_OK;
 }
 
 int Engine::isDeclared(const char* szName)
 {
-    return g_oVarTable.isDeclared(szName);
+    return _parser->m_oVarTable.isDeclared(szName);
 }
+
+int GetCurLineNumber (void) const
+{
+return _parser->m_nErrorLine;  // Return current line number for TrayTip debugging
+}
+
+void quit()
+{ _parser->m_nCurrentOperation = AUT_QUIT; }

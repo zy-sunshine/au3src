@@ -18,7 +18,22 @@ AUT_RESULT ModuleBuiltIn::F_Call(VectorVariant &vParams, Variant &vResult)
 
 AUT_RESULT ModuleBuiltIn::F_Eval(VectorVariant &vParams, Variant &vResult)
 {
-    return engine->eval(vParams[0].szValue(), vResult);
+    const char* szName = vParams[0].szValue();
+    bool    bConst = false;
+
+     if (engine->isDeclared(szName))
+     {
+         Variant *pvTemp;
+         engine->GetRef(szName, &pvTemp, bConst);
+         vResult = *pvTemp;
+         return AUT_OK;
+     }
+     else
+     {
+         engine->SetFuncErrorCode(1);            // Silent error even though variable not valid
+         vResult = "";
+         return AUT_OK;
+     }
 } // Eval()
 
 
@@ -37,6 +52,10 @@ AUT_RESULT ModuleBuiltIn::F_Assign(VectorVariant &vParams, Variant &vResult)
 {
     bool    bCreate = true;
     int     nReqScope = VARTABLE_ANY;
+    const char* szName = vParams[0].szValue();
+    Variant &vValue = vParams[1];
+    Variant *pvTemp;
+
     if (vParams.size() == 3)
     {
         if (vParams[2].nValue() & 1)
@@ -47,7 +66,20 @@ AUT_RESULT ModuleBuiltIn::F_Assign(VectorVariant &vParams, Variant &vResult)
             bCreate = false;
     }
 
-    return engine->assign(vParams[0].szValue(), vParams[1], nReqScope, bCreate, vResult);
+    // Get a reference to the variable in the requested scope, if it doesn't exist, then create it.
+    engine->GetRef(szName, &pvTemp, bConst, nReqScope);
+    if (pvTemp == NULL)
+    {
+        if (bCreate)
+            engine->Assign(szName, vValue, false, nReqScope);
+        else
+            vResult = 0;                        // Default is 1
+    }
+    else
+        *pvTemp = vValue;
+
+    return AUT_OK;
+
 }    // F_Assign()
 
 

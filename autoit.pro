@@ -128,12 +128,12 @@ HEADERS = \
     src/Engine/Parser/StackVariant.h \
     src/Engine/Parser/Token.h \
     src/Engine/Parser/VectorToken.h \
+    src/Engine/Parser/StackStatement.h \
+    src/Engine/Parser/StackVarList.h \
+    src/Engine/Parser/UserFuncList.h \
+    src/Engine/Parser/VariableList.h \
+    src/Engine/Parser/VariableTable.h \
     src/Engine/ScriptFile.h \
-    src/Engine/StackStatement.h \
-    src/Engine/StackVarList.h \
-    src/Engine/UserFuncList.h \
-    src/Engine/VariableList.h \
-    src/Engine/VariableTable.h \
     src/StdAfx.h \
     src/Utils/mt19937ar-cok.h \
     src/Utils/OSVersion.h \
@@ -174,12 +174,12 @@ SOURCES = \
     src/Engine/Parser/StackVariant.cpp \
     src/Engine/Parser/Token.cpp \
     src/Engine/Parser/VectorToken.cpp \
+    src/Engine/Parser/StackStatement.cpp \
+    src/Engine/Parser/StackVarList.cpp \
+    src/Engine/Parser/UserFuncList.cpp \
+    src/Engine/Parser/VariableList.cpp \
+    src/Engine/Parser/VariableTable.cpp \
     src/Engine/ScriptFile.cpp \
-    src/Engine/StackStatement.cpp \
-    src/Engine/StackVarList.cpp \
-    src/Engine/UserFuncList.cpp \
-    src/Engine/VariableList.cpp \
-    src/Engine/VariableTable.cpp \
     src/Utils/mt19937ar-cok.cpp \
     src/Utils/OSVersion.cpp \
     src/Utils/SendKeys.cpp \

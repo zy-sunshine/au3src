@@ -281,7 +281,7 @@ void ParserExp::ExpandVarString(Variant &vString)
                 ++nLine;                        // Skip the closing %
 
                 // Get the value of this variable and copy it to our result string
-                engine->g_oVarTable.GetRef(sName.c_str(), &pvTemp, bConst);
+                _parser->m_oVarTable.GetRef(sName.c_str(), &pvTemp, bConst);
                 if (pvTemp != NULL)
                     sResult += pvTemp->szValue();
             }
@@ -337,10 +337,10 @@ AUT_RESULT ParserExp::EvaluateVariable(VectorToken &vLineToks, unsigned int &ivP
     Variant        vTemp;
 
     // Get a reference to the variant
-    engine->g_oVarTable.GetRef(vLineToks[ivPos].szValue, &pvTemp, bConst);
+    _parser->m_oVarTable.GetRef(vLineToks[ivPos].szValue, &pvTemp, bConst);
     if (pvTemp == NULL)
     {
-        engine->FatalError(IDS_AUT_E_VARNOTFOUND, vLineToks[ivPos].m_nCol);
+        _parser->FatalError(IDS_AUT_E_VARNOTFOUND, vLineToks[ivPos].m_nCol);
         return AUT_ERR;
     }
 
@@ -355,7 +355,7 @@ AUT_RESULT ParserExp::EvaluateVariable(VectorToken &vLineToks, unsigned int &ivP
         // If next token is [ then trying to use a non array as an array
         if (pvTemp->type() != VAR_ARRAY && vLineToks[ivPos].m_nType == TOK_LEFTSUBSCRIPT)
         {
-            engine->FatalError(IDS_AUT_E_NONARRAYWITHSUBSCRIPT, vLineToks[ivPos].m_nCol);
+            _parser->FatalError(IDS_AUT_E_NONARRAYWITHSUBSCRIPT, vLineToks[ivPos].m_nCol);
             return AUT_ERR;
         }
         else
@@ -420,14 +420,14 @@ AUT_RESULT ParserExp::GetArrayElement(VectorToken &vLineToks, uint &ivPos, Varia
         // Parse expression for subscript
         if ( AUT_FAILED( EvaluateExpression(vLineToks, ivPos, vTemp) ) )
         {
-            //engine->FatalError(IDS_AUT_E_PARSESUBSCRIPT, nColTemp);
+            //_parser->FatalError(IDS_AUT_E_PARSESUBSCRIPT, nColTemp);
             return AUT_ERR;
         }
 
         // Subscript cannot be < 0
         if ( vTemp.nValue() < 0 )
         {
-            engine->FatalError(IDS_AUT_E_PARSESUBSCRIPT, nColTemp);
+            _parser->FatalError(IDS_AUT_E_PARSESUBSCRIPT, nColTemp);
             return AUT_ERR;
         }
 
@@ -435,7 +435,7 @@ AUT_RESULT ParserExp::GetArrayElement(VectorToken &vLineToks, uint &ivPos, Varia
         if (vLineToks[ivPos].m_nType != TOK_RIGHTSUBSCRIPT)
         {
             //AUT_MSGBOX("", "Thisone")
-            engine->FatalError(IDS_AUT_E_PARSESUBSCRIPT, vLineToks[ivPos-1].m_nCol);
+            _parser->FatalError(IDS_AUT_E_PARSESUBSCRIPT, vLineToks[ivPos-1].m_nCol);
             return AUT_ERR;
         }
 
@@ -457,7 +457,7 @@ AUT_RESULT ParserExp::GetArrayElement(VectorToken &vLineToks, uint &ivPos, Varia
 
     if ((*ppvTemp) == NULL)
     {
-        engine->FatalError(IDS_AUT_E_BADSUBSCRIPT, nColVar);    // Use the initial variable for the error message
+        _parser->FatalError(IDS_AUT_E_BADSUBSCRIPT, nColVar);    // Use the initial variable for the error message
         return AUT_ERR;
     }
 
@@ -505,7 +505,7 @@ AUT_RESULT ParserExp::EvaluateMacro(const char *szName, Variant &vResult)
 
         sNewMacro += sMacro;
 
-        engine->g_oVarTable.GetRef(sNewMacro, &pvTemp, bConst);
+        _parser->m_oVarTable.GetRef(sNewMacro, &pvTemp, bConst);
         if (pvTemp == NULL)
             return AUT_ERR;
         else
@@ -1129,7 +1129,7 @@ AUT_RESULT ParserExp::EvaluateExpression(VectorToken &vLineToks, unsigned int &i
             case TOK_MACRO:
                 if ( AUT_FAILED(EvaluateMacro(vLineToks[ivPos++].szValue, vTemp)) )
                 {
-                    engine->FatalError(IDS_AUT_E_MACROUNKNOWN, vLineToks[ivPos-1].m_nCol);
+                    _parser->FatalError(IDS_AUT_E_MACROUNKNOWN, vLineToks[ivPos-1].m_nCol);
                     return AUT_ERR;
                 }
 
@@ -1173,7 +1173,7 @@ AUT_RESULT ParserExp::EvaluateExpression(VectorToken &vLineToks, unsigned int &i
                     if ( AUT_FAILED( OprReduce(opStack, valStack) ) )
                     {
                         // Print message and quit
-                        engine->FatalError(IDS_AUT_E_EXPRESSION, nColTemp);
+                        _parser->FatalError(IDS_AUT_E_EXPRESSION, nColTemp);
                         return AUT_ERR;
                     }
                     bLastOpWasReduce = true;        // Loop again with this operator
@@ -1185,7 +1185,7 @@ AUT_RESULT ParserExp::EvaluateExpression(VectorToken &vLineToks, unsigned int &i
                     {
                         if (opStack.top() == OPR_END)
                         {
-                            engine->FatalError(IDS_AUT_E_UNBALANCEDPAREN, nColTemp);
+                            _parser->FatalError(IDS_AUT_E_UNBALANCEDPAREN, nColTemp);
                             return AUT_ERR;
                         }
                         else
@@ -1194,7 +1194,7 @@ AUT_RESULT ParserExp::EvaluateExpression(VectorToken &vLineToks, unsigned int &i
                             if ( AUT_FAILED( OprReduce(opStack, valStack) ) )
                             {
                                 // Print message and quit
-                                engine->FatalError(IDS_AUT_E_EXPRESSION, nColTemp);
+                                _parser->FatalError(IDS_AUT_E_EXPRESSION, nColTemp);
                                 return AUT_ERR;
                             }
                         }
@@ -1210,7 +1210,7 @@ AUT_RESULT ParserExp::EvaluateExpression(VectorToken &vLineToks, unsigned int &i
                     if (valStack.size() != 1)
                     {
                         // Syntax error, print message and quit
-                        engine->FatalError(IDS_AUT_E_EXPRESSION, nColTemp);
+                        _parser->FatalError(IDS_AUT_E_EXPRESSION, nColTemp);
                         return AUT_ERR;
                     }
                     else
@@ -1221,13 +1221,13 @@ AUT_RESULT ParserExp::EvaluateExpression(VectorToken &vLineToks, unsigned int &i
                     }
 
                 case E1:
-                    engine->FatalError(IDS_AUT_E_RIGHTPAREN, nColTemp);
+                    _parser->FatalError(IDS_AUT_E_RIGHTPAREN, nColTemp);
                     return AUT_ERR;
                 case E2:
-                    engine->FatalError(IDS_AUT_E_MISSINGOP, nColTemp);
+                    _parser->FatalError(IDS_AUT_E_MISSINGOP, nColTemp);
                     return AUT_ERR;
                 case E3:
-                    engine->FatalError(IDS_AUT_E_UNBALANCEDPAREN, nColTemp);
+                    _parser->FatalError(IDS_AUT_E_UNBALANCEDPAREN, nColTemp);
                     return AUT_ERR;
 
             } // End Switch
@@ -1250,7 +1250,7 @@ AUT_RESULT ParserExp::EvaluateExpression(VectorToken &vLineToks, unsigned int &i
             {
                 if ( AUT_FAILED( SkipBoolean(vLineToks, ivPos) ) )
                 {
-                    engine->FatalError(IDS_AUT_E_EXPRESSION, nColTemp);    // Unbalanced () usually causes an error
+                    _parser->FatalError(IDS_AUT_E_EXPRESSION, nColTemp);    // Unbalanced () usually causes an error
                     return AUT_ERR;
                 }
 

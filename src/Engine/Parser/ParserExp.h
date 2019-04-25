@@ -1,11 +1,12 @@
 #pragma once
 #include "AutoIt.h"
 
+class Parser;
 class Engine;
 class ParserExp {
 public:
-    ParserExp(Engine *engine)
-        :engine(engine) {}
+    ParserExp(Parser* parser, Engine* engine)
+        :_parser(parser), engine(engine) {}
     // Parsing expression/conditions (script_parse_exp.cpp)
     void        ExpandEnvString(Variant &vString);
     void        ExpandVarString(Variant &vString);
@@ -17,5 +18,6 @@ public:
     AUT_RESULT  SkipBoolean(VectorToken &vLineToks, unsigned int &ivPos);
 
 private:
+    Parser *_parser;
     Engine *engine;
 };

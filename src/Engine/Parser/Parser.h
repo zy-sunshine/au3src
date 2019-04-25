@@ -1,19 +1,27 @@
 #pragma once
 #include "AutoIt.h"
 #include "VectorToken.h"
+#include "Token.h"
+#include "VectorToken.h"
+#include "StackInt.h"
+#include "StackVariant.h"
+#include "StackStatement.h"
+#include "UserFuncList.h"
+#include "VariableTable.h"
 
 class Engine;
 class ParserExp;
 class Parser {
+    friend class Engine;
 public:
     Parser(Engine *engine);
     // Parser functions (script_parser.cpp)
     AUT_RESULT  VerifyBlockStructure(void);
     AUT_RESULT  VerifyBlockStructure2(int nDo, int nWhile, int nFor, int nSelect, int nIf);
-    void        Parse(VectorToken &vLineToks, int &nScriptLine);
+    void        Parse(VectorToken &vLineToks, int nScriptLineCurrent, int &nScriptLine);
     void        StartWithVariable(VectorToken &vLineToks, uint &ivPos);
     AUT_RESULT  GetArrayElement(VectorToken &vLineToks, uint &ivPos, Variant **ppvTemp);
-    void        StartWithKeyword(VectorToken &vLineToks, uint &ivPos, int &nScriptLine);
+    void        StartWithKeyword(VectorToken &vLineToks, uint &ivPos, int nScriptLineCurrent, int &nScriptLine);
     AUT_RESULT  FunctionCall(VectorToken &vLineToks, uint &ivPos, Variant &vResult);
     AUT_RESULT  GetFunctionCallParams(VectorVariant &vParams, VectorToken &vLineToks, uint &ivPos, int &nNumParams);
     bool        FindUserFunction(const char *szName, int &nLineNum, int &nNumParams,int &nNumParamsMin, int &nEndLineNum);
@@ -45,8 +53,23 @@ public:
 
     AUT_RESULT    StorePluginFuncs(void);                                // Get all plugin function details
 
-    uint getStatementStackSize();
-    void restoreStackmentStackSize(uint size);
+    void        SaveExecute(int nScriptLine, bool bRaiseScope, bool bRestoreErrorCode);        // Save state and then Execute()
+    // Functions
+    void        FatalError(int iErr, int nCol = -1);                // Output an error and signal quit (String resource errors)
+    void        FatalError(int iErr, const char *szText2);            // Output an error and signal quit (passed text errors)
+
+    void        SetFuncErrorCode(int nCode)
+        {m_nFuncErrorCode = nCode;}                    // Set script error info (@error code)
+    inline int nFuncErrorCode() { return m_nFuncErrorCode; }
+
+    void        SetFuncExtCode(int nCode)
+       {m_nFuncExtCode = nCode;};                        // Set script extended info (@extended code)
+
+    AUT_RESULT  FunctionExecute(int nFunction, VectorVariant &vParams, Variant &vResult);
+
+    AUT_RESULT call(const char* szName, Variant &vResult);
+
+    AUT_RESULT interruptCall(const char* szName, Variant &vResult);
 
 private:
     Engine *engine;
@@ -54,5 +77,16 @@ private:
 
     UserFuncList    m_oUserFuncList;            // Details (line numbers, num params) for user defined functions
     // Statement stacks
-    StackStatement    m_StatementStack;            // Stack for tracking If/Func/Select/Loop statements
+    StackStatement    m_StatementStack;         // Stack for tracking If/Func/Select/Loop statements
+
+    // User functions variables
+    Variant         m_vUserRetVal;              // Temp storage for return value of a user function (or winwait result)
+    int             m_nFuncErrorCode;           // Extended error code
+    int             m_nFuncExtCode;             // Extended code
+    int             m_nNumParams;               // Number of parameters when calling a user function
+
+    int             m_nErrorLine;               // Line number used to generate error messages
+    int             m_nCurrentOperation;        // The current state of the script (RUN, WAIT, SLEEP, etc)
+
+    VariableTable   m_oVarTable;            // Object for accessing autoit variables
 };
