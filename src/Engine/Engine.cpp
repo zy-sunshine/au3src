@@ -59,12 +59,16 @@
 #include "Utils/utility.h"
 #include "Utils/StrUtil.h"
 
+#include "Engine/ScriptFile.h"
+#include "Utils/OSVersion.h"
+#include "Utils/SendKeys.h"
+#include "Utils/SetForegroundWinEx.h"
+
 ///////////////////////////////////////////////////////////////////////////////
 // Constructor()
 ///////////////////////////////////////////////////////////////////////////////
 
 Engine::Engine()
-    :g_oScriptFile(this)
 {
     int i;
 
@@ -118,8 +122,6 @@ Engine::Engine()
     m_nMouseClickDelay            = 10;            // Time between mouse clicks
     m_nMouseClickDownDelay        = 10;            // Time the click is held down
     m_nMouseClickDragDelay        = 250;            // The delay at the start and end of a drag operation
-
-    m_oSendKeys.Init();                            // Init sendkeys to defaults
  
     // Initialise DLL handles to NULL
     for (i=0; i<AUT_MAXOPENFILES; ++i)
@@ -134,7 +136,12 @@ Engine::Engine()
     _handleGuiEvent = NULL;
 
     _parser = new Parser(this);
-    _lexer = new Lexer(this);
+
+    g_oScriptFile = new ScriptFile(this);
+    g_oSetForeWinEx = new SetForegroundWinEx();
+    g_oVersion = new OS_Version();
+    g_oSendKeys = new HS_SendKeys();
+    g_oSendKeys->Init();                            // Init sendkeys to defaults
 
 } // Engine()
 
@@ -145,19 +152,19 @@ static int funcNameSort(AU3_FuncInfo *a0,  AU3_FuncInfo *a1)
 
 void Engine::initModules(AU3_FuncInfo * funcList, int size)
 {
-    m_FuncList = funcList;
-    m_nFuncListSize = size;
+    _parser->m_FuncList = funcList;
+    _parser->m_nFuncListSize = size;
 
-    for (int i=0; i<m_nFuncListSize; ++i) {
+    for (int i=0; i<_parser->m_nFuncListSize; ++i) {
 // NOTE: because Lexer search function use binary search, enable these code now
 //      but why not sort these function firstly, speed?
 //#ifdef _DEBUG
         // test to make sure that the list is in order, but only during development
-        if (i>0 && strcmp(m_FuncList[i-1].szName, m_FuncList[i].szName) > 0)    // out of sequence
+        if (i>0 && strcmp(_parser->m_FuncList[i-1].szName, _parser->m_FuncList[i].szName) > 0)    // out of sequence
         {
             // display out of order name before aborting.
-            AUT_DEBUGMESSAGEBOX(m_FuncList[i].szName);
-            AUT_ASSERT(strcmp(m_FuncList[i-1].szName, m_FuncList[i].szName) < 0);
+            AUT_DEBUGMESSAGEBOX(_parser->m_FuncList[i].szName);
+            AUT_ASSERT(strcmp(_parser->m_FuncList[i-1].szName, _parser->m_FuncList[i].szName) < 0);
         }
 //#endif
     }
@@ -329,16 +336,16 @@ AUT_RESULT Engine::Execute(int nScriptLine)
     }
 
 
-    _parser->m_bUserFuncReturned = false;                // When this becomes true, a user function (or winwait
+    _parser->m_bUserFuncReturned = false;       // When this becomes true, a user function (or winwait
                                                 // operation has requested to return (or EndFunc encountered)
 
     // Run our Execute() loop
-    while(_parser->m_bWinQuitProcessed == false && _parser->m_bUserFuncReturned == false)
+    while(m_bWinQuitProcessed == false && _parser->m_bUserFuncReturned == false)
     {
         processEvents();
 
         // Get the next line, or quit if none left
-        szScriptLine = g_oScriptFile.GetLine(nScriptLine++);
+        szScriptLine = g_oScriptFile->GetLine(nScriptLine++);
         if ( szScriptLine == NULL )
         {
             _parser->m_nCurrentOperation = AUT_QUIT;
@@ -346,7 +353,7 @@ AUT_RESULT Engine::Execute(int nScriptLine)
         }
 
         // Do the lexing (convert the line into tokens) - stored in LineTokens
-        _lexer->doLexer(nScriptLine-1, szScriptLine, LineTokens);  // No need to check for errors, already lexed in InitScript()
+        _parser->lexer->doLexer(nScriptLine-1, szScriptLine, LineTokens);  // No need to check for errors, already lexed in InitScript()
 
         // Parse and execute the line
         _parser->Parse(LineTokens, nScriptLine-1, nScriptLine);
@@ -603,20 +610,57 @@ int Engine::processEvents()
 //
 //} // HandleGuiEvent()
 
-AUT_RESULT Engine::AssignVar(const char* szName, Variant &vValue, int nReqScope,
-        bool bCreate, Variant &vResult)
-{
-}
-
-int Engine::isDeclared(const char* szName)
-{
-    return _parser->m_oVarTable.isDeclared(szName);
-}
-
-int GetCurLineNumber (void) const
+int Engine::GetCurLineNumber (void) const
 {
 return _parser->m_nErrorLine;  // Return current line number for TrayTip debugging
 }
 
-void quit()
+void Engine::quit()
 { _parser->m_nCurrentOperation = AUT_QUIT; }
+
+
+// Assign variable
+bool Engine::Assign(const AString &sVarName, const Variant &vVariant,
+        bool bConst/* = false*/, int nReqScope/* = VARTABLE_ANY*/)
+{
+    return _parser->m_oVarTable.Assign(sVarName, vVariant, bConst, nReqScope);
+}
+// Get pointer to a variable
+bool Engine::GetRef(const AString &sVarName, Variant **pvVariant, bool &bConst, int nReqScope/* = VARTABLE_ANY*/)
+{
+    return _parser->m_oVarTable.GetRef(sVarName, pvVariant, bConst, nReqScope);
+}
+// Return true if the reference variable exists (and type of variable, global/local etc)
+int Engine::isDeclared(const AString &sVarName)
+{
+    return _parser->m_oVarTable.isDeclared(sVarName);
+}
+void Engine::SetFuncErrorCode(int nCode)
+{
+    return _parser->SetFuncErrorCode(nCode);
+}
+int Engine::nFuncErrorCode()
+{
+    return _parser->nFuncErrorCode();
+}
+// Set script extended info (@extended code)
+void  Engine::SetFuncExtCode(int nCode)
+{
+    _parser->SetFuncExtCode(nCode);
+}
+AUT_RESULT  Engine::call(const char* szName, Variant &vResult)
+{
+    return _parser->call(szName, vResult);
+}
+AUT_RESULT  Engine::interruptCall(const char* szName, Variant &vResult)
+{
+    return _parser->interruptCall(szName, vResult);
+}
+void Engine::FatalError(int iErr, int nCol/* = -1*/)
+{
+    _parser->FatalError(iErr, nCol);
+}
+void Engine::FatalError(int iErr, const char *szText2)
+{
+    _parser->FatalError(iErr, szText2);
+}

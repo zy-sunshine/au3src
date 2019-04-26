@@ -1264,7 +1264,7 @@ void HS_SendKeys::SendSpecial(char *szTemp)
                     //if (m_hWnd && GetForegroundWindow() != GetParent(m_hWnd) && GetParent(m_hWnd) != NULL)
                     //{
                         //MessageBox(NULL, "", "", MB_OK);
-                        //g_oSetForeWinEx.Activate(GetParent(m_hWnd));
+                        //g_oSetForeWinEx->Activate(GetParent(m_hWnd));
                         //::Sleep(250);
                     //    break;
                     //}

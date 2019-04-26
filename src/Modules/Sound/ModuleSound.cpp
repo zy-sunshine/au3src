@@ -1,6 +1,7 @@
 #include "StdAfx.h"                                // Pre-compiled headers
 #include "Engine/Engine.h"
 #include "ModuleSound.h"
+#include "Utils/utility.h"
 
 //AU3_FuncInfo ModuleSound::funcInfo[] = {
 //    {"SOUNDPLAY", &ModuleSound::F_SoundPlay, 1, 2},

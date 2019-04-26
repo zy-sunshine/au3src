@@ -55,6 +55,7 @@
 //#include "Engine/globaldata.h"
 #include "Utils/utility.h"
 #include "Engine/Application.h"
+#include "Utils/SetForegroundWinEx.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -76,7 +77,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 #endif
 
     // Perform any startup that the objects need
-    engine->g_oSetForeWinEx.Patch();                    // Run our setforegroundwindow patch
+    engine->g_oSetForeWinEx->Patch();                    // Run our setforegroundwindow patch
     app.g_oCmdLine.SetCmdLine(lpCmdLine);            // Split the cmdline parameters into chunks
 
 
@@ -84,7 +85,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     app.Run();
 
     // Perform any close down that our objects need
-    engine->g_oSetForeWinEx.UnPatch();                    // Undo our setforegroundwindow patch
+    engine->g_oSetForeWinEx->UnPatch();                    // Undo our setforegroundwindow patch
 
     return engine->g_nExitCode;
 

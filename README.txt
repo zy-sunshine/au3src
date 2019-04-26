@@ -11,6 +11,25 @@
 
 engine 作为引擎封装，向Modules 提供标准访问借口，尽量将脚本引擎内部细节屏蔽。
 
+## engine 设计
+#### engine 接口原则
+* engine 中include 的 h 文件必须谨慎，因为提供第三方开发Module 会提供该文件
+  * 不暴露脚本引擎解析状态，因此所有 Parser 头文件不会暴露，执行状态不能被外部调用打乱。
+  * Type 文件可以暴露，因为Module 会对取出的类型做操作(Ref)
+  * 只提供原子类操作，因此除了函数调用封装之外都不会涉及 vResult参数传递。
+### engine 与 Parser边界划分
+* engine 在某些方面与 Parser 联系很紧密，特别是Execute
+* Parser 包含两层功能
+    * 第一层为脚本语法解析，此时会调用 Lexer 相关特性
+        * 将解析后的函数存储 UserFuncList
+        * 支持 builtin、plugin函数设置和解析调用
+        * 支持解析每一行脚本为 Token
+    * 第二层为脚本运行
+        * 调用 ParserExp，并管理堆栈 StackStatement
+        * 管理变量作用域切换 VariableTable
+* 而 engine作为一个脚本运行与外界的沟通，屏蔽脚本引擎内部的运行细节，向外部提供鲁棒性的原子性接口
+* engine 也作为联通各个模块的运行环境，包括引擎级别的全局变量，
+
 AutoIt v3
 =========
 

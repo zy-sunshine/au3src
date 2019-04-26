@@ -1,6 +1,6 @@
 #pragma once
 #include "AutoIt.h"
-#include "Engine/Engine.h"
+#include "VectorToken.h"
 
 // Lexer caching
 // Assuming an average of 7 tokens per line at 256 bytes per line
@@ -14,9 +14,10 @@ typedef struct
 } LexerCache;
 
 class Engine;
+class Parser;
 class Lexer {
 public:
-    Lexer(Engine* engine);
+    Lexer(Parser* parser, Engine* engine);
     // Lexer functions (script_lexer.cpp)
     AUT_RESULT    doLexer(int nLineNum, const char *szLine, VectorToken &vLineToks);    // Convert a string into tokens
     AUT_RESULT    Lexer_String(const char *szLine, uint &iPos, char *szTemp);
@@ -25,6 +26,7 @@ public:
 
 private:
     Engine *engine;
+    Parser *_parser;
 
     // Lexing and parsing vars
 #ifdef AUT_CONFIG_LEXERCACHE

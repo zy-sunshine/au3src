@@ -120,5 +120,11 @@ typedef unsigned long         ulong;
 #define AUT_WM_NOTIFYICON        WM_USER+1
 #define AUT_NOTIFY_ICON_ID        1
 
+// Magic numbers used in assigning/getting vars, sometimes we want force local/global operations
+#define VARTABLE_ANY            0                // Any type (local first, then global)
+#define VARTABLE_FORCELOCAL     1                // Force local only scope
+#define VARTABLE_FORCEGLOBAL    2                // Force global only scope
+#define VARTABLE_RESIZE         4                // Resize the array in the variable list.
+
 #include "resources/resource.h"
 ///////////////////////////////////////////////////////////////////////////////

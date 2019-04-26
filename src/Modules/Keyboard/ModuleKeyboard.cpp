@@ -39,12 +39,12 @@ AUT_RESULT ModuleKeyboard::F_Send(VectorVariant &vParams, Variant &vResult)
     if (vParams.size() == 2)
     {
         if (vParams[1].nValue() == 0)
-            engine->oSendKeys().Send(vParams[0].szValue());        // Normal send
+            engine->g_oSendKeys->Send(vParams[0].szValue());        // Normal send
         else
-            engine->oSendKeys().SendRaw(vParams[0].szValue());    // Raw send
+            engine->g_oSendKeys->SendRaw(vParams[0].szValue());    // Raw send
     }
     else
-        engine->oSendKeys().Send(vParams[0].szValue());    // Normal send
+        engine->g_oSendKeys->Send(vParams[0].szValue());    // Normal send
 
     return AUT_OK;
 
@@ -76,7 +76,7 @@ AUT_RESULT ModuleKeyboard::F_HotKeySet(VectorVariant &vParams, Variant &vResult)
 
 
     // Get the virtual key code and modifiers
-    if (engine->oSendKeys().GetSingleVKandMods(vParams[0].szValue(), vk, bShift, bControl, bAlt, bWin) == false)
+    if (engine->g_oSendKeys->GetSingleVKandMods(vParams[0].szValue(), vk, bShift, bControl, bAlt, bWin) == false)
     {
         vResult = 0;                            // Error, default is 1
         return AUT_OK;

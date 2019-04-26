@@ -44,8 +44,8 @@
 
 // Includes
 #include "StdAfx.h"                                // Pre-compiled headers
-#include "Engine/Engine.h"
 #include "ParserExp.h"
+#include "Engine/Engine.h"
 
 #ifndef _MSC_VER                                // Includes for non-MS compilers
     #include <stdio.h>
@@ -57,10 +57,14 @@
     #include <math.h>
 #endif
 
-#include "AutoIt.h"                                // Autoit values, macros and config options
-
 #include "Utils/utility.h"
-
+#include "Utils/OSVersion.h"
+#include "VectorToken.h"
+#include "StackVariant.h"
+#include "StackInt.h"
+#include "StackVariant.h"
+#include "Parser.h"
+#include "Engine/Type/AString.h"
 
 // Inbuilt macro values (must match the order as in script.cpp)
 enum
@@ -86,32 +90,6 @@ enum
     M_NUMPARAMS,
     M_MAX
 };
-
-
-// Macro variables - order must match above
-// Must be in UPPERCASE
-const char * ParserExp::m_szMacros[M_MAX] =    {
-    "ERROR", "EXTENDED",
-    "SEC", "MIN", "HOUR", "MDAY", "MON", "YEAR", "WDAY", "YDAY",
-    "PROGRAMFILESDIR", "COMMONFILESDIR",
-    "MYDOCUMENTSDIR", "APPDATACOMMONDIR", "DESKTOPCOMMONDIR", "DOCUMENTSCOMMONDIR", "FAVORITESCOMMONDIR",
-    "PROGRAMSCOMMONDIR", "STARTMENUCOMMONDIR", "STARTUPCOMMONDIR",
-    "APPDATADIR", "DESKTOPDIR", "FAVORITESDIR", "PROGRAMSDIR", "STARTMENUDIR", "STARTUPDIR",
-    "COMPUTERNAME", "WINDOWSDIR", "SYSTEMDIR",
-    "SW_HIDE", "SW_MINIMIZE", "SW_MAXIMIZE", "SW_RESTORE", "SW_SHOW", "SW_SHOWDEFAULT", "SW_ENABLE", "SW_DISABLE",
-    "SW_SHOWMAXIMIZED", "SW_SHOWMINIMIZED", "SW_SHOWMINNOACTIVE", "SW_SHOWNA", "SW_SHOWNOACTIVATE", "SW_SHOWNORMAL",
-    "SCRIPTFULLPATH", "SCRIPTNAME", "SCRIPTDIR", "WORKINGDIR",
-    "OSTYPE", "OSVERSION", "OSBUILD", "OSSERVICEPACK", "OSLANG",
-    "AUTOITVERSION", "AUTOITEXE", "IPADDRESS1", "IPADDRESS2", "IPADDRESS3",
-    "IPADDRESS4", "CR", "LF", "CRLF", "DESKTOPWIDTH", "DESKTOPHEIGHT", "DESKTOPDEPTH", "DESKTOPREFRESH",
-    "COMPILED", "COMSPEC", "TAB",
-    "USERNAME", "TEMPDIR",
-    "USERPROFILEDIR", "HOMEDRIVE",
-    "HOMEPATH", "HOMESHARE", "LOGONSERVER", "LOGONDOMAIN",
-    "LOGONDNSDOMAIN", "INETGETBYTESREAD", "INETGETACTIVE",
-    "NUMPARAMS"
-};
-
 
 // Operator precedence parsing stuff - ordering is important (see script_exp.cpp)
 enum
@@ -724,29 +702,29 @@ AUT_RESULT ParserExp::EvaluateMacro(const char *szName, Variant &vResult)
             break;
 
         case M_OSTYPE:
-            if ( engine->g_oVersion.IsWinNT() == true )
+            if ( engine->g_oVersion->IsWinNT() == true )
                 vResult = "WIN32_NT";
             else
                 vResult = "WIN32_WINDOWS";
             break;
 
         case M_OSVERSION:
-            if ( engine->g_oVersion.IsWinNT() == true )
+            if ( engine->g_oVersion->IsWinNT() == true )
             {
-                if (engine->g_oVersion.IsWin2003() == true)
+                if (engine->g_oVersion->IsWin2003() == true)
                     vResult = "WIN_2003";
-                else if (engine->g_oVersion.IsWinXP() == true)
+                else if (engine->g_oVersion->IsWinXP() == true)
                     vResult = "WIN_XP";
-                else if (engine->g_oVersion.IsWin2000() == true)
+                else if (engine->g_oVersion->IsWin2000() == true)
                     vResult = "WIN_2000";
                 else
                     vResult = "WIN_NT4";
             }
             else
             {
-                if (engine->g_oVersion.IsWin95() == true)
+                if (engine->g_oVersion->IsWin95() == true)
                     vResult = "WIN_95";
-                else if (engine->g_oVersion.IsWin98() == true)
+                else if (engine->g_oVersion->IsWin98() == true)
                     vResult = "WIN_98";
                 else
                     vResult = "WIN_ME";
@@ -754,18 +732,18 @@ AUT_RESULT ParserExp::EvaluateMacro(const char *szName, Variant &vResult)
             break;
 
         case M_OSBUILD:
-            vResult = (int)engine->g_oVersion.BuildNumber();
+            vResult = (int)engine->g_oVersion->BuildNumber();
             break;
 
         case M_OSSERVICEPACK:
-            vResult = engine->g_oVersion.CSD();
+            vResult = engine->g_oVersion->CSD();
 
             break;
 
         case M_OSLANG:
-            if ( engine->g_oVersion.IsWinNT() == true )
+            if ( engine->g_oVersion->IsWinNT() == true )
             {
-                if ( engine->g_oVersion.IsWin2000orLater() == true )
+                if ( engine->g_oVersion->IsWin2000orLater() == true )
                     Util_RegReadString(HKEY_LOCAL_MACHINE,"SYSTEM\\CurrentControlSet\\Control\\Nls\\Language", "InstallLanguage", _MAX_PATH, szValue);
                 else      // WinNT4
                     Util_RegReadString(HKEY_LOCAL_MACHINE,"SYSTEM\\CurrentControlSet\\Control\\Nls\\Language", "Default", _MAX_PATH, szValue);
@@ -862,7 +840,7 @@ AUT_RESULT ParserExp::EvaluateMacro(const char *szName, Variant &vResult)
 
         case M_USERPROFILEDIR:
             // Deceptively difficult as all the API functions for obtaining this rely on IE4+
-            if (engine->g_oVersion.IsWinNT())
+            if (engine->g_oVersion->IsWinNT())
                 GetEnvironmentVariable("USERPROFILE", szValue, _MAX_PATH);
             else
             {
@@ -913,7 +891,7 @@ AUT_RESULT ParserExp::EvaluateMacro(const char *szName, Variant &vResult)
             break;
 
         case M_NUMPARAMS:
-            vResult = m_nNumParams;
+            vResult = _parser->m_nNumParams;
             break;
 
     } // end switch
@@ -1055,9 +1033,9 @@ AUT_RESULT ParserExp::EvaluateExpression(VectorToken &vLineToks, unsigned int &i
             case TOK_STRING:
                 vTemp = vLineToks[ivPos].szValue;
 
-                if (m_bExpandEnvStrings)
+                if (engine->bExpandEnvStrings())
                     ExpandEnvString(vTemp);
-                if (m_bExpandVarStrings)
+                if (engine->bExpandVarStrings())
                     ExpandVarString(vTemp);
 
                 opTemp = OPR_VAL;
@@ -1105,7 +1083,7 @@ AUT_RESULT ParserExp::EvaluateExpression(VectorToken &vLineToks, unsigned int &i
 
             case TOK_FUNCTION:
                 // Call function
-                if ( AUT_FAILED(FunctionCall(vLineToks, ivPos, vTemp)) )
+                if ( AUT_FAILED(_parser->FunctionCall(vLineToks, ivPos, vTemp)) )
                     return AUT_ERR;
 
                 opTemp = OPR_VAL;
@@ -1113,7 +1091,7 @@ AUT_RESULT ParserExp::EvaluateExpression(VectorToken &vLineToks, unsigned int &i
 
             case TOK_USERFUNCTION:
                 // Call user function
-                if ( AUT_FAILED(UserFunctionCall(vLineToks, ivPos, vTemp)) )
+                if ( AUT_FAILED(_parser->UserFunctionCall(vLineToks, ivPos, vTemp)) )
                     return AUT_ERR;
 
                 opTemp = OPR_VAL;

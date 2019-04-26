@@ -1,7 +1,10 @@
 #include "StdAfx.h"                                // Pre-compiled headers
-#include "Engine/Engine.h"
 #include "ModuleWin.h"
+
+#include "Engine/Engine.h"
 #include "Utils/WinUtil.h"
+#include "Utils/utility.h"
+#include "Utils/OSVersion.h"
 #include "InputBox.h"
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -27,7 +30,7 @@ AUT_RESULT ModuleWin::F_TrayTip(VectorVariant &vParams, Variant &vResult)
 {
     uint    iNumParams = vParams.size();
 
-    if (engine->g_oVersion.IsWin2000orLater()) {
+    if (engine->g_oVersion->IsWin2000orLater()) {
 
         struct MYNOTIFYICONDATA : public _NOTIFYICONDATAA { // Not wide character compliant.
             DWORD dwState;

@@ -1,7 +1,8 @@
 #pragma once
 #include "AutoIt.h"
 #include "Engine/BaseModule.h"
-#include "Engine/type/VectorVariant.h"
+#include "Engine/Type/VectorVariant.h"
+#include "Engine/Type/AString.h"
 
 class Engine;
 class ModuleSys: public BaseModule {

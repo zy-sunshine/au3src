@@ -1,5 +1,9 @@
 #pragma once
 #include "AutoIt.h"
+#include "Engine/Type/Variant.h"
+#include "VectorToken.h"
+#include "StackInt.h"
+#include "StackVariant.h"
 
 class Parser;
 class Engine;

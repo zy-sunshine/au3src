@@ -2,9 +2,6 @@
 #include "AutoIt.h"
 #include "VectorToken.h"
 #include "Token.h"
-#include "VectorToken.h"
-#include "StackInt.h"
-#include "StackVariant.h"
 #include "StackStatement.h"
 #include "UserFuncList.h"
 #include "VariableTable.h"
@@ -13,6 +10,8 @@ class Engine;
 class ParserExp;
 class Parser {
     friend class Engine;
+    friend class ParserExp;
+    friend class Lexer;
 public:
     Parser(Engine *engine);
     // Parser functions (script_parser.cpp)
@@ -27,7 +26,7 @@ public:
     bool        FindUserFunction(const char *szName, int &nLineNum, int &nNumParams,int &nNumParamsMin, int &nEndLineNum);
     AUT_RESULT  UserFunctionCall(VectorToken &vLineToks, uint &ivPos, Variant &vResult);
     bool        PluginFunctionCall(VectorToken &vLineToks, uint &ivPos, Variant &vResult);
-    void        Keyword_IF(VectorToken &vLineToks, uint &ivPos, int &nScriptLine);
+    void        Keyword_IF(VectorToken &vLineToks, uint &ivPos, int nScriptLineCurrent, int &nScriptLine);
     void        Keyword_ELSE(int &nScriptLine);
     void        Keyword_ENDIF(VectorToken &vLineToks, uint &ivPos);
     void        Keyword_WHILE(VectorToken &vLineToks,uint &ivPos, int &nScriptLine);
@@ -56,7 +55,7 @@ public:
     void        SaveExecute(int nScriptLine, bool bRaiseScope, bool bRestoreErrorCode);        // Save state and then Execute()
     // Functions
     void        FatalError(int iErr, int nCol = -1);                // Output an error and signal quit (String resource errors)
-    void        FatalError(int iErr, const char *szText2);            // Output an error and signal quit (passed text errors)
+    void        FatalError(int iErr, const char *szText2);          // Output an error and signal quit (passed text errors)
 
     void        SetFuncErrorCode(int nCode)
         {m_nFuncErrorCode = nCode;}                    // Set script error info (@error code)
@@ -66,20 +65,24 @@ public:
        {m_nFuncExtCode = nCode;};                        // Set script extended info (@extended code)
 
     AUT_RESULT  FunctionExecute(int nFunction, VectorVariant &vParams, Variant &vResult);
-
-    AUT_RESULT call(const char* szName, Variant &vResult);
-
-    AUT_RESULT interruptCall(const char* szName, Variant &vResult);
+    AUT_RESULT  call(const char* szName, Variant &vResult);
+    AUT_RESULT  interruptCall(const char* szName, Variant &vResult);
 
 private:
+    Lexer *lexer;
     Engine *engine;
     ParserExp* parserExp;
+
+    // module register function list
+    AU3_FuncInfo       *m_FuncList;                // List of functions and details for each
+    int                m_nFuncListSize;            // Number of functions
 
     UserFuncList    m_oUserFuncList;            // Details (line numbers, num params) for user defined functions
     // Statement stacks
     StackStatement    m_StatementStack;         // Stack for tracking If/Func/Select/Loop statements
 
     // User functions variables
+    bool            m_bUserFuncReturned;        // Becomes true when userfunctions end (return or endfunc)
     Variant         m_vUserRetVal;              // Temp storage for return value of a user function (or winwait result)
     int             m_nFuncErrorCode;           // Extended error code
     int             m_nFuncExtCode;             // Extended code

@@ -2,6 +2,7 @@
 #include "AutoIt.h"
 #include "Engine/BaseModule.h"
 #include "Engine/type/VectorVariant.h"
+#include "Utils/SendKeys.h"
 
 class Engine;
 class ModuleKeyboard: public BaseModule {

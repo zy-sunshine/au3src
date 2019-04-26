@@ -51,12 +51,12 @@
     #include <limits.h>
 #endif
 
-#include "AutoIt.h"                                // Autoit values, macros and config options
-
+#include "Engine/Engine.h"
 #include "Utils/utility.h"
+#include "Parser.h"
 
-Lexer::Lexer(Engine* engine)
-    :engine(engine)
+Lexer::Lexer(Parser* parser, Engine* engine)
+    :engine(engine), _parser(parser)
 {
     // Make sure our lexer cache is set to empty defaults
     for (int i=0; i<AUT_LEXER_CACHESIZE; ++i)
@@ -85,6 +85,30 @@ const char * Lexer::m_szKeywords[K_MAX] =    {
     "FUNC", "ENDFUNC", "RETURN",
     "EXIT",
     "BYREF"
+};
+
+// Macro variables - order must match above
+// Must be in UPPERCASE
+const char * Lexer::m_szMacros[M_MAX] =    {
+    "ERROR", "EXTENDED",
+    "SEC", "MIN", "HOUR", "MDAY", "MON", "YEAR", "WDAY", "YDAY",
+    "PROGRAMFILESDIR", "COMMONFILESDIR",
+    "MYDOCUMENTSDIR", "APPDATACOMMONDIR", "DESKTOPCOMMONDIR", "DOCUMENTSCOMMONDIR", "FAVORITESCOMMONDIR",
+    "PROGRAMSCOMMONDIR", "STARTMENUCOMMONDIR", "STARTUPCOMMONDIR",
+    "APPDATADIR", "DESKTOPDIR", "FAVORITESDIR", "PROGRAMSDIR", "STARTMENUDIR", "STARTUPDIR",
+    "COMPUTERNAME", "WINDOWSDIR", "SYSTEMDIR",
+    "SW_HIDE", "SW_MINIMIZE", "SW_MAXIMIZE", "SW_RESTORE", "SW_SHOW", "SW_SHOWDEFAULT", "SW_ENABLE", "SW_DISABLE",
+    "SW_SHOWMAXIMIZED", "SW_SHOWMINIMIZED", "SW_SHOWMINNOACTIVE", "SW_SHOWNA", "SW_SHOWNOACTIVATE", "SW_SHOWNORMAL",
+    "SCRIPTFULLPATH", "SCRIPTNAME", "SCRIPTDIR", "WORKINGDIR",
+    "OSTYPE", "OSVERSION", "OSBUILD", "OSSERVICEPACK", "OSLANG",
+    "AUTOITVERSION", "AUTOITEXE", "IPADDRESS1", "IPADDRESS2", "IPADDRESS3",
+    "IPADDRESS4", "CR", "LF", "CRLF", "DESKTOPWIDTH", "DESKTOPHEIGHT", "DESKTOPDEPTH", "DESKTOPREFRESH",
+    "COMPILED", "COMSPEC", "TAB",
+    "USERNAME", "TEMPDIR",
+    "USERPROFILEDIR", "HOMEDRIVE",
+    "HOMEPATH", "HOMESHARE", "LOGONSERVER", "LOGONDOMAIN",
+    "LOGONDNSDOMAIN", "INETGETBYTESREAD", "INETGETACTIVE",
+    "NUMPARAMS"
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -180,7 +204,7 @@ AUT_RESULT Lexer::doLexer(int nLineNum, const char *szLine, VectorToken &vLineTo
 
                 if (iPosTemp == 0)                // No variable given!
                 {
-                    engine->FatalError(IDS_AUT_E_VARBADFORMAT, iPos-1);
+                    _parser->FatalError(IDS_AUT_E_VARBADFORMAT, iPos-1);
                     return AUT_ERR;
                 }
 
@@ -204,7 +228,7 @@ AUT_RESULT Lexer::doLexer(int nLineNum, const char *szLine, VectorToken &vLineTo
 
                 if (iPosTemp == 0)                // No macro given!
                 {
-                    engine->FatalError(IDS_AUT_E_VARBADFORMAT, iPos-1);
+                    _parser->FatalError(IDS_AUT_E_VARBADFORMAT, iPos-1);
                     return AUT_ERR;
                 }
 
@@ -352,7 +376,7 @@ AUT_RESULT Lexer::doLexer(int nLineNum, const char *szLine, VectorToken &vLineTo
 
             default:
                 // no match with anything - not good
-                engine->FatalError(IDS_AUT_E_GENPARSE, iPos);
+                _parser->FatalError(IDS_AUT_E_GENPARSE, iPos);
                 tok.settype(TOK_END);        // Add an end token for safety if someone tries to use this vector
                 vLineToks.push_back(tok);
                 return AUT_ERR;                // Abort
@@ -421,7 +445,7 @@ AUT_RESULT Lexer::Lexer_String(const char *szLine, uint &iPos, char *szResult)
 
     if (bComplete == false)
     {
-        engine->FatalError(IDS_AUT_E_MISSINGQUOTE, iPosStart);
+        _parser->FatalError(IDS_AUT_E_MISSINGQUOTE, iPosStart);
         return AUT_ERR;
     }
 
@@ -561,14 +585,14 @@ void Lexer::Lexer_KeywordOrFunc(const char *szLine, uint &iPos, Token &rtok, cha
 
     // The built-in function list is in alphabetical order so we can do a binary search :)
     int nFirst = 0;
-    int nLast = engine->m_nFuncListSize - 1;
+    int nLast = _parser->m_nFuncListSize - 1;
     int nRes;
 
     while (nFirst <= nLast)
     {
         i = (nFirst + nLast) / 2;            // Truncated to an integer!
 
-        nRes = strcmp(szTemp, engine->m_FuncList[i].szName);
+        nRes = strcmp(szTemp, _parser->m_FuncList[i].szName);
 
         if ( nRes < 0 )
             nLast = i - 1;

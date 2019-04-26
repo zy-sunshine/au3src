@@ -2,6 +2,7 @@
 #include "Engine/Engine.h"
 #include "ModuleMouse.h"
 #include "Utils/WinUtil.h"
+#include "Utils/utility.h"
 
 //AU3_FuncInfo ModuleMouse::funcInfo[] = {
 //    {"MOUSECLICK", &ModuleMouse::F_MouseClick, 1, 5},

@@ -57,6 +57,7 @@
 
 #include "Utils/utility.h"
 #include "Utils/WinUtil.h"
+#include "Utils/OSVersion.h"
 
 //ModuleSys::funcInfo[] = {
 //    {"RUN", &Engine::F_Run, 1, 3},
@@ -353,7 +354,7 @@ AUT_RESULT ModuleSys::F_RunAsSet(VectorVariant &vParams, Variant &vResult)
     uint    iNumParams = vParams.size();
 
     // We must be 2000+ to use this feature
-    if (engine->g_oVersion.IsWin2000orLater() == false)
+    if (engine->g_oVersion->IsWin2000orLater() == false)
     {
         vResult = 0;                            // Not supported (default 1)
         return AUT_OK;
@@ -672,7 +673,7 @@ AUT_RESULT ModuleSys::F_ProcessSetPriority(VectorVariant &vParams, Variant &vRes
         dwPriority = 0x00000040;                // IDLE_PRIORITY_CLASS
         break;
     case 1:
-        if (engine->g_oVersion.IsWin9x() || engine->g_oVersion.IsWinMe())
+        if (engine->g_oVersion->IsWin9x() || engine->g_oVersion->IsWinMe())
             engine->SetFuncErrorCode(2);
         else
             dwPriority = 0x00004000;            // BELOW_NORMAL_PRIORITY_CLASS
@@ -681,7 +682,7 @@ AUT_RESULT ModuleSys::F_ProcessSetPriority(VectorVariant &vParams, Variant &vRes
         dwPriority = 0x00000020;                // NORMAL_PRIORITY_CLASS
         break;
     case 3:
-        if (engine->g_oVersion.IsWin9x() || engine->g_oVersion.IsWinMe())
+        if (engine->g_oVersion->IsWin9x() || engine->g_oVersion->IsWinMe())
             engine->SetFuncErrorCode(2);
         else
             dwPriority = 0x00008000;            // ABOVE_NORMAL_PRIORITY_CLASS
@@ -731,7 +732,7 @@ AUT_RESULT ModuleSys::F_ProcessList(VectorVariant &vParams, Variant &vResult)
     };
     ProcessInfo piProc[512];
 
-    if (engine->g_oVersion.IsWinNT4())    // Windows NT 4stuff
+    if (engine->g_oVersion->IsWinNT4())    // Windows NT 4stuff
     {
         typedef BOOL (WINAPI *MyEnumProcesses)(DWORD*, DWORD, DWORD*);
         typedef BOOL (WINAPI *MyEnumProcessModules)(HANDLE, HMODULE*, DWORD, LPDWORD);

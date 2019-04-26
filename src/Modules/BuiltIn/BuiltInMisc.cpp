@@ -55,6 +55,7 @@ AUT_RESULT ModuleBuiltIn::F_Assign(VectorVariant &vParams, Variant &vResult)
     const char* szName = vParams[0].szValue();
     Variant &vValue = vParams[1];
     Variant *pvTemp;
+    bool bConst;
 
     if (vParams.size() == 3)
     {
@@ -70,9 +71,10 @@ AUT_RESULT ModuleBuiltIn::F_Assign(VectorVariant &vParams, Variant &vResult)
     engine->GetRef(szName, &pvTemp, bConst, nReqScope);
     if (pvTemp == NULL)
     {
-        if (bCreate)
+        if (bCreate) {
+            // TODO: bConst === true can not assign
             engine->Assign(szName, vValue, false, nReqScope);
-        else
+        } else
             vResult = 0;                        // Default is 1
     }
     else

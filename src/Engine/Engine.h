@@ -55,12 +55,6 @@
 #include "Engine/Type/AString.h"
 #include "Engine/Type/Variant.h"
 #include "Engine/Type/VectorVariant.h"
-#include "Engine/ScriptFile.h"
-#include "Engine/Parser/Parser.h"
-
-#include "Utils/OSVersion.h"
-#include "Utils/SendKeys.h"
-#include "Utils/SetForegroundWinEx.h"
 
 // Possible states of the script
 enum
@@ -284,6 +278,10 @@ typedef bool        (*HandleFunc)(void);
 ///////////////////////////////////////////////////////////////////////////////
 
 class Lexer;
+class OS_Version;
+class SetForegroundWinEx;
+class ScriptFile;
+class HS_SendKeys;
 // The AutoIt Script object
 class Engine
 {
@@ -305,7 +303,6 @@ public:
 
 private:
     // Variables
-    HS_SendKeys     m_oSendKeys;                // SendKeys object
     AString         m_sScriptName;                // Filename of script
     AString         m_sScriptFullPath;            // Full pathname of script
     AString         m_sScriptDir;                // Directory the script is in
@@ -377,18 +374,11 @@ private:
     // Net download details
     InetGetDetails  m_InetGetDetails;
 
-    bool            m_bUserFuncReturned;        // Becomes true when userfunctions end (return or endfunc)
-
-
     // Plugin variables
     //PluginFuncs        *m_PluginFuncs;                // Linked list of plugin functions
 
     // DLL variables
     HINSTANCE            m_DLLHandleDetails[AUT_MAXOPENFILES];
-
-    // module register function list
-    AU3_FuncInfo       *m_FuncList;                // List of functions and details for each
-    int                m_nFuncListSize;            // Number of functions
 
     int                m_nWindowSearchMatchMode;    // Window title substring match mode
     int                m_nWindowSearchTextMode;    // Window title substring match mode
@@ -446,31 +436,33 @@ public:
 
 private:
     Parser*     _parser;
-    Lexer*      _lexer;
 
 public:
     inline Parser* parser() { return _parser; }
     void quit();
 
-    HS_SendKeys& oSendKeys() { return m_oSendKeys; }
-
-    AUT_RESULT AssignVar(const char* szName, Variant &vValue, int nReqScope, bool bCreate, Variant &vResult);
-
 public:
     // === export engine function ===
     // Assign variable
-    inline bool Assign(const AString &sVarName, const Variant &vVariant, bool bConst = false, int nReqScope = VARTABLE_ANY)
-    { return _parser->m_oVarTable.Assign(sVarName, vVariant, bConst, nReqScope); }
+    bool Assign(const AString &sVarName, const Variant &vVariant, bool bConst = false, int nReqScope = VARTABLE_ANY);
     // Get pointer to a variable
-    inline bool GetRef(const AString &sVarName, Variant **pvVariant, bool &bConst, int nReqScope = VARTABLE_ANY)
-    { return _parser->m_oVarTable.GetRef(sVarName, pvVariant, bConst, nReqScope); }
-
+    bool GetRef(const AString &sVarName, Variant **pvVariant, bool &bConst, int nReqScope = VARTABLE_ANY);
     // Return true if the reference variable exists (and type of variable, global/local etc)
-    inline int isDeclared(const AString &sVarName)
-    { return _parser->m_oVarTable.isDeclared(sVarName); }
+    int isDeclared(const AString &sVarName);
 
-    inline void SetFuncErrorCode(int nCode)
-    { return _parser->SetFuncErrorCode(nCode); }
+    // === module execute code and exception ===
+    void SetFuncErrorCode(int nCode);
+    int nFuncErrorCode();
+    // Set script extended info (@extended code)
+    void SetFuncExtCode(int nCode);
+    // Output an error and signal quit (String resource errors)
+    void FatalError(int iErr, int nCol = -1);
+    // Output an error and signal quit (passed text errors)
+    void FatalError(int iErr, const char *szText2);
+
+    // === call functions ===
+    AUT_RESULT  call(const char* szName, Variant &vResult);
+    AUT_RESULT  interruptCall(const char* szName, Variant &vResult);
 
 public:
 
@@ -503,14 +495,10 @@ public:
     int                     g_nExitCode;            // Windows exit code
     int                     g_nExitMethod;          // The way AutoIt finished
     
-    OS_Version              g_oVersion;             // Version object
-    
-    //AutoIt_App            g_oApplication;         // Main application object
-    //AutoIt_Script         g_oScript;              // The scripting engine object
-    
-    SetForegroundWinEx      g_oSetForeWinEx;        // Foreground window hack object
-    
-    ScriptFile              g_oScriptFile;          // The script file object
+    OS_Version              *g_oVersion;             // Version object
+    SetForegroundWinEx      *g_oSetForeWinEx;        // Foreground window hack object
+    ScriptFile              *g_oScriptFile;          // The script file object
+    HS_SendKeys             *g_oSendKeys;           // SendKeys object
     
     
     // Script/main window comms

@@ -55,6 +55,8 @@
 
 #include "Utils/utility.h"
 #include "Utils/WinUtil.h"
+#include "Utils/SetForegroundWinEx.h"
+#include "Utils/SendKeys.h"
 #include "WinSearchUtil.h"
 
 //AU3_FuncInfo ModuleWin::funcInfo[] = {
@@ -291,7 +293,7 @@ AUT_RESULT ModuleWin::F_WinActivate(VectorVariant &vParams, Variant &vResult)
     if (util.Win_WindowSearch() == false)
         return AUT_OK;                            // No window to activate
 
-    engine->g_oSetForeWinEx.Activate(util.m_WindowSearchHWND);
+    engine->g_oSetForeWinEx->Activate(util.m_WindowSearchHWND);
     Util_Sleep(engine->nWinWaitDelay());                // Briefly pause before continuing
 
     return AUT_OK;
@@ -1292,9 +1294,9 @@ AUT_RESULT ModuleWin::F_ControlSend(VectorVariant &vParams, Variant &vResult)
 
     // Send the keys
     if (vParams.size() >= 5 && vParams[4].nValue() != 0)
-        engine->oSendKeys().SendRaw(vParams[3].szValue(), util.m_ControlSearchHWND);
+        engine->g_oSendKeys->SendRaw(vParams[3].szValue(), util.m_ControlSearchHWND);
     else
-        engine->oSendKeys().Send(vParams[3].szValue(), util.m_ControlSearchHWND);
+        engine->g_oSendKeys->Send(vParams[3].szValue(), util.m_ControlSearchHWND);
 
     return AUT_OK;
 

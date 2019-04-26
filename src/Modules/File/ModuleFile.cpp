@@ -53,6 +53,8 @@
 #endif
 
 #include "Utils/utility.h"
+#include "Utils/OSVersion.h"
+#include "Utils/SendKeys.h"
 
 //AU3_FuncInfo ModuleFile:funcInfo[] = {
 //    {"DIRCOPY", &ModuleFile::F_DirCopy, 2, 3},
@@ -1568,7 +1570,7 @@ AUT_RESULT ModuleFile::F_DriveMapAdd(VectorVariant &vParams, Variant &vResult)
     if (szDrive[0] == '*')
         dwFlags |= CONNECT_REDIRECT;            // Use first available drive
 
-    if (iNumParams < 4 || engine->g_oVersion.IsWin9x())
+    if (iNumParams < 4 || engine->g_oVersion->IsWin9x())
         res = WNetUseConnection(NULL,&nr, NULL, NULL, dwFlags, szBuffer, &dwBuffersize, &dwResult); // Use current user/password
     else
     {
@@ -2092,7 +2094,7 @@ AUT_RESULT ModuleFile::F_FileCreateShortcut(VectorVariant &vParams, Variant &vRe
         if ( iNumParams > 6 && vParams[6].isTrue())        // Hotkey may be blank
         {
             // Get the virtual key code and modifiers
-            if (engine->oSendKeys().GetSingleVKandMods(vParams[6].szValue(), vk, bShift, bControl, bAlt, bWin) == true)
+            if (engine->g_oSendKeys->GetSingleVKandMods(vParams[6].szValue(), vk, bShift, bControl, bAlt, bWin) == true)
             {
                 if (bShift)
                     mods |= HOTKEYF_SHIFT;

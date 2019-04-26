@@ -54,7 +54,9 @@
 #endif
 
 #include "Engine/Engine.h"
+#include "Engine/ScriptFile.h"
 #include "Utils/utility.h"
+#include "Utils/OSVersion.h"
 
 static Application *gApp = NULL;
 
@@ -113,12 +115,12 @@ void Application::Run(void)
         // Create a "loaded" script that contains a single line - cunning eh? :)
         //MessageBox(NULL, m_sSingleLine.c_str(), "", MB_OK);
 
-        engine->g_oScriptFile.AddLine(1, m_sSingleLine.c_str(), -1);
+        engine->g_oScriptFile->AddLine(1, m_sSingleLine.c_str(), -1);
     }
     else
     {
         // Check that we can load the script file.  Returns the FULLPATH of the script loaded
-        if (engine->g_oScriptFile.LoadScript(m_szScriptFileName) == false)
+        if (engine->g_oScriptFile->LoadScript(m_szScriptFileName) == false)
         {
             engine->g_nExitCode = 1;                        // Main exit code
             return;                                    // Error loading script
@@ -128,12 +130,12 @@ void Application::Run(void)
     }
 
     // Prepare the script for use
-    engine->g_oScriptFile.PrepareScript();
+    engine->g_oScriptFile->PrepareScript();
 
     // Perform initial check of the script (check userfunctions, etc)
     if (engine->InitScript(m_szScriptFileName) != AUT_OK)
     {
-        engine->g_oScriptFile.UnloadScript();
+        engine->g_oScriptFile->UnloadScript();
         engine->g_nExitCode = 1;                        // Main exit code
         return;                                    // Error initialising script
     }
@@ -156,7 +158,7 @@ void Application::Run(void)
     engine->Execute(1);
 
     // Unload the script (even if one wasn't loaded - this is OK)
-    engine->g_oScriptFile.UnloadScript();
+    engine->g_oScriptFile->UnloadScript();
 
     // Restore the old working directory
     SetCurrentDirectory(szOldWorkingDir);
@@ -181,7 +183,7 @@ void Application::RegisterClass(void)
     m_hIconPause    = LoadIcon(engine->g_hInstance, MAKEINTRESOURCE(IDI_PAUSED));
 
     // Load the right tray icon for the OS
-    if (engine->g_oVersion.IsWinXPorLater() || engine->g_oVersion.IsWinMeorLater())
+    if (engine->g_oVersion->IsWinXPorLater() || engine->g_oVersion->IsWinMeorLater())
         m_hIconSmall    = Util_LoadIcon(IDI_MAIN, 16, 16, -1);
     else
         m_hIconSmall    = Util_LoadIcon(IDI_MAIN, 16, 16, 4);
@@ -262,7 +264,7 @@ void Application::ParseCmdLine(void)
     // Create the variable $CmdLineRaw which holds the original command line
     vTemp = g_oCmdLine.GetCmdLine();
 
-    engine->assignConst("CmdLineRaw", vTemp);
+    engine->Assign("CmdLineRaw", vTemp, true);
 
     vTemp = 0;                                    // Will be used later as a dummy var so make 0 to save space
 
@@ -805,12 +807,12 @@ void Application::SetTrayIconToolTip(void)
     else
     {
         nCurLine = engine->GetCurLineNumber();
-        if (engine->g_oScriptFile.GetLine(nCurLine) != NULL)
+        if (engine->g_oScriptFile->GetLine(nCurLine) != NULL)
         {
-            sTip += engine->g_oScriptFile.GetIncludeFileName(engine->g_oScriptFile.GetIncludeID(nCurLine));
-            sprintf(szTip, "\nLine %d: ", engine->g_oScriptFile.GetAutLineNumber(nCurLine));
+            sTip += engine->g_oScriptFile->GetIncludeFileName(engine->g_oScriptFile->GetIncludeID(nCurLine));
+            sprintf(szTip, "\nLine %d: ", engine->g_oScriptFile->GetAutLineNumber(nCurLine));
             sTip += szTip;
-            sTip += engine->g_oScriptFile.GetLine(nCurLine);
+            sTip += engine->g_oScriptFile->GetLine(nCurLine);
         }
     }
 #else
@@ -820,10 +822,10 @@ void Application::SetTrayIconToolTip(void)
     if (engine->g_bTrayIconDebug)
     {
         nCurLine = engine->GetCurLineNumber();
-        if (engine->g_oScriptFile.GetLine(nCurLine) != NULL)
+        if (engine->g_oScriptFile->GetLine(nCurLine) != NULL)
         {
             sTip += "\nLine: ";
-            sTip += engine->g_oScriptFile.GetLine(nCurLine);
+            sTip += engine->g_oScriptFile->GetLine(nCurLine);
         }
     }
 #endif

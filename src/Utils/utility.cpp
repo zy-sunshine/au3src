@@ -223,7 +223,7 @@ void Util_WinKill(HWND hWnd)
 
 bool Util_DoesProcessExist(const char *szName, DWORD &dwPid, bool &bResult)
 {
-    if (g_oVersion.IsWinNT4())
+    if (g_oVersion->IsWinNT4())
     {
         // NT4
         return Util_DoesProcessExistNT(szName, dwPid, bResult);
@@ -645,7 +645,7 @@ bool Util_FileSetTime(const char *szFilename, FILETIME *ft, int nWhichTime)
     HANDLE    hFile;
 
     // If this is a directory and we are NOT running NT then just return
-    if (Util_IsDir(szFilename) && g_oVersion.IsWin9x() )
+    if (Util_IsDir(szFilename) && g_oVersion->IsWin9x() )
         return true;
 
     if ( (hFile = CreateFile(szFilename, GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_BACKUP_SEMANTICS, NULL)) == INVALID_HANDLE_VALUE )
@@ -1630,7 +1630,7 @@ flags can be a combination of:
     TOKEN_PRIVILEGES    tkp;
 
     // If we are running NT, make sure we have rights to shutdown
-    if (g_oVersion.IsWinNT())
+    if (g_oVersion->IsWinNT())
     {
         // Get a token for this process.
          if (!OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hToken))
@@ -1651,7 +1651,7 @@ flags can be a combination of:
     }
 
     // if we are forcing the issue, AND this is 95/98 terminate all windows first
-    if ( (g_oVersion.IsWin9x()) && (nFlag & EWX_FORCE) )
+    if ( (g_oVersion->IsWin9x()) && (nFlag & EWX_FORCE) )
     {
         nFlag ^= EWX_FORCE;    // remove this flag - not valid in 95
         EnumWindows((WNDENUMPROC) Util_ShutdownHandler, 0);
@@ -2029,7 +2029,7 @@ void Util_Sleep(int nTimeOut)
     DWORD        dwTimeOut = (DWORD)nTimeOut;
 
     // Set the minimum Sleep accuracy
-    if (g_oVersion.IsWin9x())
+    if (g_oVersion->IsWin9x())
         dwMin = 55;
     else
         dwMin = 10;

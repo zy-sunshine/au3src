@@ -45,13 +45,15 @@
 // Includes
 #include "StdAfx.h"                                // Pre-compiled headers
 #include "Parser.h"
-#include "Engine/Engine.h"
-#include "ParserExp.h"
-#include "Lexer.h"
 
 #ifndef _MSC_VER                                // Includes for non-MS compilers
     #include <windows.h>
 #endif
+
+#include "Engine/Engine.h"
+#include "Engine/ScriptFile.h"
+#include "ParserExp.h"
+#include "Lexer.h"
 
 Parser::Parser(Engine *engine)
     :engine(engine)
@@ -59,6 +61,8 @@ Parser::Parser(Engine *engine)
     m_nErrorLine                = 0;            // Set last line read as 0 by default (application.cpp may try reading it)
     m_nNumParams                = 0;            // Number of UDF parameters initially 0
     m_nCurrentOperation            = AUT_RUN;        // Current operation is to run the script
+
+    lexer = new Lexer(this, engine);
     parserExp = new ParserExp(this, engine);
 }
 
@@ -96,7 +100,7 @@ void Parser::Parse(VectorToken &vLineToks, int nScriptLineCurrent, int &nScriptL
                 // Next token must be END (otherwise there is other crap on the line)
                 if (vLineToks[ivPos].m_nType != TOK_END)
                 {
-                    engine->FatalError(IDS_AUT_E_EXTRAONLINE, vLineToks[ivPos].m_nCol);
+                    FatalError(IDS_AUT_E_EXTRAONLINE, vLineToks[ivPos].m_nCol);
                     return;
                 }
             }
@@ -109,7 +113,7 @@ void Parser::Parse(VectorToken &vLineToks, int nScriptLineCurrent, int &nScriptL
                 // Next token must be END (otherwise there is other crap on the line)
                 if (vLineToks[ivPos].m_nType != TOK_END)
                 {
-                    engine->FatalError(IDS_AUT_E_EXTRAONLINE, vLineToks[ivPos].m_nCol);
+                    FatalError(IDS_AUT_E_EXTRAONLINE, vLineToks[ivPos].m_nCol);
                     return;
                 }
             }
@@ -122,7 +126,7 @@ void Parser::Parse(VectorToken &vLineToks, int nScriptLineCurrent, int &nScriptL
 
         default:
             // Error
-            engine->FatalError(IDS_AUT_E_GENPARSE, vLineToks[ivPos].m_nCol);
+            FatalError(IDS_AUT_E_GENPARSE, vLineToks[ivPos].m_nCol);
             break;
     }
 
@@ -150,14 +154,14 @@ AUT_RESULT Parser::FunctionCall(VectorToken &vLineToks, uint &ivPos, Variant &vR
         return AUT_ERR;
 
     // How many parameters did we find?
-    if ( nNumParams < engine->m_FuncList[nFunction].nMin || nNumParams > engine->m_FuncList[nFunction].nMax)
+    if ( nNumParams < m_FuncList[nFunction].nMin || nNumParams > m_FuncList[nFunction].nMax)
     {
-        engine->FatalError(IDS_AUT_E_FUNCTIONNUMPARAMS, nColTemp);
+        FatalError(IDS_AUT_E_FUNCTIONNUMPARAMS, nColTemp);
         return AUT_ERR;
     }
 
     // Call the function
-    if ( AUT_FAILED( engine->FunctionExecute(nFunction, vParams, vResult) ) )
+    if ( AUT_FAILED( FunctionExecute(nFunction, vParams, vResult) ) )
         return AUT_ERR;
 
     return AUT_OK;
@@ -193,7 +197,7 @@ AUT_RESULT Parser::GetFunctionCallParams(VectorVariant &vParams, VectorToken &vL
 
     if ( vLineToks[ivPos].m_nType != TOK_LEFTPAREN )
     {
-        engine->FatalError(IDS_AUT_E_GENFUNCTION, vLineToks[ivPos-1].m_nCol);    // Error points to function name ( might = END (i.e not present)
+        FatalError(IDS_AUT_E_GENFUNCTION, vLineToks[ivPos-1].m_nCol);    // Error points to function name ( might = END (i.e not present)
         return AUT_ERR;
     }
     ++ivPos;                                        // Skip (
@@ -227,7 +231,7 @@ AUT_RESULT Parser::GetFunctionCallParams(VectorVariant &vParams, VectorToken &vL
                 break;
 
             case TOK_END:
-                engine->FatalError(IDS_AUT_E_GENFUNCTION, vLineToks[ivPos-1].m_nCol);
+                FatalError(IDS_AUT_E_GENFUNCTION, vLineToks[ivPos-1].m_nCol);
                 return AUT_ERR;
 
             default:
@@ -321,7 +325,7 @@ AUT_RESULT Parser::UserFunctionCall(VectorToken &vLineToks, uint &ivPos, Variant
         // Wasn't a recognised user function - try and and run it as a plugin function
 //        if (PluginFunctionCall(vLineToks, ivPos, vResult) == false)
 //        {
-            engine->FatalError(IDS_AUT_E_UNKNOWNUSERFUNC, nColTemp);
+            FatalError(IDS_AUT_E_UNKNOWNUSERFUNC, nColTemp);
             return AUT_ERR;
 //        }
 //        else
@@ -353,7 +357,7 @@ AUT_RESULT Parser::UserFunctionCall(VectorToken &vLineToks, uint &ivPos, Variant
     ++ivPos;                                    // Skip function name
     if ( vLineToks[ivPos].m_nType != TOK_LEFTPAREN )
     {
-        engine->FatalError(IDS_AUT_E_GENFUNCTION, nColTemp) ;
+        FatalError(IDS_AUT_E_GENFUNCTION, nColTemp) ;
         return AUT_ERR;
     }
     ++ivPos;                                        // Skip (
@@ -388,7 +392,7 @@ AUT_RESULT Parser::UserFunctionCall(VectorToken &vLineToks, uint &ivPos, Variant
                 break;
 
             case TOK_END:
-                engine->FatalError(IDS_AUT_E_GENFUNCTION, nColTemp);
+                FatalError(IDS_AUT_E_GENFUNCTION, nColTemp);
                 return AUT_ERR;
 
             default:
@@ -414,8 +418,8 @@ AUT_RESULT Parser::UserFunctionCall(VectorToken &vLineToks, uint &ivPos, Variant
     // helps.
 
     // Read in our function declaration
-    szTempScriptLine = engine->g_oScriptFile.GetLine(nLineNum);
-    engine->_lexer->doLexer(nLineNum, szTempScriptLine, vFuncDecToks);
+    szTempScriptLine = engine->g_oScriptFile->GetLine(nLineNum);
+    lexer->doLexer(nLineNum, szTempScriptLine, vFuncDecToks);
     ivFuncDecPos = 0;
     ivFuncDecPos += 3;                            // Skip "Func", funcname and "("
 
@@ -436,19 +440,19 @@ AUT_RESULT Parser::UserFunctionCall(VectorToken &vLineToks, uint &ivPos, Variant
             // Reference, get a pointer to the named variable
             if (vFuncToks[ivFuncPos].m_nType != TOK_VARIABLE)
             {
-                engine->FatalError(IDS_AUT_E_FUNCTIONEXPECTEDVARIABLE, vFuncToks[ivFuncPos].m_nCol);
+                FatalError(IDS_AUT_E_FUNCTIONEXPECTEDVARIABLE, vFuncToks[ivFuncPos].m_nCol);
                 return AUT_ERR;
             }
 
             if (m_oVarTable.GetRef(vFuncToks[ivFuncPos].szValue, &pvTemp, bConst) == false)
             {
-                engine->FatalError(IDS_AUT_E_VARNOTFOUND, vFuncToks[ivFuncPos].m_nCol);
+                FatalError(IDS_AUT_E_VARNOTFOUND, vFuncToks[ivFuncPos].m_nCol);
                 return AUT_ERR;
             }
             else if (bConst)
             {
                 // Can't use a constant for a ByRef!
-                engine->FatalError(IDS_AUT_E_ASSIGNTOCONST, vFuncToks[ivFuncPos].m_nCol);
+                FatalError(IDS_AUT_E_ASSIGNTOCONST, vFuncToks[ivFuncPos].m_nCol);
                 return AUT_ERR;
             }
 
@@ -469,7 +473,7 @@ AUT_RESULT Parser::UserFunctionCall(VectorToken &vLineToks, uint &ivPos, Variant
             // Make sure that the next token in the user call is a comma or END
             if ( vFuncToks[ivFuncPos].m_nType != TOK_COMMA && vFuncToks[ivFuncPos].m_nType != TOK_END)
             {
-                engine->FatalError(IDS_AUT_E_FUNCTIONEXPECTEDVARIABLE, vFuncToks[ivFuncPos].m_nCol);
+                FatalError(IDS_AUT_E_FUNCTIONEXPECTEDVARIABLE, vFuncToks[ivFuncPos].m_nCol);
                 return AUT_ERR;
             }
 
@@ -503,7 +507,7 @@ AUT_RESULT Parser::UserFunctionCall(VectorToken &vLineToks, uint &ivPos, Variant
     // If the next token in the function call is not END, then too many parameters have been passed.
     if ( vFuncToks[ivFuncPos].m_nType != TOK_END  )
     {
-        engine->FatalError(IDS_AUT_E_FUNCTIONNUMPARAMS, vFuncToks[ivFuncPos].m_nCol);
+        FatalError(IDS_AUT_E_FUNCTIONNUMPARAMS, vFuncToks[ivFuncPos].m_nCol);
         return AUT_ERR;
     }
 
@@ -511,7 +515,7 @@ AUT_RESULT Parser::UserFunctionCall(VectorToken &vLineToks, uint &ivPos, Variant
     if (nNumParams < nNumParamsMin)
     {
         // too small number of parameters
-        engine->FatalError(IDS_AUT_E_FUNCTIONNUMPARAMS, nColTemp);
+        FatalError(IDS_AUT_E_FUNCTIONNUMPARAMS, nColTemp);
         return AUT_ERR;
     }
 
@@ -543,7 +547,7 @@ AUT_RESULT Parser::UserFunctionCall(VectorToken &vLineToks, uint &ivPos, Variant
 
             if (m_oVarTable.CreateRef(vFuncDecToks[ivFuncDecPos].szValue, vParams[ivParamPos].pValue() ) == false)
             {
-                engine->FatalError(IDS_AUT_E_VARNOTFOUND, vFuncDecToks[ivFuncDecPos].m_nCol);
+                FatalError(IDS_AUT_E_VARNOTFOUND, vFuncDecToks[ivFuncDecPos].m_nCol);
                 return AUT_ERR;
             }
             ivFuncDecPos += 2;                    // Skip $varname and comma
@@ -696,9 +700,9 @@ void Parser::StartWithVariable(VectorToken &vLineToks, uint &ivPos)
         // Variable does not exist yet
 
         // If m_bMustDeclareVars is true then we must give a hard error here
-        if (m_bMustDeclareVars == true)
+        if (engine->bMustDeclareVars() == true)
         {
-            engine->FatalError(IDS_AUT_E_VARNOTFOUND, vLineToks[ivPos].m_nCol);
+            FatalError(IDS_AUT_E_VARNOTFOUND, vLineToks[ivPos].m_nCol);
             return;
         }
 
@@ -706,7 +710,7 @@ void Parser::StartWithVariable(VectorToken &vLineToks, uint &ivPos)
         // In this case we need to give a hard error
         if (vLineToks[ivPos+1].m_nType == TOK_LEFTSUBSCRIPT)
         {
-            engine->FatalError(IDS_AUT_E_ARRAYUSEDNODIM, vLineToks[ivPos].m_nCol);
+            FatalError(IDS_AUT_E_ARRAYUSEDNODIM, vLineToks[ivPos].m_nCol);
             return;
         }
         else
@@ -724,7 +728,7 @@ void Parser::StartWithVariable(VectorToken &vLineToks, uint &ivPos)
         // Fail if this is a constant
         if (bConst)
         {
-            engine->FatalError(IDS_AUT_E_ASSIGNTOCONST, vLineToks[ivPos].m_nCol);
+            FatalError(IDS_AUT_E_ASSIGNTOCONST, vLineToks[ivPos].m_nCol);
             return;
         }
 
@@ -742,7 +746,7 @@ void Parser::StartWithVariable(VectorToken &vLineToks, uint &ivPos)
     // Next token must be equals, followed by an expression
     if ( vLineToks[ivPos].m_nType != TOK_EQUAL )
     {
-        engine->FatalError(IDS_AUT_E_EXPECTEDASSIGNMENT, vLineToks[ivPos].m_nCol);
+        FatalError(IDS_AUT_E_EXPECTEDASSIGNMENT, vLineToks[ivPos].m_nCol);
         return;
     }
 
@@ -754,7 +758,7 @@ void Parser::StartWithVariable(VectorToken &vLineToks, uint &ivPos)
     // Next token must be END (otherwise there is other crap on the line)
     if (vLineToks[ivPos].m_nType != TOK_END)
     {
-        engine->FatalError(IDS_AUT_E_EXTRAONLINE, vLineToks[ivPos].m_nCol);
+        FatalError(IDS_AUT_E_EXTRAONLINE, vLineToks[ivPos].m_nCol);
         return;
     }
 
@@ -853,12 +857,12 @@ void Parser::StartWithKeyword(VectorToken &vLineToks, uint &ivPos, int nScriptLi
             break;
 
         case K_ENDFUNC:
-            engine->m_bUserFuncReturned = true;            // Request exit from Execute()
+            m_bUserFuncReturned = true;            // Request exit from Execute()
             break;
 
         case K_RETURN:
             Keyword_RETURN(vLineToks, ivPos);
-            engine->m_bUserFuncReturned = true;            // Request exit from Execute()
+            m_bUserFuncReturned = true;            // Request exit from Execute()
             break;
 
         case K_FUNC:
@@ -870,7 +874,7 @@ void Parser::StartWithKeyword(VectorToken &vLineToks, uint &ivPos, int nScriptLi
 
         default:
             // Can't start with this keyword error
-            engine->FatalError(IDS_AUT_E_INVALIDSTARTKEYWORD);
+            FatalError(IDS_AUT_E_INVALIDSTARTKEYWORD);
             break;
 
     }
@@ -908,7 +912,7 @@ void Parser::Keyword_IF(VectorToken &vLineToks, uint &ivPos, int nScriptLineCurr
         ++ivPos;                                // skip Then keyword
     else
     {
-        engine->FatalError(IDS_AUT_E_MISSINGTHEN, vLineToks[ivPos].m_nCol);
+        FatalError(IDS_AUT_E_MISSINGTHEN, vLineToks[ivPos].m_nCol);
         return;
     }
 
@@ -946,10 +950,10 @@ void Parser::Keyword_IF(VectorToken &vLineToks, uint &ivPos, int nScriptLineCurr
     // Look for an ELSE and/or ENDIF statement (skipping nested IFs)
     nIfCount = 0;
 
-    while ( (szTempScriptLine = engine->g_oScriptFile.GetLine(nScriptLine++)) != NULL
+    while ( (szTempScriptLine = engine->g_oScriptFile->GetLine(nScriptLine++)) != NULL
             && bEndIfFound == false)
     {
-        Lexer(nScriptLine-1, szTempScriptLine, vIFToks);
+        lexer->doLexer(nScriptLine-1, szTempScriptLine, vIFToks);
 
         ivTempPos = 0;
 
@@ -984,7 +988,7 @@ void Parser::Keyword_IF(VectorToken &vLineToks, uint &ivPos, int nScriptLineCurr
                     // Check the we haven't already had an ELSE for this IF
                     if (bElseFound == true)
                     {
-                        engine->FatalError(IDS_AUT_E_TOOMANYELSE);
+                        FatalError(IDS_AUT_E_TOOMANYELSE);
                         return;
                     }
 
@@ -995,7 +999,7 @@ void Parser::Keyword_IF(VectorToken &vLineToks, uint &ivPos, int nScriptLineCurr
                     if (vIFToks[ivTempPos].m_nType != TOK_END)
                     {
                         m_nErrorLine = nScriptLine - 1;    // So the error message is correct
-                        engine->FatalError(IDS_AUT_E_EXTRAONLINE, vIFToks[ivTempPos].m_nCol);
+                        FatalError(IDS_AUT_E_EXTRAONLINE, vIFToks[ivTempPos].m_nCol);
                         return;
                     }
 
@@ -1016,7 +1020,7 @@ void Parser::Keyword_IF(VectorToken &vLineToks, uint &ivPos, int nScriptLineCurr
                     // Check the we haven't already had an ELSE for this IF
                     if (bElseFound == true)
                     {
-                        engine->FatalError(IDS_AUT_E_TOOMANYELSE);
+                        FatalError(IDS_AUT_E_TOOMANYELSE);
                         return;
                     }
 
@@ -1035,7 +1039,7 @@ void Parser::Keyword_IF(VectorToken &vLineToks, uint &ivPos, int nScriptLineCurr
                     if ( !(vIFToks[ivTempPos].m_nType == TOK_KEYWORD && vIFToks[ivTempPos].nValue == K_THEN) )
                     {
                         m_nErrorLine = nScriptLine - 1;    // So the error message is correct
-                        engine->FatalError(IDS_AUT_E_MISSINGTHEN, vIFToks[ivTempPos].m_nCol);
+                        FatalError(IDS_AUT_E_MISSINGTHEN, vIFToks[ivTempPos].m_nCol);
                         return;
                     }
 
@@ -1114,7 +1118,7 @@ void Parser::Keyword_ENDIF(VectorToken &vLineToks, uint &ivPos)
     // Next token must be END (otherwise there is other crap on the line)
     if (vLineToks[ivPos].m_nType != TOK_END)
     {
-        engine->FatalError(IDS_AUT_E_EXTRAONLINE, vLineToks[ivPos].m_nCol);
+        FatalError(IDS_AUT_E_EXTRAONLINE, vLineToks[ivPos].m_nCol);
         return;
     }
 
@@ -1154,7 +1158,7 @@ void Parser::Keyword_WHILE(VectorToken &vLineToks, uint &ivPos, int &nScriptLine
     // Next token must be END (otherwise there is other crap on the line)
     if (vLineToks[ivPos].m_nType != TOK_END)
     {
-        engine->FatalError(IDS_AUT_E_EXTRAONLINE, vLineToks[ivPos].m_nCol);
+        FatalError(IDS_AUT_E_EXTRAONLINE, vLineToks[ivPos].m_nCol);
         return;
     }
 
@@ -1164,10 +1168,10 @@ void Parser::Keyword_WHILE(VectorToken &vLineToks, uint &ivPos, int &nScriptLine
     // Look for an WEND statement (skipping nested WHILESs)
     nWhileCount = 0;
 
-    while ( (szTempScriptLine = engine->g_oScriptFile.GetLine(nScriptLine++)) != NULL
+    while ( (szTempScriptLine = engine->g_oScriptFile->GetLine(nScriptLine++)) != NULL
             && bWendFound == false)
     {
-        Lexer(nScriptLine-1, szTempScriptLine, vWhileToks);
+        lexer->doLexer(nScriptLine-1, szTempScriptLine, vWhileToks);
 
         ivTempPos = 0;
 
@@ -1230,7 +1234,7 @@ void Parser::Keyword_WEND(VectorToken &vLineToks, uint &ivPos, int &nScriptLine)
     // Next token must be END (otherwise there is other crap on the line)
     if (vLineToks[ivPos].m_nType != TOK_END)
     {
-        engine->FatalError(IDS_AUT_E_EXTRAONLINE, vLineToks[ivPos].m_nCol);
+        FatalError(IDS_AUT_E_EXTRAONLINE, vLineToks[ivPos].m_nCol);
         return;
     }
 
@@ -1269,7 +1273,7 @@ void Parser::Keyword_EXITLOOP(VectorToken &vLineToks, uint &ivPos, int &nScriptL
         // Next token must be END (otherwise there is other crap on the line)
         if (vLineToks[ivPos].m_nType != TOK_END)
         {
-            engine->FatalError(IDS_AUT_E_EXTRAONLINE, vLineToks[ivPos].m_nCol);
+            FatalError(IDS_AUT_E_EXTRAONLINE, vLineToks[ivPos].m_nCol);
             return;
         }
 
@@ -1286,13 +1290,13 @@ void Parser::Keyword_EXITLOOP(VectorToken &vLineToks, uint &ivPos, int &nScriptL
         // Is the loop stack empty?
         if (m_StatementStack.empty())
         {
-            engine->FatalError(IDS_AUT_E_EXITLOOP);
+            FatalError(IDS_AUT_E_EXITLOOP);
             return;
         }
 
         if (m_StatementStack.top().nType == L_FUNC)        // Trying to pop through function call!
         {
-            engine->FatalError(IDS_AUT_E_EXITLOOP);
+            FatalError(IDS_AUT_E_EXITLOOP);
             return;
         }
         else if (m_StatementStack.top().nType == L_WHILE || m_StatementStack.top().nType == L_DO ||
@@ -1303,7 +1307,7 @@ void Parser::Keyword_EXITLOOP(VectorToken &vLineToks, uint &ivPos, int &nScriptL
             m_StatementStack.pop();
         }
         else    // IF or SELECT.  Pop it and keep going
-            engine->m_StatementStack.pop();
+            m_StatementStack.pop();
     }
 
 } // Keyword_EXITLOOP()
@@ -1334,7 +1338,7 @@ void Parser::Keyword_CONTINUELOOP(VectorToken &vLineToks, uint &ivPos, int &nScr
         // Next token must be END (otherwise there is other crap on the line)
         if (vLineToks[ivPos].m_nType != TOK_END)
         {
-            engine->FatalError(IDS_AUT_E_EXTRAONLINE, vLineToks[ivPos].m_nCol);
+            FatalError(IDS_AUT_E_EXTRAONLINE, vLineToks[ivPos].m_nCol);
             return;
         }
 
@@ -1345,28 +1349,28 @@ void Parser::Keyword_CONTINUELOOP(VectorToken &vLineToks, uint &ivPos, int &nScr
     while (i < nBreakLevel)
     {
         // Is the stack empty?
-        if (engine->m_StatementStack.empty())
+        if (m_StatementStack.empty())
         {
-            engine->FatalError(IDS_AUT_E_EXITLOOP);
+            FatalError(IDS_AUT_E_EXITLOOP);
             return;
         }
 
-        if (engine->m_StatementStack.top().nType == L_FUNC)    // Trying to pop through function call!
+        if (m_StatementStack.top().nType == L_FUNC)    // Trying to pop through function call!
         {
-            engine->FatalError(IDS_AUT_E_EXITLOOP);
+            FatalError(IDS_AUT_E_EXITLOOP);
             return;
         }
-        else if (engine->m_StatementStack.top().nType == L_WHILE || engine->m_StatementStack.top().nType == L_DO ||
-                engine->m_StatementStack.top().nType == L_FOR)    // one of the loops
+        else if (m_StatementStack.top().nType == L_WHILE || m_StatementStack.top().nType == L_DO ||
+                m_StatementStack.top().nType == L_FOR)    // one of the loops
         {
             ++i;
-            nScriptLine = engine->m_StatementStack.top().nLoopEnd;        // Continue on WEND/UNTIL/NEXT
+            nScriptLine = m_StatementStack.top().nLoopEnd;        // Continue on WEND/UNTIL/NEXT
 
             if (i != nBreakLevel)
-                engine->m_StatementStack.pop();                // Pop all BUT the last one :)
+                m_StatementStack.pop();                // Pop all BUT the last one :)
         }
         else    // IF or SELECT.  Pop it and keep going
-            engine->m_StatementStack.pop();
+            m_StatementStack.pop();
     }
 
 } // Keyword_CONTINUELOOP()
@@ -1394,7 +1398,7 @@ void Parser::Keyword_DO(VectorToken &vLineToks, uint &ivPos, int &nScriptLine)
     // Next token must be END (otherwise there is other crap on the line)
     if (vLineToks[ivPos].m_nType != TOK_END)
     {
-        engine->FatalError(IDS_AUT_E_EXTRAONLINE, vLineToks[ivPos].m_nCol);
+        FatalError(IDS_AUT_E_EXTRAONLINE, vLineToks[ivPos].m_nCol);
         return;
     }
 
@@ -1404,10 +1408,10 @@ void Parser::Keyword_DO(VectorToken &vLineToks, uint &ivPos, int &nScriptLine)
     // Look for an UNTIL statement (skipping nested DOs)
     nDoCount = 0;
 
-    while ( (szTempScriptLine = engine->g_oScriptFile.GetLine(nScriptLine++)) != NULL
+    while ( (szTempScriptLine = engine->g_oScriptFile->GetLine(nScriptLine++)) != NULL
             && bUntilFound == false)
     {
-        Lexer(nScriptLine-1, szTempScriptLine, vDoToks);
+        lexer->doLexer(nScriptLine-1, szTempScriptLine, vDoToks);
 
         ivTempPos = 0;
 
@@ -1437,7 +1441,7 @@ void Parser::Keyword_DO(VectorToken &vLineToks, uint &ivPos, int &nScriptLine)
     // (No longer need this check, blocks verified on load)
 
     // Push details of this DO statement on the stack for later use
-    engine->m_StatementStack.push(tDODetails);
+    m_StatementStack.push(tDODetails);
 
     nScriptLine = tDODetails.nLoopStart + 1;        // Continue on line AFTER Do
 
@@ -1465,23 +1469,23 @@ void Parser::Keyword_UNTIL(VectorToken &vLineToks, uint &ivPos, int &nScriptLine
     // Next token must be END (otherwise there is other crap on the line)
     if (vLineToks[ivPos].m_nType != TOK_END)
     {
-        engine->FatalError(IDS_AUT_E_EXTRAONLINE, vLineToks[ivPos].m_nCol);
+        FatalError(IDS_AUT_E_EXTRAONLINE, vLineToks[ivPos].m_nCol);
         return;
     }
 
-    AUT_ASSERT(engine->m_StatementStack.top().nType == L_DO);
+    AUT_ASSERT(m_StatementStack.top().nType == L_DO);
 
     // Set the next line to execute depending on the evaluation of the condition
     if (bCondition == false)
     {
         // DO statement false, continue on the line AFTER the DO statement
-        nScriptLine = engine->m_StatementStack.top().nLoopStart + 1;
+        nScriptLine = m_StatementStack.top().nLoopStart + 1;
 
     }
     else
     {
         // DO statement true, pop the DO off the stack and continue at next line
-        engine->m_StatementStack.pop();
+        m_StatementStack.pop();
     }
 
 } // Keyword_UNTIL()
@@ -1513,7 +1517,7 @@ void Parser::Keyword_FOR(VectorToken &vLineToks, uint &ivPos, int &nScriptLine)
     // Next token must be a variable, get a reference to it (or create if required)
     if (vLineToks[ivPos].m_nType != TOK_VARIABLE)
     {
-        engine->FatalError(IDS_AUT_E_FORERROR, vLineToks[ivPos].m_nCol);
+        FatalError(IDS_AUT_E_FORERROR, vLineToks[ivPos].m_nCol);
         return;
     }
 
@@ -1532,14 +1536,14 @@ void Parser::Keyword_FOR(VectorToken &vLineToks, uint &ivPos, int &nScriptLine)
     }
     else if (bConst)
     {
-        engine->FatalError(IDS_AUT_E_ASSIGNTOCONST, vLineToks[ivPos-1].m_nCol);
+        FatalError(IDS_AUT_E_ASSIGNTOCONST, vLineToks[ivPos-1].m_nCol);
         return;
     }
 
     // Next token must be =
     if (vLineToks[ivPos].m_nType != TOK_EQUAL)
     {
-        engine->FatalError(IDS_AUT_E_FORERROR, vLineToks[ivPos].m_nCol);
+        FatalError(IDS_AUT_E_FORERROR, vLineToks[ivPos].m_nCol);
         return;
     }
 
@@ -1555,7 +1559,7 @@ void Parser::Keyword_FOR(VectorToken &vLineToks, uint &ivPos, int &nScriptLine)
     // Next token must be the keyword "To"
     if ( !(vLineToks[ivPos].m_nType == TOK_KEYWORD && vLineToks[ivPos].nValue == K_TO) )
     {
-        engine->FatalError(IDS_AUT_E_FORERROR, vLineToks[ivPos].m_nCol);
+        FatalError(IDS_AUT_E_FORERROR, vLineToks[ivPos].m_nCol);
         return;
     }
 
@@ -1585,7 +1589,7 @@ void Parser::Keyword_FOR(VectorToken &vLineToks, uint &ivPos, int &nScriptLine)
     // Next token must be END (otherwise there is other crap on the line)
     if (vLineToks[ivPos].m_nType != TOK_END)
     {
-        engine->FatalError(IDS_AUT_E_EXTRAONLINE, vLineToks[ivPos].m_nCol);
+        FatalError(IDS_AUT_E_EXTRAONLINE, vLineToks[ivPos].m_nCol);
         return;
     }
 
@@ -1602,10 +1606,10 @@ void Parser::Keyword_FOR(VectorToken &vLineToks, uint &ivPos, int &nScriptLine)
     // Look for an NEXT statement (skipping nested FORs)
     nForCount = 0;
 
-    while ( (szTempScriptLine = engine->g_oScriptFile.GetLine(nScriptLine++)) != NULL
+    while ( (szTempScriptLine = engine->g_oScriptFile->GetLine(nScriptLine++)) != NULL
             && bNextFound == false)
     {
-        Lexer(nScriptLine-1, szTempScriptLine, vForToks);
+        lexer->doLexer(nScriptLine-1, szTempScriptLine, vForToks);
 
         ivTempPos = 0;
 
@@ -1647,7 +1651,7 @@ void Parser::Keyword_FOR(VectorToken &vLineToks, uint &ivPos, int &nScriptLine)
     {
         if ( ((*pvTemp) < tFORDetails.vForTo) || ((*pvTemp) == tFORDetails.vForTo) )
         {
-            engine->m_StatementStack.push(tFORDetails);        // Commit  to the stack
+            m_StatementStack.push(tFORDetails);        // Commit  to the stack
             nScriptLine = tFORDetails.nLoopStart + 1;    // Continue execution on line after FOR statement
         }
         else
@@ -1657,7 +1661,7 @@ void Parser::Keyword_FOR(VectorToken &vLineToks, uint &ivPos, int &nScriptLine)
     {
         if ( ((*pvTemp) > tFORDetails.vForTo) || ((*pvTemp) == tFORDetails.vForTo) )
         {
-            engine->m_StatementStack.push(tFORDetails);        // Commit  to the stack
+            m_StatementStack.push(tFORDetails);        // Commit  to the stack
             nScriptLine = tFORDetails.nLoopStart + 1;    // Continue execution on line after FOR statement
         }
         else
@@ -1689,21 +1693,21 @@ void Parser::Keyword_NEXT(VectorToken &vLineToks, uint &ivPos, int &nScriptLine)
     // Next token must be END (otherwise there is other crap on the line)
     if (vLineToks[ivPos].m_nType != TOK_END)
     {
-        engine->FatalError(IDS_AUT_E_EXTRAONLINE, vLineToks[ivPos].m_nCol);
+        FatalError(IDS_AUT_E_EXTRAONLINE, vLineToks[ivPos].m_nCol);
         return;
     }
 
     // Update the counter and check the for condition
     // We now have a reference to the count variable, are we setting up the FOR statement
-    tFORDetails = engine->m_StatementStack.top();    // Get a copy of the details from the stack
-    engine->m_StatementStack.pop();                    // Remove it from stack (we will push back on if required)
+    tFORDetails = m_StatementStack.top();    // Get a copy of the details from the stack
+    m_StatementStack.pop();                    // Remove it from stack (we will push back on if required)
 
 
     // Now we have to read in the for line in order to get the variable name - we know that
     // the for structure is perfect so we can go right to the token we need and assume that
     // it is a valid and assigned variable
-    szTempScriptLine = engine->g_oScriptFile.GetLine(tFORDetails.nLoopStart);
-    Lexer(tFORDetails.nLoopStart, szTempScriptLine, vForToks);
+    szTempScriptLine = engine->g_oScriptFile->GetLine(tFORDetails.nLoopStart);
+    lexer->doLexer(tFORDetails.nLoopStart, szTempScriptLine, vForToks);
     AString sVarName = vForToks[1].szValue;    // FOR = 0, Var = 1,
     m_oVarTable.GetRef(sVarName, &pvTemp, bConst);
 
@@ -1727,7 +1731,7 @@ void Parser::Keyword_NEXT(VectorToken &vLineToks, uint &ivPos, int &nScriptLine)
         if ( ((*pvTemp) < tFORDetails.vForTo) || ((*pvTemp) == tFORDetails.vForTo) )
         {
 
-            engine->m_StatementStack.push(tFORDetails);            // Commit back to the stack
+            m_StatementStack.push(tFORDetails);            // Commit back to the stack
             nScriptLine = tFORDetails.nLoopStart + 1;    // Continue execution on line after FOR statement
         }
     }
@@ -1735,7 +1739,7 @@ void Parser::Keyword_NEXT(VectorToken &vLineToks, uint &ivPos, int &nScriptLine)
     {
         if ( ((*pvTemp) > tFORDetails.vForTo) || ((*pvTemp) == tFORDetails.vForTo) )
         {
-            engine->m_StatementStack.push(tFORDetails);            // Commit back to the stack
+            m_StatementStack.push(tFORDetails);            // Commit back to the stack
             nScriptLine = tFORDetails.nLoopStart + 1;    // Continue execution on line after FOR statement
         }
     }
@@ -1769,7 +1773,7 @@ void Parser::Keyword_SELECT(VectorToken &vLineToks, uint &ivPos, int &nScriptLin
     // Next token must be END (otherwise there is other crap on the line)
     if (vLineToks[ivPos].m_nType != TOK_END)
     {
-        engine->FatalError(IDS_AUT_E_EXTRAONLINE, vLineToks[ivPos].m_nCol);
+        FatalError(IDS_AUT_E_EXTRAONLINE, vLineToks[ivPos].m_nCol);
         return;
     }
 
@@ -1779,12 +1783,12 @@ void Parser::Keyword_SELECT(VectorToken &vLineToks, uint &ivPos, int &nScriptLin
     // Look for an CASE and/or ENDSELECT statement (skipping nested SELECTs)
     nSelectCount = 0;
 
-    while ( (szTempScriptLine = engine->g_oScriptFile.GetLine(nScriptLine++)) != NULL
+    while ( (szTempScriptLine = engine->g_oScriptFile->GetLine(nScriptLine++)) != NULL
        && bEndSelectFound == false)
     {
         m_nErrorLine = nScriptLine-1;            // So any errors in case statements look correct
 
-        Lexer(nScriptLine-1, szTempScriptLine, vSELECTToks);
+        lexer->doLexer(nScriptLine-1, szTempScriptLine, vSELECTToks);
 
         ivTempPos = 0;
 
@@ -1822,7 +1826,7 @@ void Parser::Keyword_SELECT(VectorToken &vLineToks, uint &ivPos, int &nScriptLin
                         // Next token must be END (otherwise there is other crap on the line)
                         if (vSELECTToks[ivTempPos].m_nType != TOK_END)
                         {
-                            engine->FatalError(IDS_AUT_E_EXTRAONLINE, vSELECTToks[ivTempPos].m_nCol);
+                            FatalError(IDS_AUT_E_EXTRAONLINE, vSELECTToks[ivTempPos].m_nCol);
                             return;
                         }
 
@@ -1852,12 +1856,12 @@ void Parser::Keyword_SELECT(VectorToken &vLineToks, uint &ivPos, int &nScriptLin
     if (bEndSelectFound == false || bCaseFound == false)
     {
         m_nErrorLine = tSELECTDetails.nSelect;        // Make the error look correct
-        engine->FatalError(IDS_AUT_E_MISSINGENDSELECTORCASE);
+        FatalError(IDS_AUT_E_MISSINGENDSELECTORCASE);
         return;
     }
 
 
-    engine->m_StatementStack.push(tSELECTDetails);            // Push this select statement onto the stack
+    m_StatementStack.push(tSELECTDetails);            // Push this select statement onto the stack
 
     // Are we going to execute any of the case statements?
     if (bCaseExecuted)
@@ -1880,7 +1884,7 @@ void Parser::Keyword_CASE(int &nScriptLine)
     // If we have reached a CASE statement then we just continue execution at the
     // ENDSELECT  line because it just means that a previous case statement has
     // finished executing
-    AUT_ASSERT(engine->m_StatementStack.top().nType == L_SELECT);
+    AUT_ASSERT(m_StatementStack.top().nType == L_SELECT);
     nScriptLine = m_StatementStack.top().nEndSelect;
 
 } // Keyword_CASE()
@@ -1900,12 +1904,12 @@ void Parser::Keyword_ENDSELECT(VectorToken &vLineToks, uint &ivPos)
     // Next token must be END (otherwise there is other crap on the line)
     if (vLineToks[ivPos].m_nType != TOK_END)
     {
-        engine->FatalError(IDS_AUT_E_EXTRAONLINE, vLineToks[ivPos].m_nCol);
+        FatalError(IDS_AUT_E_EXTRAONLINE, vLineToks[ivPos].m_nCol);
         return;
     }
 
     // Remove the SELECT statement from the stack
-    engine->m_StatementStack.pop();
+    m_StatementStack.pop();
 
     // Do NOTHING! :)
 
@@ -1951,7 +1955,7 @@ void Parser::Keyword_DIM(VectorToken &vLineToks, uint &ivPos, int nReqScope)
         // Get variable name
         if (vLineToks[ivPos].m_nType != TOK_VARIABLE)
         {
-            engine->FatalError(IDS_AUT_E_DIMWITHOUTVAR, vLineToks[ivPos-1].m_nCol);
+            FatalError(IDS_AUT_E_DIMWITHOUTVAR, vLineToks[ivPos-1].m_nCol);
             return;
         }
 
@@ -1963,7 +1967,7 @@ void Parser::Keyword_DIM(VectorToken &vLineToks, uint &ivPos, int nReqScope)
             if (bReDim)
             {
                 // The array to redim must already exist
-                engine->FatalError(IDS_AUT_E_VARNOTFOUND, vLineToks[ivPos].m_nCol);
+                FatalError(IDS_AUT_E_VARNOTFOUND, vLineToks[ivPos].m_nCol);
                 return;
             }
 
@@ -1974,7 +1978,7 @@ void Parser::Keyword_DIM(VectorToken &vLineToks, uint &ivPos, int nReqScope)
         else if (bConst)
         {
             // Can't Dim a constant!
-            engine->FatalError(IDS_AUT_E_ASSIGNTOCONST, vLineToks[ivPos].m_nCol);
+            FatalError(IDS_AUT_E_ASSIGNTOCONST, vLineToks[ivPos].m_nCol);
             return;
         }
 
@@ -1983,7 +1987,7 @@ void Parser::Keyword_DIM(VectorToken &vLineToks, uint &ivPos, int nReqScope)
         {
             if ( !(pvTemp->isArray()) )
             {
-                engine->FatalError(IDS_AUT_E_REDIMUSEDONNONARRAY, vLineToks[ivPos].m_nCol);
+                FatalError(IDS_AUT_E_REDIMUSEDONNONARRAY, vLineToks[ivPos].m_nCol);
                 return;
             }
         }
@@ -2007,21 +2011,21 @@ void Parser::Keyword_DIM(VectorToken &vLineToks, uint &ivPos, int nReqScope)
                 // Parse expression for subscript
                 if ( AUT_FAILED( parserExp->EvaluateExpression(vLineToks, ivPos, vTemp) ) )
                 {
-                    engine->FatalError(IDS_AUT_E_PARSESUBSCRIPT, nColTemp);
+                    FatalError(IDS_AUT_E_PARSESUBSCRIPT, nColTemp);
                     return;
                 }
 
                 // Subscript cannot be less than or equal to 0
                 if ( vTemp.nValue() <= 0 )
                 {
-                    engine->FatalError(IDS_AUT_E_PARSESUBSCRIPT, nColTemp);
+                    FatalError(IDS_AUT_E_PARSESUBSCRIPT, nColTemp);
                     return;
                 }
 
                 // Next token must be ]
                 if (vLineToks[ivPos].m_nType != TOK_RIGHTSUBSCRIPT)
                 {
-                    engine->FatalError(IDS_AUT_E_PARSESUBSCRIPT, nColTemp);
+                    FatalError(IDS_AUT_E_PARSESUBSCRIPT, nColTemp);
                     return;
                 }
 
@@ -2035,7 +2039,7 @@ void Parser::Keyword_DIM(VectorToken &vLineToks, uint &ivPos, int nReqScope)
             // Must have at least one subscript for a valid array
             if (nNumSubscripts < 1)
             {
-                engine->FatalError(IDS_AUT_E_TOOFEWSUBSCRIPTS, nColTemp);
+                FatalError(IDS_AUT_E_TOOFEWSUBSCRIPTS, nColTemp);
                 return;
             }
 
@@ -2046,7 +2050,7 @@ void Parser::Keyword_DIM(VectorToken &vLineToks, uint &ivPos, int nReqScope)
             {
                 if ( pvTemp->ArraySubscriptSetNext( nSubScriptDetails[i] ) == false )
                 {
-                    engine->FatalError(IDS_AUT_E_TOOMANYSUBSCRIPTS, nColTemp);
+                    FatalError(IDS_AUT_E_TOOMANYSUBSCRIPTS, nColTemp);
                     return;
                 }
             }
@@ -2054,7 +2058,7 @@ void Parser::Keyword_DIM(VectorToken &vLineToks, uint &ivPos, int nReqScope)
             // Ok, valid subscripts, dimension the variant into an array
             if ( pvTemp->ArrayDim() == false )
             {
-                engine->FatalError(IDS_AUT_E_ARRAYALLOC, nColTemp);
+                FatalError(IDS_AUT_E_ARRAYALLOC, nColTemp);
                 return;
             }
 
@@ -2071,7 +2075,7 @@ void Parser::Keyword_DIM(VectorToken &vLineToks, uint &ivPos, int nReqScope)
             // Parse expression for value
             if ( AUT_FAILED( parserExp->EvaluateExpression(vLineToks, ivPos, vTemp) ) )
             {
-                engine->FatalError(IDS_AUT_E_EXPRESSION, nColTemp);
+                FatalError(IDS_AUT_E_EXPRESSION, nColTemp);
                 return;
             }
 
@@ -2084,7 +2088,7 @@ void Parser::Keyword_DIM(VectorToken &vLineToks, uint &ivPos, int nReqScope)
             break;
         else if (vLineToks[ivPos].m_nType != TOK_COMMA)
         {
-            engine->FatalError(IDS_AUT_E_DIMWITHOUTVAR, vLineToks[ivPos].m_nCol);
+            FatalError(IDS_AUT_E_DIMWITHOUTVAR, vLineToks[ivPos].m_nCol);
             return;
         }
         ++ivPos;        // skip COMMA  to check next variable to declare
@@ -2114,7 +2118,7 @@ void Parser::Keyword_CONST(VectorToken &vLineToks, uint &ivPos, int nReqScope)
         // Get variable name
         if (vLineToks[ivPos].m_nType != TOK_VARIABLE)
         {
-            engine->FatalError(IDS_AUT_E_DIMWITHOUTVAR, vLineToks[ivPos-1].m_nCol);
+            FatalError(IDS_AUT_E_DIMWITHOUTVAR, vLineToks[ivPos-1].m_nCol);
             return;
         }
 
@@ -2131,7 +2135,7 @@ void Parser::Keyword_CONST(VectorToken &vLineToks, uint &ivPos, int nReqScope)
         else
         {
             // Already exists
-            engine->FatalError(IDS_AUT_E_CONSTONEXISTING, vLineToks[ivPos].m_nCol);
+            FatalError(IDS_AUT_E_CONSTONEXISTING, vLineToks[ivPos].m_nCol);
             return;
         }
 
@@ -2141,7 +2145,7 @@ void Parser::Keyword_CONST(VectorToken &vLineToks, uint &ivPos, int nReqScope)
         // Must be a TOK_EQUAL next
         if (vLineToks[ivPos].m_nType != TOK_EQUAL)
         {
-            engine->FatalError(IDS_AUT_E_EXPECTEDASSIGNMENT, vLineToks[ivPos].m_nCol);
+            FatalError(IDS_AUT_E_EXPECTEDASSIGNMENT, vLineToks[ivPos].m_nCol);
             return;
         }
 
@@ -2151,7 +2155,7 @@ void Parser::Keyword_CONST(VectorToken &vLineToks, uint &ivPos, int nReqScope)
         // Parse expression for value
         if ( AUT_FAILED( parserExp->EvaluateExpression(vLineToks, ivPos, vTemp) ) )
         {
-            engine->FatalError(IDS_AUT_E_EXPRESSION, nColTemp);
+            FatalError(IDS_AUT_E_EXPRESSION, nColTemp);
             return;
         }
 
@@ -2163,7 +2167,7 @@ void Parser::Keyword_CONST(VectorToken &vLineToks, uint &ivPos, int nReqScope)
             break;
         else if (vLineToks[ivPos].m_nType != TOK_COMMA)
         {
-            engine->FatalError(IDS_AUT_E_DIMWITHOUTVAR, vLineToks[ivPos].m_nCol);
+            FatalError(IDS_AUT_E_DIMWITHOUTVAR, vLineToks[ivPos].m_nCol);
             return;
         }
 
@@ -2192,7 +2196,7 @@ void Parser::Keyword_RETURN(VectorToken &vLineToks, uint &ivPos)
     // Next token must be END (otherwise there is other crap on the line)
     if (vLineToks[ivPos].m_nType != TOK_END)
     {
-        engine->FatalError(IDS_AUT_E_EXTRAONLINE, vLineToks[ivPos].m_nCol);
+        FatalError(IDS_AUT_E_EXTRAONLINE, vLineToks[ivPos].m_nCol);
         return;
     }
 
@@ -2224,7 +2228,7 @@ void Parser::Keyword_EXIT(VectorToken &vLineToks, uint &ivPos)
     // Next token must be END (otherwise there is other crap on the line)
     if (vLineToks[ivPos].m_nType != TOK_END)
     {
-        engine->FatalError(IDS_AUT_E_EXTRAONLINE, vLineToks[ivPos].m_nCol);
+        FatalError(IDS_AUT_E_EXTRAONLINE, vLineToks[ivPos].m_nCol);
         return;
     }
 
@@ -2279,14 +2283,14 @@ AUT_RESULT Parser::VerifyBlockStructure(void)
 
 
     // Read in each line of the script
-    while ( (szScriptLine = engine->g_oScriptFile.GetLine(nScriptLine)) != NULL )
+    while ( (szScriptLine = engine->g_oScriptFile->GetLine(nScriptLine)) != NULL )
     {
         m_nErrorLine = nScriptLine;                // Keep track for errors
         ++nScriptLine;                            // Next line
 
         // Convert the line
 
-        if ( AUT_FAILED( Lexer(nScriptLine-1, szScriptLine, LineTokens) ) )
+        if ( AUT_FAILED( lexer->doLexer(nScriptLine-1, szScriptLine, LineTokens) ) )
             return AUT_ERR;                        // Bad line
 
         ivPos = 0;
@@ -2340,7 +2344,7 @@ AUT_RESULT Parser::VerifyBlockStructure(void)
 
                 if (bThen == false)
                 {
-                    engine->FatalError(IDS_AUT_E_MISSINGTHEN);
+                    FatalError(IDS_AUT_E_MISSINGTHEN);
                     return AUT_ERR;
                 }
 
@@ -2360,7 +2364,7 @@ AUT_RESULT Parser::VerifyBlockStructure(void)
                     if (nKey != K_EXITLOOP && nKey != K_CONTINUELOOP && nKey != K_DIM && nKey != K_REDIM
                         && nKey != K_LOCAL && nKey != K_GLOBAL && nKey != K_EXIT && nKey != K_RETURN)
                     {
-                        engine->FatalError(IDS_AUT_E_KEYWORDAFTERTHEN, LineTokens[ivPos].m_nCol);
+                        FatalError(IDS_AUT_E_KEYWORDAFTERTHEN, LineTokens[ivPos].m_nCol);
                         return AUT_ERR;
                     }
                 }
@@ -2371,7 +2375,7 @@ AUT_RESULT Parser::VerifyBlockStructure(void)
                 ++nFunc;
                 if (nFunc > 1)
                 {
-                    engine->FatalError(IDS_AUT_E_MISSINGENDFUNC);
+                    FatalError(IDS_AUT_E_MISSINGENDFUNC);
                     return AUT_ERR;
                 }
                 // As we are at the start of a function all the other tests must now be equal
@@ -2394,7 +2398,7 @@ AUT_RESULT Parser::VerifyBlockStructure(void)
 
                 if (nDo < 0 || nSeq != nSeqTst)
                 {
-                    engine->FatalError(IDS_AUT_E_UNTILNOMATCHINGDO);
+                    FatalError(IDS_AUT_E_UNTILNOMATCHINGDO);
                     return AUT_ERR;
                 }
                 break;
@@ -2412,7 +2416,7 @@ AUT_RESULT Parser::VerifyBlockStructure(void)
 
                 if (nWhile < 0 || nSeq != nSeqTst)
                 {
-                    engine->FatalError(IDS_AUT_E_WENDNOMATCHINGWHILE);
+                    FatalError(IDS_AUT_E_WENDNOMATCHINGWHILE);
                     return AUT_ERR;
                 }
                 break;
@@ -2430,7 +2434,7 @@ AUT_RESULT Parser::VerifyBlockStructure(void)
 
                 if (nFor < 0 || nSeq != nSeqTst)
                 {
-                    engine->FatalError(IDS_AUT_E_NEXTNOMATCHINGFOR);
+                    FatalError(IDS_AUT_E_NEXTNOMATCHINGFOR);
                     return AUT_ERR;
                 }
                 break;
@@ -2448,7 +2452,7 @@ AUT_RESULT Parser::VerifyBlockStructure(void)
 
                 if (nSelect < 0 || nSeq != nSeqTst)
                 {
-                    engine->FatalError(IDS_AUT_E_ENDSELECTNOMATCHINGSELECT);
+                    FatalError(IDS_AUT_E_ENDSELECTNOMATCHINGSELECT);
                     return AUT_ERR;
                 }
                 break;
@@ -2456,7 +2460,7 @@ AUT_RESULT Parser::VerifyBlockStructure(void)
             case K_CASE:
                 if (stkSelect.empty())
                 {
-                    engine->FatalError(IDS_AUT_E_CASENOMATCHINGSELECT);
+                    FatalError(IDS_AUT_E_CASENOMATCHINGSELECT);
                     return AUT_ERR;
                 }
                 else
@@ -2464,7 +2468,7 @@ AUT_RESULT Parser::VerifyBlockStructure(void)
 
                 if ((nSeq-1) != nSeqTst )
                 {
-                    engine->FatalError(IDS_AUT_E_CASENOMATCHINGSELECT);
+                    FatalError(IDS_AUT_E_CASENOMATCHINGSELECT);
                     return AUT_ERR;
                 }
 
@@ -2483,7 +2487,7 @@ AUT_RESULT Parser::VerifyBlockStructure(void)
 
                 if (nIf < 0 || nSeq != nSeqTst)
                 {
-                    engine->FatalError(IDS_AUT_E_ENDIFNOMATCHINGIF);
+                    FatalError(IDS_AUT_E_ENDIFNOMATCHINGIF);
                     return AUT_ERR;
                 }
                 break;
@@ -2492,7 +2496,7 @@ AUT_RESULT Parser::VerifyBlockStructure(void)
             case K_ELSEIF:
                 if (nIf == 0)
                 {
-                    engine->FatalError(IDS_AUT_E_ELSENOMATCHINGIF);
+                    FatalError(IDS_AUT_E_ELSENOMATCHINGIF);
                     return AUT_ERR;
                 }
                 break;
@@ -2501,7 +2505,7 @@ AUT_RESULT Parser::VerifyBlockStructure(void)
             case K_EXITLOOP:
                 if (nDo == 0 && nWhile == 0 && nFor == 0)
                 {
-                    engine->FatalError(IDS_AUT_E_EXITLOOP);
+                    FatalError(IDS_AUT_E_EXITLOOP);
                     return AUT_ERR;
                 }
                 break;
@@ -2510,7 +2514,7 @@ AUT_RESULT Parser::VerifyBlockStructure(void)
                 --nFunc;
                 if (nFunc != 0)
                 {
-                    engine->FatalError(IDS_AUT_E_MISSINGENDFUNC);
+                    FatalError(IDS_AUT_E_MISSINGENDFUNC);
                     return AUT_ERR;
                 }
                 // As we are at the end of a function all the other tests above must now be equal
@@ -2530,7 +2534,7 @@ AUT_RESULT Parser::VerifyBlockStructure(void)
 
     if (nFunc != 0)
     {
-        engine->FatalError(IDS_AUT_E_MISSINGENDFUNC);
+        FatalError(IDS_AUT_E_MISSINGENDFUNC);
         return AUT_ERR;
     }
 
@@ -2550,27 +2554,27 @@ AUT_RESULT Parser::VerifyBlockStructure2(int nDo, int nWhile, int nFor, int nSel
 {
     if (nDo != 0)
     {
-        engine->FatalError(IDS_AUT_E_MISSINGUNTIL);
+        FatalError(IDS_AUT_E_MISSINGUNTIL);
         return AUT_ERR;
     }
     else if (nWhile != 0)
     {
-        engine->FatalError(IDS_AUT_E_MISSINGWEND);
+        FatalError(IDS_AUT_E_MISSINGWEND);
         return AUT_ERR;
     }
     else if (nFor != 0)
     {
-        engine->FatalError(IDS_AUT_E_MISSINGNEXT);
+        FatalError(IDS_AUT_E_MISSINGNEXT);
         return AUT_ERR;
     }
     else if (nSelect != 0)
     {
-        engine->FatalError(IDS_AUT_E_MISSINGENDSELECTORCASE);
+        FatalError(IDS_AUT_E_MISSINGENDSELECTORCASE);
         return AUT_ERR;
     }
     else if (nIf != 0)
     {
-        engine->FatalError(IDS_AUT_E_MISSINGENDIF);
+        FatalError(IDS_AUT_E_MISSINGENDIF);
         return AUT_ERR;
     }
 
@@ -2598,11 +2602,11 @@ AUT_RESULT Parser::StoreUserFuncs(void)
     const char        *szScriptLine;
 
     // Check each line of the script for the FUNC keyword
-    while ( (szScriptLine = engine->g_oScriptFile.GetLine(nScriptLine++)) != NULL )
+    while ( (szScriptLine = engine->g_oScriptFile->GetLine(nScriptLine++)) != NULL )
     {
         m_nErrorLine = nScriptLine - 1;            // Keep track for errors
 
-        if ( AUT_FAILED( engine->_lexer->doLexer(nScriptLine-1, szScriptLine, LineTokens) ) )
+        if ( AUT_FAILED( lexer->doLexer(nScriptLine-1, szScriptLine, LineTokens) ) )
             return AUT_ERR;                        // Bad line
 
         ivPos = 0;
@@ -2814,12 +2818,12 @@ AUT_RESULT Parser::StoreUserFuncsFindEnd(int &nScriptLine)
     const char    *szScriptLine;
 
     bool bEndFuncFound = false;
-    while ( bEndFuncFound == false && (szScriptLine = engine->g_oScriptFile.GetLine(nScriptLine)) != NULL )
+    while ( bEndFuncFound == false && (szScriptLine = engine->g_oScriptFile->GetLine(nScriptLine)) != NULL )
     {
         ++nScriptLine;
         m_nErrorLine = nScriptLine - 1;            // Keep track for errors
 
-        if ( AUT_FAILED( engine->_lexer->doLexer(nScriptLine-1, szScriptLine, LineTokens) ) )
+        if ( AUT_FAILED( lexer->doLexer(nScriptLine-1, szScriptLine, LineTokens) ) )
             return AUT_ERR;                        // Bad line
 
         ivPos = 0;
@@ -2856,11 +2860,11 @@ AUT_RESULT Parser::VerifyUserFuncCalls(void)
     int                nLineNum, nNumParams, nNumParamsMin, nEndLineNum;
 
     // Check each line for user function calls
-    while ( (szScriptLine = engine->g_oScriptFile.GetLine(nScriptLine++)) != NULL )
+    while ( (szScriptLine = engine->g_oScriptFile->GetLine(nScriptLine++)) != NULL )
     {
         m_nErrorLine = nScriptLine - 1;            // Keep track for errors
         
-        engine->_lexer->doLexer(nScriptLine-1, szScriptLine, LineTokens);        // No need to test for errors, already done in StoreUserFuncs()
+        lexer->doLexer(nScriptLine-1, szScriptLine, LineTokens);        // No need to test for errors, already done in StoreUserFuncs()
 
         ivPos = 0;
 
@@ -2868,7 +2872,7 @@ AUT_RESULT Parser::VerifyUserFuncCalls(void)
         {
             if (LineTokens[ivPos].m_nType == TOK_USERFUNCTION)
             {
-                if (_parser->FindUserFunction(LineTokens[ivPos].szValue, nLineNum, nNumParams, nNumParamsMin, nEndLineNum) == false)
+                if (FindUserFunction(LineTokens[ivPos].szValue, nLineNum, nNumParams, nNumParamsMin, nEndLineNum) == false)
                 {
                     FatalError(IDS_AUT_E_UNKNOWNUSERFUNC, LineTokens[ivPos].m_nCol);
                     return AUT_ERR;
@@ -2924,7 +2928,7 @@ AUT_RESULT Parser::StorePluginFuncs(void)
 // This function is used by UserFunction calling, Adlib, Hotkey, Call
 ///////////////////////////////////////////////////////////////////////////////
 
-void Engine::SaveExecute(int nScriptLine, bool bRaiseScope, bool bRestoreErrorCode)
+void Parser::SaveExecute(int nScriptLine, bool bRaiseScope, bool bRestoreErrorCode)
 {
     // Saved state vars - Control related
     Variant            vControlSearchValue;                        // The ID, classname or text to search for 
@@ -2941,7 +2945,7 @@ void Engine::SaveExecute(int nScriptLine, bool bRaiseScope, bool bRestoreErrorCo
     // we have on the go just in case the user function is naughty (return function in the
     // middle of a loop) and leaves the statement stacks in an incorrect state - we will
     // have to correct this after Execute() returns
-    uint    nStackSize        = _parser->getStatementStackSize();
+    uint    nStackSize        = m_StatementStack.size();
 
 
     // Continue execution with the user function (using recursive call of Execute() )
@@ -2949,7 +2953,7 @@ void Engine::SaveExecute(int nScriptLine, bool bRaiseScope, bool bRestoreErrorCo
     if (bRaiseScope)
         m_oVarTable.ScopeIncrease();                // Increase scope
 
-    Execute(nScriptLine);
+    engine->Execute(nScriptLine);
 
     // Descrease the variable scope - deletes function local variables
     if (bRaiseScope)
@@ -2957,7 +2961,9 @@ void Engine::SaveExecute(int nScriptLine, bool bRaiseScope, bool bRestoreErrorCo
 
     // Make sure the statement stacks are the same as before the user function was called, 
     // if not we fix them
-    _parser->restoreStackmentStackSize(nStackSize);
+    while (nStackSize < m_StatementStack.size()) {
+        m_StatementStack.pop();
+    }
 
     m_nNumParams            = nNumParams;
     m_nErrorLine            = nErrorLine;
@@ -2982,21 +2988,21 @@ void Engine::SaveExecute(int nScriptLine, bool bRaiseScope, bool bRestoreErrorCo
 // if the column number is < zero, this is also used in the error message
 ///////////////////////////////////////////////////////////////////////////////
 
-void Engine::FatalError(int iErr, int nCol)
+void Parser::FatalError(int iErr, int nCol)
 {
     char        szTitle[AUT_MAX_LINESIZE];
     char        szText[AUT_MAX_LINESIZE];
     char        szOutput[AUT_MAX_LINESIZE*3];
     char        szOutput2[AUT_MAX_LINESIZE*3];
 
-    LoadString(g_hInstance, IDS_AUT_E_TITLE, szTitle, AUT_MAX_LINESIZE);
-    LoadString(g_hInstance, iErr, szText, AUT_MAX_LINESIZE);
+    LoadString(engine->g_hInstance, IDS_AUT_E_TITLE, szTitle, AUT_MAX_LINESIZE);
+    LoadString(engine->g_hInstance, iErr, szText, AUT_MAX_LINESIZE);
 
     // Get the line and include file
-    const char *szScriptLine = g_oScriptFile.GetLine(m_nErrorLine);
-    int nAutScriptLine = g_oScriptFile.GetAutLineNumber(m_nErrorLine);
-    int nIncludeID = g_oScriptFile.GetIncludeID(m_nErrorLine);
-    const char *szInclude = g_oScriptFile.GetIncludeName(nIncludeID);
+    const char *szScriptLine = engine->g_oScriptFile->GetLine(m_nErrorLine);
+    int nAutScriptLine = engine->g_oScriptFile->GetAutLineNumber(m_nErrorLine);
+    int nIncludeID = engine->g_oScriptFile->GetIncludeID(m_nErrorLine);
+    const char *szInclude = engine->g_oScriptFile->GetIncludeName(nIncludeID);
 
     if (szInclude == NULL)
         sprintf(szOutput, "Line %d:\n\n", nAutScriptLine);
@@ -3019,10 +3025,10 @@ void Engine::FatalError(int iErr, int nCol)
     strcat(szOutput, "\nError: ");
     strcat(szOutput, szText);
 
-    if (g_bStdOut)
+    if (engine->g_bStdOut)
         printf("%s (%d) : ==> %s: \n%s \n%s\n",szInclude, nAutScriptLine, szText, szScriptLine, szOutput2 );
     else
-        MessageBox(g_hWnd, szOutput, szTitle, MB_ICONSTOP | MB_OK | MB_SYSTEMMODAL | MB_SETFOREGROUND);
+        MessageBox(engine->g_hWnd, szOutput, szTitle, MB_ICONSTOP | MB_OK | MB_SYSTEMMODAL | MB_SETFOREGROUND);
 
     // Signal that we want to quit as soon as possible
     m_nCurrentOperation = AUT_QUIT;
@@ -3041,20 +3047,20 @@ void Engine::FatalError(int iErr, int nCol)
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-void Engine::FatalError(int iErr, const char *szText2)
+void Parser::FatalError(int iErr, const char *szText2)
 {
     char    szTitle[AUT_MAX_LINESIZE];
     char    szText[AUT_MAX_LINESIZE];
     char    szOutput[AUT_MAX_LINESIZE*3];
 
-    LoadString(g_hInstance, IDS_AUT_E_TITLE, szTitle, AUT_MAX_LINESIZE);
-    LoadString(g_hInstance, iErr, szText, AUT_MAX_LINESIZE);
+    LoadString(engine->g_hInstance, IDS_AUT_E_TITLE, szTitle, AUT_MAX_LINESIZE);
+    LoadString(engine->g_hInstance, iErr, szText, AUT_MAX_LINESIZE);
 
     // Get the line
-    const char *szScriptLine = g_oScriptFile.GetLine(m_nErrorLine);
-    int nAutScriptLine = g_oScriptFile.GetAutLineNumber(m_nErrorLine);
-    int nIncludeID = g_oScriptFile.GetIncludeID(m_nErrorLine);
-    const char *szInclude = g_oScriptFile.GetIncludeName(nIncludeID);
+    const char *szScriptLine = engine->g_oScriptFile->GetLine(m_nErrorLine);
+    int nAutScriptLine = engine->g_oScriptFile->GetAutLineNumber(m_nErrorLine);
+    int nIncludeID = engine->g_oScriptFile->GetIncludeID(m_nErrorLine);
+    const char *szInclude = engine->g_oScriptFile->GetIncludeName(nIncludeID);
 
     if (szInclude == NULL)
         sprintf(szOutput, "Line %d:\n\n", nAutScriptLine);
@@ -3067,10 +3073,10 @@ void Engine::FatalError(int iErr, const char *szText2)
     strcat(szOutput, "\n\n");
     strcat(szOutput, szText2);
 
-    if (g_bStdOut)
+    if (engine->g_bStdOut)
         printf("%s (%d) : ==> %s: \n%s \n%s\n",szInclude, nAutScriptLine, szText, szScriptLine, szText2);
     else
-        MessageBox(g_hWnd, szOutput, szTitle, MB_ICONSTOP | MB_OK | MB_SYSTEMMODAL | MB_SETFOREGROUND);
+        MessageBox(engine->g_hWnd, szOutput, szTitle, MB_ICONSTOP | MB_OK | MB_SYSTEMMODAL | MB_SETFOREGROUND);
 
     // Signal that we want to quit as soon as possible
     m_nCurrentOperation = AUT_QUIT;
@@ -3081,7 +3087,7 @@ void Engine::FatalError(int iErr, const char *szText2)
 // FunctionExecute()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT Engine::FunctionExecute(int nFunction, VectorVariant &vParams, Variant &vResult)
+AUT_RESULT Parser::FunctionExecute(int nFunction, VectorVariant &vParams, Variant &vResult)
 {
     vResult        = 1;                            // Default return value is 1
     SetFuncErrorCode(0);                        // Default extended error code is zero
@@ -3093,31 +3099,31 @@ AUT_RESULT Engine::FunctionExecute(int nFunction, VectorVariant &vParams, Varian
 
 } // FunctionExecute()
 
-AUT_RESULT Engine::call(const char* szName, Variant &vResult)
+AUT_RESULT Parser::call(const char* szName, Variant &vResult)
 {
     int nLineNum, nNumParams, nNumParamsMin, nEndLineNum;
 
     // Check that this user function exists
-    if (_parser->FindUserFunction(szName, nLineNum, nNumParams, nNumParamsMin, nEndLineNum) == false)
+    if (FindUserFunction(szName, nLineNum, nNumParams, nNumParamsMin, nEndLineNum) == false)
     {
         SetFuncErrorCode(1);                // Silent error even though function not valid
         return AUT_OK;                        // As will probably be used this way
     }
     else
     {
-        _parser->m_vUserRetVal = 1;                    // Default return value is 1
-        _parser->SaveExecute(nLineNum+1, true, false);    // Run the user function (line after the Func declaration)
-        vResult = _parser->m_vUserRetVal;            // Get return value (0 = timed out)
+        m_vUserRetVal = 1;                    // Default return value is 1
+        SaveExecute(nLineNum+1, true, false);    // Run the user function (line after the Func declaration)
+        vResult = m_vUserRetVal;            // Get return value (0 = timed out)
         return AUT_OK;
     }
 }
 
-AUT_RESULT Engine::interruptCall(const char* szName, Variant &vResult)
+AUT_RESULT Parser::interruptCall(const char* szName, Variant &vResult)
 {
     // Get the details of the function (we should have previously checked that it
     // exists!)
     int        nLineNum, nNumParams, nNumParamsMin, nEndLineNum;
-    if (_parser->FindUserFunction(szName, nLineNum, nNumParams, nNumParamsMin, nEndLineNum) == false) {
+    if (FindUserFunction(szName, nLineNum, nNumParams, nNumParamsMin, nEndLineNum) == false) {
         SetFuncErrorCode(1);                // Silent error even though function not valid
         return AUT_OK;                      // As will probably be used this way
     }
@@ -3129,9 +3135,9 @@ AUT_RESULT Engine::interruptCall(const char* szName, Variant &vResult)
     m_nCurrentOperation = AUT_RUN;                // Change mode to run script (may have been waiting)
 
     // Skip function declaration
-    _parser->m_vUserRetVal = 1;                     // Default return value is 1
-    _parser->SaveExecute(nLineNum+1, true, true);   // Save state and recursively call Execute()
-    vResult = _parser->m_vUserRetVal;               // Get return value (0 = timed out)
+    m_vUserRetVal = 1;                     // Default return value is 1
+    SaveExecute(nLineNum+1, true, true);   // Save state and recursively call Execute()
+    vResult = m_vUserRetVal;               // Get return value (0 = timed out)
 
     // If the function caused the script to end, we must honour the request rather than restoring
     if (m_nCurrentOperation != AUT_QUIT)

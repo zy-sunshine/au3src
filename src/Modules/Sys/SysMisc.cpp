@@ -1,7 +1,9 @@
 #include "StdAfx.h"                                // Pre-compiled headers
+#include "ModuleSys.h"
 #include "Engine/Engine.h"
 #include "Engine/Parser/Parser.h"
-#include "ModuleSys.h"
+#include "Utils/SendKeys.h"
+#include "Utils/OSVersion.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // EnvGet()
@@ -257,7 +259,7 @@ AUT_RESULT ModuleSys::F_IsAdmin(VectorVariant &vParams, Variant &vResult)
 {
     vResult = 0;                                // Set default
 
-    if (engine->g_oVersion.IsWin9x())
+    if (engine->g_oVersion->IsWin9x())
     {
         vResult = 1;
         return AUT_OK;
@@ -506,35 +508,35 @@ AUT_RESULT ModuleSys::F_AutoItSetOption(VectorVariant &vParams, Variant &vResult
     }
     else if ( !stricmp(szOption, "SendAttachMode") )        // SendAttachMode
     {
-        vResult = (int)engine->oSendKeys().m_bAttachMode;    // Store current value
+        vResult = (int)engine->g_oSendKeys->m_bAttachMode;    // Store current value
 
         if (nValue == 0)
-            engine->oSendKeys().SetAttachMode(false);
+            engine->g_oSendKeys->SetAttachMode(false);
         else
-            engine->oSendKeys().SetAttachMode(true);
+            engine->g_oSendKeys->SetAttachMode(true);
     }
     else if ( !stricmp(szOption, "SendCapslockMode") )        // SendCapslockMode
     {
-        vResult = (int)engine->oSendKeys().m_bStoreCapslockMode;    // Store current value
+        vResult = (int)engine->g_oSendKeys->m_bStoreCapslockMode;    // Store current value
 
         if (nValue == 0)
-            engine->oSendKeys().SetStoreCapslockMode(false);
+            engine->g_oSendKeys->SetStoreCapslockMode(false);
         else
-            engine->oSendKeys().SetStoreCapslockMode(true);
+            engine->g_oSendKeys->SetStoreCapslockMode(true);
     }
     else if ( !stricmp(szOption, "SendKeyDelay") )            // SendKeyDelay
     {
-        vResult = (int)engine->oSendKeys().m_nKeyDelay;    // Store current value
+        vResult = (int)engine->g_oSendKeys->m_nKeyDelay;    // Store current value
 
         if (nValue >= -1)
-            engine->oSendKeys().SetKeyDelay( nValue );
+            engine->g_oSendKeys->SetKeyDelay( nValue );
     }
     else if ( !stricmp(szOption, "SendKeyDownDelay") )        // SendKeyDownDelay
     {
-        vResult = (int)engine->oSendKeys().m_nKeyDownDelay;    // Store current value
+        vResult = (int)engine->g_oSendKeys->m_nKeyDownDelay;    // Store current value
 
         if (nValue >= -1)
-            engine->oSendKeys().SetKeyDownDelay( nValue );
+            engine->g_oSendKeys->SetKeyDownDelay( nValue );
     }
     else if ( !stricmp(szOption, "TrayIconDebug") )            // TrayIconDebug
     {
