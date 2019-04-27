@@ -45,6 +45,7 @@
 
 
 // Includes
+#include "AutoIt.h"
 #include "utility.h"
 
 

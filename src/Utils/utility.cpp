@@ -46,6 +46,7 @@
 
 // Includes
 #include "StdAfx.h"                                // Pre-compiled headers
+#include "utility.h"
 
 #ifndef _MSC_VER                                // Includes for non-MS compilers
     #include <stdio.h>
@@ -60,10 +61,8 @@
     #include <ctype.h>
 #endif
 
-#include "Engine/globaldata.h"
-#include "utility.h"
 #include "mt19937ar-cok.h"                        // Custom rand()
-#include "astring_datatype.h"
+#include "Engine/Type/AString.h"
 
 
 // Defines

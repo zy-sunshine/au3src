@@ -32,7 +32,5 @@ private:
 #ifdef AUT_CONFIG_LEXERCACHE
     LexerCache         m_LexerCache[AUT_LEXER_CACHESIZE];
 #endif
-    static char        m_PrecOpRules[OPR_MAXOPR][OPR_MAXOPR];    // Table for precedence rules
     static const char  *m_szKeywords[];            // Valid keywords
-    static const char  *m_szMacros[];                // Valid functions
 };

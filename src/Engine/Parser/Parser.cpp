@@ -462,7 +462,7 @@ AUT_RESULT Parser::UserFunctionCall(VectorToken &vLineToks, uint &ivPos, Variant
             // of the actual ELEMENT rather than the whole array
             if (pvTemp->type() == VAR_ARRAY && vFuncToks[ivFuncPos].m_nType == TOK_LEFTSUBSCRIPT)
             {
-                if ( AUT_FAILED(GetArrayElement(vFuncToks, ivFuncPos, &pvTemp)) )
+                if ( AUT_FAILED(parserExp->GetArrayElement(vFuncToks, ivFuncPos, &pvTemp)) )
                     return AUT_ERR;
             }
 
@@ -737,7 +737,7 @@ void Parser::StartWithVariable(VectorToken &vLineToks, uint &ivPos)
         // If it is an array and a subscript token is next then get the reference of the array element we want to change
         if (pvTemp->type() == VAR_ARRAY && vLineToks[ivPos].m_nType == TOK_LEFTSUBSCRIPT)
         {
-            if ( AUT_FAILED(GetArrayElement(vLineToks, ivPos, &pvTemp)) )
+            if ( AUT_FAILED(parserExp->GetArrayElement(vLineToks, ivPos, &pvTemp)) )
                 return;
         }
 

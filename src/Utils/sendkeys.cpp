@@ -68,15 +68,12 @@
 
 // Includes
 #include "StdAfx.h"                                // Pre-compiled headers
+#include "SendKeys.h"
 
 #ifndef _MSC_VER                                // Includes for non-MS compilers
     #include <windows.h>
 #endif
 
-#include "AutoIt.h"                                // Autoit values, macros and config options
-
-#include "sendkeys.h"
-#include "globaldata.h"
 #include "utility.h"
 
 

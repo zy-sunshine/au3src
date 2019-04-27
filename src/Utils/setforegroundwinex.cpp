@@ -45,13 +45,13 @@
 
 // Includes
 #include "StdAfx.h"                                // Pre-compiled headers
+#include "SetForegroundWinEx.h"
 
 #ifndef _MSC_VER                                // Includes for non-MS compilers
     #include <windows.h>
 #endif
 
-#include "setforegroundwinex.h"
-#include "os_version.h"
+#include "OSVersion.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////

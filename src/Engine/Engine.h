@@ -278,6 +278,8 @@ typedef bool        (*HandleFunc)(void);
 ///////////////////////////////////////////////////////////////////////////////
 
 class Lexer;
+class Parser;
+class ParserExp;
 class OS_Version;
 class SetForegroundWinEx;
 class ScriptFile;
@@ -287,6 +289,7 @@ class Engine
 {
     friend class Lexer;
     friend class Parser;
+    friend class ParserExp;
 public:
     // Variables
 

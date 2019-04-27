@@ -1,3 +1,4 @@
+#pragma once
 #include "AutoIt.h"
 
 class WinUtil {

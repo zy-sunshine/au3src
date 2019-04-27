@@ -45,13 +45,11 @@
 
 // Includes
 #include "StdAfx.h"                                // Pre-compiled headers
+#include "OSVersion.h"
 
 #ifndef _MSC_VER                                // Includes for non-MS compilers
     #include <windows.h>
 #endif
-
-#include "os_version.h"
-
 
 /*
 OSVERSIONINFO structure details

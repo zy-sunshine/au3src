@@ -19,7 +19,6 @@ public:
     AUT_RESULT  VerifyBlockStructure2(int nDo, int nWhile, int nFor, int nSelect, int nIf);
     void        Parse(VectorToken &vLineToks, int nScriptLineCurrent, int &nScriptLine);
     void        StartWithVariable(VectorToken &vLineToks, uint &ivPos);
-    AUT_RESULT  GetArrayElement(VectorToken &vLineToks, uint &ivPos, Variant **ppvTemp);
     void        StartWithKeyword(VectorToken &vLineToks, uint &ivPos, int nScriptLineCurrent, int &nScriptLine);
     AUT_RESULT  FunctionCall(VectorToken &vLineToks, uint &ivPos, Variant &vResult);
     AUT_RESULT  GetFunctionCallParams(VectorVariant &vParams, VectorToken &vLineToks, uint &ivPos, int &nNumParams);

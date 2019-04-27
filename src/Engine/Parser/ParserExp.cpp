@@ -91,15 +91,39 @@ enum
     M_MAX
 };
 
+// Macro variables - order must match above
+// Must be in UPPERCASE
+const char * ParserExp::m_szMacros[M_MAX] =    {
+    "ERROR", "EXTENDED",
+    "SEC", "MIN", "HOUR", "MDAY", "MON", "YEAR", "WDAY", "YDAY",
+    "PROGRAMFILESDIR", "COMMONFILESDIR",
+    "MYDOCUMENTSDIR", "APPDATACOMMONDIR", "DESKTOPCOMMONDIR", "DOCUMENTSCOMMONDIR", "FAVORITESCOMMONDIR",
+    "PROGRAMSCOMMONDIR", "STARTMENUCOMMONDIR", "STARTUPCOMMONDIR",
+    "APPDATADIR", "DESKTOPDIR", "FAVORITESDIR", "PROGRAMSDIR", "STARTMENUDIR", "STARTUPDIR",
+    "COMPUTERNAME", "WINDOWSDIR", "SYSTEMDIR",
+    "SW_HIDE", "SW_MINIMIZE", "SW_MAXIMIZE", "SW_RESTORE", "SW_SHOW", "SW_SHOWDEFAULT", "SW_ENABLE", "SW_DISABLE",
+    "SW_SHOWMAXIMIZED", "SW_SHOWMINIMIZED", "SW_SHOWMINNOACTIVE", "SW_SHOWNA", "SW_SHOWNOACTIVATE", "SW_SHOWNORMAL",
+    "SCRIPTFULLPATH", "SCRIPTNAME", "SCRIPTDIR", "WORKINGDIR",
+    "OSTYPE", "OSVERSION", "OSBUILD", "OSSERVICEPACK", "OSLANG",
+    "AUTOITVERSION", "AUTOITEXE", "IPADDRESS1", "IPADDRESS2", "IPADDRESS3",
+    "IPADDRESS4", "CR", "LF", "CRLF", "DESKTOPWIDTH", "DESKTOPHEIGHT", "DESKTOPDEPTH", "DESKTOPREFRESH",
+    "COMPILED", "COMSPEC", "TAB",
+    "USERNAME", "TEMPDIR",
+    "USERPROFILEDIR", "HOMEDRIVE",
+    "HOMEPATH", "HOMESHARE", "LOGONSERVER", "LOGONDOMAIN",
+    "LOGONDNSDOMAIN", "INETGETBYTESREAD", "INETGETACTIVE",
+    "NUMPARAMS"
+};
+
 // Operator precedence parsing stuff - ordering is important (see script_exp.cpp)
 enum
 {
     S,                                            // Shift
     R,                                            // Reduce
-    RP,                                            // Reduce parenthesis
+    RP,                                           // Reduce parenthesis
     A,                                            // Accept
-    E1,                                            // Error: missing )
-    E2,                                            // Error: mising operator
+    E1,                                           // Error: missing )
+    E2,                                           // Error: mising operator
     E3                                            // Error: unbalanced )
 };
 
@@ -511,11 +535,11 @@ AUT_RESULT ParserExp::EvaluateMacro(const char *szName, Variant &vResult)
             break;
 
         case M_ERROR:
-            vResult = m_nFuncErrorCode;    // Extended function error code
+            vResult = _parser->m_nFuncErrorCode;    // Extended function error code
             break;
 
         case M_EXTENDED:
-            vResult = m_nFuncExtCode;    // Extended function code
+            vResult = _parser->m_nFuncExtCode;    // Extended function code
             break;
 
         case M_SEC:
@@ -688,13 +712,13 @@ AUT_RESULT ParserExp::EvaluateMacro(const char *szName, Variant &vResult)
             break;
 
         case M_SCRIPTFULLPATH:
-            vResult = m_sScriptFullPath.c_str();
+            vResult = engine->m_sScriptFullPath.c_str();
             break;
         case M_SCRIPTNAME:
-            vResult = m_sScriptName.c_str();
+            vResult = engine->m_sScriptName.c_str();
             break;
         case M_SCRIPTDIR:
-            vResult = m_sScriptDir.c_str();
+            vResult = engine->m_sScriptDir.c_str();
             break;
         case M_WORKINGDIR:
             GetCurrentDirectory(_MAX_PATH, szValue);
@@ -884,10 +908,10 @@ AUT_RESULT ParserExp::EvaluateMacro(const char *szName, Variant &vResult)
             break;
 
         case M_INETGETBYTESREAD:
-            vResult = m_InetGetDetails.nBytesRead;
+            vResult = engine->m_InetGetDetails.nBytesRead;
             break;
         case M_INETGETACTIVE:
-            vResult = (int)m_InetGetDetails.bInProgress;
+            vResult = (int)engine->m_InetGetDetails.bInProgress;
             break;
 
         case M_NUMPARAMS:

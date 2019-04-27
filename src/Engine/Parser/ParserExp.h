@@ -20,8 +20,12 @@ public:
     AUT_RESULT  EvaluateExpression(VectorToken &vLineToks, uint &ivPos, Variant &vResult);
     AUT_RESULT  OprReduce(StackInt &opStack, StackVariant &valStack);
     AUT_RESULT  SkipBoolean(VectorToken &vLineToks, unsigned int &ivPos);
+    AUT_RESULT  GetArrayElement(VectorToken &vLineToks, uint &ivPos, Variant **ppvTemp);
 
 private:
     Parser *_parser;
     Engine *engine;
+
+    static char        m_PrecOpRules[OPR_MAXOPR][OPR_MAXOPR];    // Table for precedence rules
+    static const char  *m_szMacros[];                // Valid functions
 };
