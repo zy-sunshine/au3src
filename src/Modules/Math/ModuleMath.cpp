@@ -56,8 +56,7 @@
 //    #include "qmath.h"                            // MinGW doesn't like our asm maths functions
 #endif
 
-#include "Utils/utility.h"
-
+#include "Utils/StrUtil.h"
 
 //AU3_FuncInfo ModuleMath::funcList[] = 
 ////    {"EXP", &ModuleMath::F_Exp, 1, 1},
@@ -341,7 +340,7 @@ AUT_RESULT ModuleMath::F_Hex(VectorVariant &vParams, Variant &vResult)
         engine->SetFuncErrorCode(1);
         return AUT_OK;
     }
-    if (Util_ConvHex(vParams[0].nValue(), szTemp1, vParams[1].nValue()) == false)
+    if (g_oStrUtil.DecToHex(vParams[0].nValue(), szTemp1, vParams[1].nValue()) == false)
         engine->SetFuncErrorCode(1);            // left overs / not enough digits
     vResult = szTemp1;
 

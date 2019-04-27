@@ -56,7 +56,7 @@
 
 #ifdef AUT_CONFIG_GUI                            // Is GUI enabled?
 
-#include "Utils/utility.h"
+#include "Utils/StrUtil.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -107,21 +107,21 @@ AUT_RESULT AutoIt_Script::F_GUIGetMsg(VectorVariant &vParams, Variant &vResult)
         // Advanced return
 
         // Setup vResult as an Array to hold the 3 values we want to return
-        Util_VariantArrayDim(&vResult, 5);
+        engine->VariantArrayDim(&vResult, 5);
 
-        pvTemp = Util_VariantArrayGetRef(&vResult, 0);    // First element
+        pvTemp = engine->VariantArrayGetRef(&vResult, 0);    // First element
         *pvTemp = Event.nGlobalID;
 
-        pvTemp = Util_VariantArrayGetRef(&vResult, 1);
+        pvTemp = engine->VariantArrayGetRef(&vResult, 1);
         *pvTemp = Event.hWnd;
 
-        pvTemp = Util_VariantArrayGetRef(&vResult, 2);
+        pvTemp = engine->VariantArrayGetRef(&vResult, 2);
         *pvTemp = Event.hCtrl;
 
-        pvTemp = Util_VariantArrayGetRef(&vResult, 3);
+        pvTemp = engine->VariantArrayGetRef(&vResult, 3);
         *pvTemp = Event.nCursorX;
 
-        pvTemp = Util_VariantArrayGetRef(&vResult, 4);
+        pvTemp = engine->VariantArrayGetRef(&vResult, 4);
         *pvTemp = Event.nCursorY;
     }
     else
@@ -453,7 +453,7 @@ AUT_RESULT AutoIt_Script::GUICtrlCreate(int nType, VectorVariant &vParams, Varia
         case AUT_GUI_LISTVIEWITEM:
             nSubType |= AUT_GUI_NORESIZE | AUT_GUI_NOTEXTSIZE;
             i = 0;
-            szText = Util_StrCpyAlloc(vParams[0].szValue());
+            szText = g_oStrUtil.StrCpyAlloc(vParams[0].szValue());
             break;
 
         case AUT_GUI_TABITEM:
@@ -480,7 +480,7 @@ AUT_RESULT AutoIt_Script::GUICtrlCreate(int nType, VectorVariant &vParams, Varia
         case AUT_GUI_CHECKBOX:
         case AUT_GUI_RADIO:
             i = 0;
-            szText = Util_StrCpyAlloc(vParams[0].szValue());
+            szText = g_oStrUtil.StrCpyAlloc(vParams[0].szValue());
             break;
 
         case AUT_GUI_AVI:
@@ -489,7 +489,7 @@ AUT_RESULT AutoIt_Script::GUICtrlCreate(int nType, VectorVariant &vParams, Varia
             i = 1;
             id = vParams[1].nValue();
             if (id<0) id=0;
-            szText = Util_StrCpyAlloc(vParams[0].szValue());
+            szText = g_oStrUtil.StrCpyAlloc(vParams[0].szValue());
             break;
 
         case AUT_GUI_PROGRESS:
@@ -505,7 +505,7 @@ AUT_RESULT AutoIt_Script::GUICtrlCreate(int nType, VectorVariant &vParams, Varia
             nSubType |= AUT_GUI_NORESIZE | AUT_GUI_NOFONT | AUT_GUI_NOTEXTSIZE;
             char szTemp[10];
             sprintf(szTemp,"%d",vParams[0].nValue());
-            szText = Util_StrCpyAlloc(szTemp);
+            szText = g_oStrUtil.StrCpyAlloc(szTemp);
             i = 0;
             break;
     }
@@ -756,8 +756,8 @@ AUT_RESULT AutoIt_Script::F_GUISetTrayBalloon(VectorVariant &vParams, Variant &v
     int        nTimeOut = 10;
     int        nOption = 0;
 
-    Util_Strncpy(szTitle,vParams[0].szValue(),64);
-    Util_Strncpy(szText,vParams[1].szValue(),256);
+    g_oStrUtil.Strncpy(szTitle,vParams[0].szValue(),64);
+    g_oStrUtil.Strncpy(szText,vParams[1].szValue(),256);
 
     if (iNumParams > 2)
         nTimeOut = vParams[2].nValue();
@@ -780,7 +780,7 @@ AUT_RESULT AutoIt_Script::F_GUISetTrayIcon(VectorVariant &vParams, Variant &vRes
 {
     uint    iNumParams = vParams.size();
 
-    Util_Strncpy(g_oGUI.m_szTrayIconFile,vParams[0].szValue(),_MAX_PATH);
+    g_oStrUtil.Strncpy(g_oGUI.m_szTrayIconFile,vParams[0].szValue(),_MAX_PATH);
 
     if (iNumParams > 1 &&  vParams[1].nValue() >= 0)
         g_oGUI.m_nTrayIconId = vParams[1].nValue();
@@ -800,7 +800,7 @@ AUT_RESULT AutoIt_Script::F_GUISetTrayIcon(VectorVariant &vParams, Variant &vRes
 
 AUT_RESULT AutoIt_Script::F_GUISetTrayTip(VectorVariant &vParams, Variant &vResult)
 {
-    Util_Strncpy(g_oGUI.m_szTrayToolTip,vParams[0].szValue(),64);
+    g_oStrUtil.Strncpy(g_oGUI.m_szTrayToolTip,vParams[0].szValue(),64);
 
     if (g_oGUI.m_bShowTrayIcon)
         g_oGUI.CreateTrayIcon();
@@ -1105,20 +1105,20 @@ AUT_RESULT AutoIt_Script::F_GUIRecvMsg(VectorVariant &vParams, Variant &vResult)
 
         nLparamType = nLparamType + 2; //  entry in array
 
-        Util_VariantArrayDim(&vResult, nLparamType);
+        engine->VariantArrayDim(&vResult, nLparamType);
 
-        pvTemp = Util_VariantArrayGetRef(&vResult, 0);    //First element
+        pvTemp = engine->VariantArrayGetRef(&vResult, 0);    //First element
         *pvTemp = nX;
 
-        pvTemp = Util_VariantArrayGetRef(&vResult, 1);
+        pvTemp = engine->VariantArrayGetRef(&vResult, 1);
         *pvTemp = nY;
 
         if (nLparamType == 4)
         {
-            pvTemp = Util_VariantArrayGetRef(&vResult, 2);
+            pvTemp = engine->VariantArrayGetRef(&vResult, 2);
             *pvTemp = nRight;
 
-            pvTemp = Util_VariantArrayGetRef(&vResult, 3);
+            pvTemp = engine->VariantArrayGetRef(&vResult, 3);
             *pvTemp = nBottom;
         }
     }
@@ -1158,26 +1158,26 @@ AUT_RESULT AutoIt_Script::F_GUIGetCursorInfo(VectorVariant &vParams, Variant &vR
     // Setup vResult as an Array to hold the 5 values we want to return
     Variant    *pvTemp;
 
-    Util_VariantArrayDim(&vResult, 5);
+    engine->VariantArrayDim(&vResult, 5);
 
     if (vParams.size() > 0)
         hWnd = vParams[0].hWnd();
 
     if ( g_oGUI.GuiGetCursorInfo(hWnd, nX, nY, nPrimary, nSecondary, nGlobalID) )
     {
-        pvTemp = Util_VariantArrayGetRef(&vResult, 0);    //First element
+        pvTemp = engine->VariantArrayGetRef(&vResult, 0);    //First element
         *pvTemp = nX;                    // X
 
-        pvTemp = Util_VariantArrayGetRef(&vResult, 1);
+        pvTemp = engine->VariantArrayGetRef(&vResult, 1);
         *pvTemp = nY;                    // Y
 
-        pvTemp = Util_VariantArrayGetRef(&vResult, 2);
+        pvTemp = engine->VariantArrayGetRef(&vResult, 2);
         *pvTemp = nPrimary;                // Primary down
 
-        pvTemp = Util_VariantArrayGetRef(&vResult, 3);
+        pvTemp = engine->VariantArrayGetRef(&vResult, 3);
         *pvTemp = nSecondary;            // Secondary down
 
-        pvTemp = Util_VariantArrayGetRef(&vResult, 4);
+        pvTemp = engine->VariantArrayGetRef(&vResult, 4);
         *pvTemp = nGlobalID;            // Ctrl ID that cursor is over
     }
     else

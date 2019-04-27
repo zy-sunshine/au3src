@@ -3,7 +3,8 @@
 
 #include "Engine/Engine.h"
 #include "Utils/WinUtil.h"
-#include "Utils/utility.h"
+#include "Utils/SysUtil.h"
+#include "Utils/StrUtil.h"
 #include "Utils/OSVersion.h"
 #include "InputBox.h"
 
@@ -14,7 +15,7 @@
 AUT_RESULT ModuleWin::F_MsgBox(VectorVariant &vParams, Variant &vResult)
 {
     if (vParams.size() == 4)
-        vResult = Util_MessageBoxEx(NULL, vParams[2].szValue(), vParams[1].szValue(), (UINT)vParams[0].nValue() | MB_SETFOREGROUND, vParams[3].nValue() * 1000);
+        vResult = g_oSysUtil.MessageBoxEx(NULL, vParams[2].szValue(), vParams[1].szValue(), (UINT)vParams[0].nValue() | MB_SETFOREGROUND, vParams[3].nValue() * 1000);
     else
         vResult = MessageBox(NULL, vParams[2].szValue(), vParams[1].szValue(), (UINT)vParams[0].nValue() | MB_SETFOREGROUND);
     return AUT_OK;
@@ -30,7 +31,7 @@ AUT_RESULT ModuleWin::F_TrayTip(VectorVariant &vParams, Variant &vResult)
 {
     uint    iNumParams = vParams.size();
 
-    if (engine->g_oVersion->IsWin2000orLater()) {
+    if (g_oVersion.IsWin2000orLater()) {
 
         struct MYNOTIFYICONDATA : public _NOTIFYICONDATAA { // Not wide character compliant.
             DWORD dwState;
@@ -122,7 +123,7 @@ AUT_RESULT ModuleWin::F_PixelSearch (VectorVariant &vParams, Variant &vResult)
     relrect.bottom = vParams[3].nValue();
 
     // Convert coords to screen/active window/client
-    WinUtil::instance.ConvertCoords(engine->nCoordPixelMode(), ptOrigin);
+    g_oWinUtil.ConvertCoords(engine->nCoordPixelMode(), ptOrigin);
     relrect.left += ptOrigin.x;
     relrect.top += ptOrigin.y;
     relrect.right += ptOrigin.x;
@@ -132,7 +133,7 @@ AUT_RESULT ModuleWin::F_PixelSearch (VectorVariant &vParams, Variant &vResult)
     // Get the search colour and split into components
     col        = vParams[4].nValue();                // Pixel color to find
     if (engine->bColorModeBGR() == false)
-        Util_RGBtoBGR(col);                        // Get RGB color into the standard COLORREF BGR format
+        g_oSysUtil.RGBtoBGR(col);                        // Get RGB color into the standard COLORREF BGR format
 
     red        = GetRValue(col);
     green    = GetGValue(col);
@@ -191,16 +192,16 @@ AUT_RESULT ModuleWin::F_PixelSearch (VectorVariant &vParams, Variant &vResult)
                 // Setup vResult as an Array to hold the 2 values we want to return
                 Variant    *pvTemp;
 
-                Util_VariantArrayDim(&vResult, 2);
+                engine->VariantArrayDim(&vResult, 2);
 
                 // Convert coords to screen/active window/client
                 q -= ptOrigin.x;
                 r -= ptOrigin.y;
 
-                pvTemp = Util_VariantArrayGetRef(&vResult, 0);    //First element
+                pvTemp = engine->VariantArrayGetRef(&vResult, 0);    //First element
                 *pvTemp = q;                    // X
 
-                pvTemp = Util_VariantArrayGetRef(&vResult, 1);
+                pvTemp = engine->VariantArrayGetRef(&vResult, 1);
                 *pvTemp = r;                    // Y
 
                 ReleaseDC(NULL,hdc);
@@ -244,7 +245,7 @@ AUT_RESULT ModuleWin::F_PixelChecksum (VectorVariant &vParams, Variant &vResult)
         nStep = vParams[4].nValue();
 
     // Convert coords to screen/active window/client
-    WinUtil::instance.ConvertCoords(engine->nCoordPixelMode(), ptOrigin);
+    g_oWinUtil.ConvertCoords(engine->nCoordPixelMode(), ptOrigin);
     relrect.left += ptOrigin.x;
     relrect.top += ptOrigin.y;
     relrect.right += ptOrigin.x;
@@ -300,7 +301,7 @@ AUT_RESULT ModuleWin::F_PixelGetColor(VectorVariant &vParams, Variant &vResult)
     int rely = vParams[1].nValue();
 
     // Convert coords to screen/active window/client
-    WinUtil::instance.ConvertCoords(engine->nCoordPixelMode(), ptOrigin);
+    g_oWinUtil.ConvertCoords(engine->nCoordPixelMode(), ptOrigin);
     relx += ptOrigin.x;
     rely += ptOrigin.y;
 
@@ -310,7 +311,7 @@ AUT_RESULT ModuleWin::F_PixelGetColor(VectorVariant &vParams, Variant &vResult)
 
         // Convert from BGR to RGB?
         if (engine->bColorModeBGR() == false)
-            Util_BGRtoRGB(nCol);
+            g_oSysUtil.BGRtoRGB(nCol);
 
         vResult = nCol;
 
@@ -701,7 +702,7 @@ AUT_RESULT ModuleWin::F_InputBox(VectorVariant &vParams, Variant &vResult)
 
         case 4:    // with password
             cTmp = vParams[3].szValue()[0];
-             if (cTmp != '\0' && !Util_IsSpace(cTmp))
+             if (cTmp != '\0' && !g_oStrUtil.IsSpace(cTmp))
                  aDlg.m_password = cTmp;
             if (cTmp != '\0')
                 for (i=1; (cTmp = vParams[3].szValue()[i])!= '\0'; ++i) {

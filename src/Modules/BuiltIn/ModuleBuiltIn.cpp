@@ -56,7 +56,7 @@
 //    #include "qmath.h"                            // MinGW doesn't like our asm maths functions
 #endif
 
-#include "Utils/utility.h"
+#include "Utils/StrUtil.h"
 #include "Utils/mt19937ar-cok.h"
 
 
@@ -152,7 +152,7 @@ AUT_RESULT ModuleBuiltIn::F_Dec(VectorVariant &vParams, Variant &vResult)
 {
     int        nTemp1;
 
-    if (Util_ConvDec(vParams[0].szValue(), nTemp1) == false)
+    if (g_oStrUtil.HexToDec(vParams[0].szValue(), nTemp1) == false)
         engine->SetFuncErrorCode(1);            // error
     vResult = nTemp1;
 

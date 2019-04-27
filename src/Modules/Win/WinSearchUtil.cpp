@@ -164,7 +164,7 @@ bool WinSearchUtil::Win_WindowSearch(bool bFirstOnly)
 
             // Assumes int32 is big enough for HWND (it currently is... 4 bytes)
             // We can always bump up to 64 if required in the future (IA64?)
-            Util_ConvDec( &m_vWindowSearchTitle.szValue()[7], nTemp );
+            g_oStrUtil.ConvDec( &m_vWindowSearchTitle.szValue()[7], nTemp );
             m_WindowSearchHWND = (HWND)nTemp;
 
             if (IsWindow(m_WindowSearchHWND) )
@@ -290,7 +290,7 @@ bool WinSearchUtil::Win_WindowSearchText(void)
     // If current search window seems hung then don't attempt to read it (WM_GETTEXT would hang)
     // If we are not using the WM_GETEXT mode then we don't care if it's hung as GetWindowText()
     // will cope
-    if ( engine->nWindowSearchTextMode() == 1 && Util_IsWinHung(m_WindowSearchHWND) )
+    if ( engine->nWindowSearchTextMode() == 1 && g_oSysUtil.IsWinHung(m_WindowSearchHWND) )
         return false;
 
     int nLastCount = m_nWinListCount;
@@ -485,9 +485,9 @@ void WinSearchUtil::ControlWithFocus(HWND hWnd, Variant &vResult)
     char    szClass[256];
 
 
-    Util_AttachThreadInput(hWnd, true);
+    g_oSysUtil.AttachThreadInput(hWnd, true);
     m_ControlSearchHWND=GetFocus();                // Get control with focus' hWnd
-    Util_AttachThreadInput(hWnd, false);
+    g_oSysUtil.AttachThreadInput(hWnd, false);
 
     if(!m_ControlSearchHWND)
     {

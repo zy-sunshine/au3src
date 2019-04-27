@@ -55,7 +55,8 @@
 
 #include "Engine/Engine.h"
 #include "Engine/ScriptFile.h"
-#include "Utils/utility.h"
+#include "Utils/StrUtil.h"
+#include "Utils/SysUtil.h"
 #include "Utils/OSVersion.h"
 
 static Application *gApp = NULL;
@@ -183,10 +184,10 @@ void Application::RegisterClass(void)
     m_hIconPause    = LoadIcon(engine->g_hInstance, MAKEINTRESOURCE(IDI_PAUSED));
 
     // Load the right tray icon for the OS
-    if (engine->g_oVersion->IsWinXPorLater() || engine->g_oVersion->IsWinMeorLater())
-        m_hIconSmall    = Util_LoadIcon(IDI_MAIN, 16, 16, -1);
+    if (g_oVersion.IsWinXPorLater() || g_oVersion.IsWinMeorLater())
+        m_hIconSmall    = g_oSysUtil.LoadIcon(IDI_MAIN, 16, 16, -1, engine->g_hInstance);
     else
-        m_hIconSmall    = Util_LoadIcon(IDI_MAIN, 16, 16, 4);
+        m_hIconSmall    = g_oSysUtil.LoadIcon(IDI_MAIN, 16, 16, 4, engine->g_hInstance);
 
     // Init the class structure for the main class
     wndClass.cbSize            = sizeof(wndClass);
@@ -831,7 +832,7 @@ void Application::SetTrayIconToolTip(void)
 #endif
 
     // Tip can only be 64 characters, enforce and display
-    Util_Strncpy(szTip, sTip.c_str(), 63+1);
+    g_oStrUtil.Strncpy(szTip, sTip.c_str(), 63+1);
     strcpy(nic.szTip, szTip);
     Shell_NotifyIcon(NIM_MODIFY, &nic);
 

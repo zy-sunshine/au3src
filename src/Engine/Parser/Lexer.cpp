@@ -52,7 +52,7 @@
 #endif
 
 #include "Engine/Engine.h"
-#include "Utils/utility.h"
+#include "Utils/StrUtil.h"
 #include "Parser.h"
 
 Lexer::Lexer(Parser* parser, Engine* engine)
@@ -453,7 +453,7 @@ bool Lexer::Lexer_Number(const char *szLine, uint &iPos, Token &rtok, char *szTe
         szTemp[iPosTemp] = '\0';                // Terminate
         rtok.settype(TOK_INT32);
         //sscanf(szTemp, "%x", &nTemp);            // strtol doesn't cope with 0xffffffff = -1 (although sscanf adds 4KB to the code! :()
-        if (Util_ConvDec(szTemp, nTemp) == false)
+        if (g_oStrUtil.HexToDec(szTemp, nTemp) == false)
             return false;
 
         rtok.nValue = nTemp;

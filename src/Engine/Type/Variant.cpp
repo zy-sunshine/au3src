@@ -52,6 +52,8 @@
     #include <windef.h>
 #endif
 
+#include "Utils/StrUtil.h"
+
 ///////////////////////////////////////////////////////////////////////////////
 // Copy constructor
 ///////////////////////////////////////////////////////////////////////////////
@@ -155,50 +157,6 @@ void Variant::ReInit(void)
 
 } // ReInit()
 
-
-///////////////////////////////////////////////////////////////////////////////
-// HexToDec()
-///////////////////////////////////////////////////////////////////////////////
-
-bool Variant::HexToDec(const char *szHex, int &nDec)
-{
-    // Really crappy hex conversion
-    int i = (int)strlen(szHex) - 1;
-
-    nDec = 0;
-    int nMult = 1;
-    for (int j = 0; j < 8; ++j)
-    {
-        if (i < 0)
-            break;
-
-        if (szHex[i] >= '0' && szHex[i] <= '9')
-            nDec += (szHex[i] - '0') * nMult;
-        else if (szHex[i] >= 'A' && szHex[i] <= 'F')
-            nDec += (((szHex[i] - 'A'))+10) * nMult;
-        else if (szHex[i] >= 'a' && szHex[i] <= 'f')
-            nDec += (((szHex[i] - 'a'))+10) * nMult;
-        else
-        {
-            nDec = 0;                    // Set value as 0
-            return false;
-        }
-
-        --i;
-        nMult = nMult * 16;
-    }
-
-    if (i != -1)
-    {
-        nDec = 0;
-        return false;
-    }
-    else
-        return true;
-
-} // Util_ConvDec()
-
-
 ///////////////////////////////////////////////////////////////////////////////
 // szValue()
 ///////////////////////////////////////////////////////////////////////////////
@@ -237,7 +195,7 @@ double Variant::fValue(void)
 
             if ( (m_szValue[0] == '0') && (m_szValue[1] == 'x' || m_szValue[1] == 'X') )
             {
-                HexToDec(&m_szValue[2], nTemp);    // Assume hex conversion
+                g_oStrUtil.HexToDec(&m_szValue[2], nTemp);    // Assume hex conversion
                 return (double)nTemp;
             }
             else
@@ -276,7 +234,7 @@ int    Variant::nValue(void)
 
             if ( (m_szValue[0] == '0') && (m_szValue[1] == 'x' || m_szValue[1] == 'X') )
             {
-                HexToDec(&m_szValue[2], nTemp);    // Assume hex conversion
+                g_oStrUtil.HexToDec(&m_szValue[2], nTemp);    // Assume hex conversion
                 return nTemp;
             }
             else
@@ -315,7 +273,7 @@ __int64    Variant::n64Value(void)
 
             if ( (m_szValue[0] == '0') && (m_szValue[1] == 'x' || m_szValue[1] == 'X') )
             {
-                HexToDec(&m_szValue[2], nTemp);    // Assume hex conversion
+                g_oStrUtil.HexToDec(&m_szValue[2], nTemp);    // Assume hex conversion
                 return (__int64)nTemp;
             }
             else

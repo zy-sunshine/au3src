@@ -112,7 +112,6 @@ public:
     friend bool operator||(Variant &vOp1, Variant &vOp2);    // Overloaded || for variants
 
     bool        StringCompare(Variant &vOp2);            // Compare two strings with case sense
-    bool        HexToDec(const char *szHex, int &nDec);    // Convert hex string to an integer
     void        Concat(Variant &vOp2);                    // Concats two variants (forces string if possible)
     void        ChangeToDouble(void);                    // Convert variant to a DOUBLE
     void        ChangeToString(void);                    // Convert variant to a STRING

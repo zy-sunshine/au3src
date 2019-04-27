@@ -55,7 +55,8 @@
     #include <tlhelp32.h>
 #endif
 
-#include "Utils/utility.h"
+#include "Utils/SysUtil.h"
+#include "Utils/StrUtil.h"
 #include "Utils/WinUtil.h"
 #include "Utils/OSVersion.h"
 
@@ -173,7 +174,7 @@ bool ModuleSys::HandleProcessWait(int type, AString &sProcessSearchTitle, int nP
         if (type == AUT_PROCESSWAIT)
         {
             // Process Wait
-            if (Util_DoesProcessExist(m_sProcessSearchTitle.c_str(), dwPid, bRes) == false)
+            if (g_oSysUtil.DoesProcessExist(m_sProcessSearchTitle.c_str(), dwPid, bRes) == false)
             {
                 engine->FatalError(IDE_AUT_E_PROCESSNT);
                 engine->quit();
@@ -182,7 +183,7 @@ bool ModuleSys::HandleProcessWait(int type, AString &sProcessSearchTitle, int nP
         else if (type == AUT_PROCESSWAITCLOSE)
         {
             // Process Wait Close
-            if (Util_DoesProcessExist(m_sProcessSearchTitle.c_str(), dwPid, bRes) == false)
+            if (g_oSysUtil.DoesProcessExist(m_sProcessSearchTitle.c_str(), dwPid, bRes) == false)
             {
                 engine->FatalError(IDE_AUT_E_PROCESSNT);
                 engine->quit();
@@ -243,7 +244,7 @@ AUT_RESULT ModuleSys::F_ProcessExists(VectorVariant &vParams, Variant &vResult)
     DWORD    dwPid;
     bool    bResult = false;
 
-    if (Util_DoesProcessExist(vParams[0].szValue(), dwPid, bResult) == false)
+    if (g_oSysUtil.DoesProcessExist(vParams[0].szValue(), dwPid, bResult) == false)
     {
         engine->FatalError(IDE_AUT_E_PROCESSNT);
         return AUT_ERR;
@@ -322,7 +323,7 @@ AUT_RESULT ModuleSys::F_ProcessClose(VectorVariant &vParams, Variant &vResult)
     DWORD    dwPid;
     bool    bResult = false;
 
-    if (Util_DoesProcessExist(vParams[0].szValue(), dwPid, bResult) == false)
+    if (g_oSysUtil.DoesProcessExist(vParams[0].szValue(), dwPid, bResult) == false)
     {
         engine->FatalError(IDE_AUT_E_PROCESSNT);
         return AUT_ERR;
@@ -354,7 +355,7 @@ AUT_RESULT ModuleSys::F_RunAsSet(VectorVariant &vParams, Variant &vResult)
     uint    iNumParams = vParams.size();
 
     // We must be 2000+ to use this feature
-    if (engine->g_oVersion->IsWin2000orLater() == false)
+    if (g_oVersion.IsWin2000orLater() == false)
     {
         vResult = 0;                            // Not supported (default 1)
         return AUT_OK;
@@ -384,9 +385,9 @@ AUT_RESULT ModuleSys::F_RunAsSet(VectorVariant &vParams, Variant &vResult)
 
     // Now, convert to wide character versions to enable easier calling of the
     // CreateProcessAsUser() function which only accepts wide chars
-    m_wszRunUser    = Util_ANSItoUNICODE(vParams[0].szValue());
-    m_wszRunDom        = Util_ANSItoUNICODE(vParams[1].szValue());
-    m_wszRunPwd        = Util_ANSItoUNICODE(vParams[2].szValue());
+    m_wszRunUser    = g_oStrUtil.ANSItoUNICODE(vParams[0].szValue());
+    m_wszRunDom     = g_oStrUtil.ANSItoUNICODE(vParams[1].szValue());
+    m_wszRunPwd     = g_oStrUtil.ANSItoUNICODE(vParams[2].szValue());
 
 
     // Set logon flags
@@ -531,8 +532,8 @@ AUT_RESULT ModuleSys::Run(int nFunction, VectorVariant &vParams, uint iNumParams
                 wsi.lpReserved2    = NULL;
                 wsi.wShowWindow = si.wShowWindow;                // Default is same as si
 
-                wszRun = Util_ANSItoUNICODE(szRun);                // Get wide char version of the run string
-                wszDir = Util_ANSItoUNICODE(szDir);                // Get wide char version of the dir string
+                wszRun = g_oStrUtil.ANSItoUNICODE(szRun);                // Get wide char version of the run string
+                wszDir = g_oStrUtil.ANSItoUNICODE(szDir);                // Get wide char version of the dir string
             }
             else
             {
@@ -568,7 +569,7 @@ AUT_RESULT ModuleSys::Run(int nFunction, VectorVariant &vParams, uint iNumParams
 
         if (engine->bRunErrorsFatal() == true)
         {
-            engine->FatalError(IDS_AUT_E_RUNPROG, WinUtil::instance.FormatWinError());
+            engine->FatalError(IDS_AUT_E_RUNPROG, g_oWinUtil.FormatWinError());
             return AUT_ERR;
         }
         else
@@ -616,7 +617,7 @@ AUT_RESULT ModuleSys::Run(int nFunction, VectorVariant &vParams, uint iNumParams
 
 AUT_RESULT ModuleSys::F_Shutdown(VectorVariant &vParams, Variant &vResult)
 {
-    if (Util_Shutdown(vParams[0].nValue()) == FALSE)
+    if (g_oSysUtil.Shutdown(vParams[0].nValue(), engine->g_hWnd) == FALSE)
         vResult = 0;                            // Shutdown failed
 
     return AUT_OK;
@@ -648,7 +649,7 @@ AUT_RESULT ModuleSys::F_ProcessSetPriority(VectorVariant &vParams, Variant &vRes
     vResult = 0;
     engine->SetFuncErrorCode(1);
 
-    Util_DoesProcessExist(vParams[0].szValue(), dwPid, bRes);
+    g_oSysUtil.DoesProcessExist(vParams[0].szValue(), dwPid, bRes);
     if (!bRes)
         return AUT_OK;
 
@@ -673,7 +674,7 @@ AUT_RESULT ModuleSys::F_ProcessSetPriority(VectorVariant &vParams, Variant &vRes
         dwPriority = 0x00000040;                // IDLE_PRIORITY_CLASS
         break;
     case 1:
-        if (engine->g_oVersion->IsWin9x() || engine->g_oVersion->IsWinMe())
+        if (g_oVersion.IsWin9x() || g_oVersion.IsWinMe())
             engine->SetFuncErrorCode(2);
         else
             dwPriority = 0x00004000;            // BELOW_NORMAL_PRIORITY_CLASS
@@ -682,7 +683,7 @@ AUT_RESULT ModuleSys::F_ProcessSetPriority(VectorVariant &vParams, Variant &vRes
         dwPriority = 0x00000020;                // NORMAL_PRIORITY_CLASS
         break;
     case 3:
-        if (engine->g_oVersion->IsWin9x() || engine->g_oVersion->IsWinMe())
+        if (g_oVersion.IsWin9x() || g_oVersion.IsWinMe())
             engine->SetFuncErrorCode(2);
         else
             dwPriority = 0x00008000;            // ABOVE_NORMAL_PRIORITY_CLASS
@@ -732,7 +733,7 @@ AUT_RESULT ModuleSys::F_ProcessList(VectorVariant &vParams, Variant &vResult)
     };
     ProcessInfo piProc[512];
 
-    if (engine->g_oVersion->IsWinNT4())    // Windows NT 4stuff
+    if (g_oVersion.IsWinNT4())    // Windows NT 4stuff
     {
         typedef BOOL (WINAPI *MyEnumProcesses)(DWORD*, DWORD, DWORD*);
         typedef BOOL (WINAPI *MyEnumProcessModules)(HANDLE, HMODULE*, DWORD, LPDWORD);
@@ -889,13 +890,13 @@ AUT_RESULT ModuleSys::F_ProcessList(VectorVariant &vParams, Variant &vResult)
 
 /*
     // Create and fill the array
-    Util_VariantArrayDim(&vResult, count+1);
-    pvTemp = Util_VariantArrayGetRef(&vResult, 0);
+    engine->VariantArrayDim(&vResult, count+1);
+    pvTemp = engine->VariantArrayGetRef(&vResult, 0);
     *pvTemp = count;    // Set the number of processes.
 
     for (int i = 0; i < count; ++i)
     {
-        pvTemp = Util_VariantArrayGetRef(&vResult, i+1);
+        pvTemp = engine->VariantArrayGetRef(&vResult, i+1);
         *pvTemp = "";
 
         switch(mode)

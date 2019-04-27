@@ -53,7 +53,7 @@
     #include <ctype.h>
 #endif
 
-#include "Utils/utility.h"
+#include "Utils/StrUtil.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // StringLen()
@@ -293,7 +293,7 @@ AUT_RESULT ModuleBuiltIn::F_StringStripCR(VectorVariant &vParams, Variant &vResu
     szString = new char[len+1];
 
     strcpy(szString, vParams[0].szValue());
-    Util_StripCR(szString);
+    g_oStrUtil.StripCR(szString);
 
     vResult = szString;                            // Copy to vResult
 
@@ -314,9 +314,9 @@ AUT_RESULT ModuleBuiltIn::F_StringAddCR(VectorVariant &vParams, Variant &vResult
     char    *szOut;
 
     // How long will our new string buffer need to be?
-    szOut = new char[Util_AddCRSize(vParams[0].szValue())];
+    szOut = new char[g_oStrUtil.AddCRSize(vParams[0].szValue())];
 
-    Util_AddCR(vParams[0].szValue(), szOut);
+    g_oStrUtil.AddCR(vParams[0].szValue(), szOut);
 
     vResult = szOut;                            // Copy to vResult
 
@@ -470,13 +470,13 @@ AUT_RESULT ModuleBuiltIn::F_StringSplit(VectorVariant &vParams, Variant &vResult
         iCount   = 0;
         iIndex   = 1;
         iElements = (int)strlen(pcSearch);
-        Util_VariantArrayDim(&vResult, iElements+1);    // create the array , String length + 1
-        pvTemp = Util_VariantArrayGetRef(&vResult, 0);  // First element set to length
+        engine->VariantArrayDim(&vResult, iElements+1);    // create the array , String length + 1
+        pvTemp = engine->VariantArrayGetRef(&vResult, 0);  // First element set to length
         *pvTemp = iElements;
         while (iCount < iElements)
         {
             sElement.assign(pcSearch, iCount, iCount + 1);
-            pvTemp = Util_VariantArrayGetRef(&vResult, iIndex++);   //Next element
+            pvTemp = engine->VariantArrayGetRef(&vResult, iIndex++);   //Next element
             *pvTemp = sElement.c_str();
             ++iCount;                  // Increase count
         }
@@ -518,11 +518,11 @@ AUT_RESULT ModuleBuiltIn::F_StringSplit(VectorVariant &vParams, Variant &vResult
     if (iCount <= 0)
     {
         // Create array of 2 to return count = 1 and full string in element[1]
-        Util_VariantArrayDim(&vResult, 2);
-        pvTemp = Util_VariantArrayGetRef(&vResult, 0);    //First element
+        engine->VariantArrayDim(&vResult, 2);
+        pvTemp = engine->VariantArrayGetRef(&vResult, 0);    //First element
         *pvTemp = 1;
 
-        pvTemp = Util_VariantArrayGetRef(&vResult, 1);    //Second element
+        pvTemp = engine->VariantArrayGetRef(&vResult, 1);    //Second element
         *pvTemp = pcSearch;
 
         engine->SetFuncErrorCode(-iCount+1);    // 1 for no delimiters, 2 for bad flag
@@ -534,9 +534,9 @@ AUT_RESULT ModuleBuiltIn::F_StringSplit(VectorVariant &vParams, Variant &vResult
     iElements = iCount+1;
 
     // Create our return array (first element is number of strings return, so we need iElements+1 elements)
-    Util_VariantArrayDim(&vResult, iElements+1);
+    engine->VariantArrayDim(&vResult, iElements+1);
 
-    pvTemp = Util_VariantArrayGetRef(&vResult, 0);    //First element
+    pvTemp = engine->VariantArrayGetRef(&vResult, 0);    //First element
     *pvTemp = iElements;                            // Number of elements we will return
 
 
@@ -554,7 +554,7 @@ AUT_RESULT ModuleBuiltIn::F_StringSplit(VectorVariant &vParams, Variant &vResult
             bStored = false;
             if ( strchr(pcDelim, pcSearch[nPos]) )    // This works as \0 is also matched so overrun is prevented
             {
-                pvTemp = Util_VariantArrayGetRef(&vResult, iIndex++);    //Next element
+                pvTemp = engine->VariantArrayGetRef(&vResult, iIndex++);    //Next element
                 *pvTemp = sElement.c_str();
                 sElement = "";
 
@@ -582,7 +582,7 @@ AUT_RESULT ModuleBuiltIn::F_StringSplit(VectorVariant &vParams, Variant &vResult
             else
                 sElement = pcTmp;
             // copy string into array
-            pvTemp = Util_VariantArrayGetRef(&vResult, iIndex++);    //Next element
+            pvTemp = engine->VariantArrayGetRef(&vResult, iIndex++);    //Next element
             *pvTemp = sElement.c_str();
             ++iCount;
             break;
@@ -621,10 +621,10 @@ AUT_RESULT ModuleBuiltIn::F_StringStripWS(VectorVariant &vParams, Variant &vResu
     vResult = vParams[0];
 
     if (flags & 8) {    // strip all WS
-        pszTmp = Util_StrCpyAlloc(vResult.szValue());
+        pszTmp = g_oStrUtil.StrCpyAlloc(vResult.szValue());
 
         for (i=0; pszTmp[i];) {
-            if (Util_IsSpace(pszTmp[i]))
+            if (g_oStrUtil.IsSpace(pszTmp[i]))
                 for(int k=i; pszTmp[k]; ++k)    // copy characters up
                     pszTmp[k]=pszTmp[k+1];
             else
@@ -635,17 +635,17 @@ AUT_RESULT ModuleBuiltIn::F_StringStripWS(VectorVariant &vParams, Variant &vResu
         return AUT_OK;    // no other checks needed
     }
     if (flags & 1) {    // strip left
-        pszTmp = Util_StrCpyAlloc(vResult.szValue());
+        pszTmp = g_oStrUtil.StrCpyAlloc(vResult.szValue());
 
-        for (i=0; pszTmp[i] && Util_IsSpace(pszTmp[i]); ++i);    // loop until not whitespace
+        for (i=0; pszTmp[i] && g_oStrUtil.IsSpace(pszTmp[i]); ++i);    // loop until not whitespace
         if (i>0)
             vResult = pszTmp + i;    // pointer to beginning of string + i elements
         delete [] pszTmp;
     }
     if (flags & 2) {    // strip right
-        pszTmp = Util_StrCpyAlloc(vResult.szValue());
+        pszTmp = g_oStrUtil.StrCpyAlloc(vResult.szValue());
         strcpy(pszTmp, vResult.szValue());
-        for (i=(int)strlen(pszTmp)-1; i>=0 && Util_IsSpace(pszTmp[i]); --i);    // loop until not whitespace
+        for (i=(int)strlen(pszTmp)-1; i>=0 && g_oStrUtil.IsSpace(pszTmp[i]); --i);    // loop until not whitespace
         if (pszTmp[i+1]) {    // if I am not looking at the end of the string
             pszTmp[i+1] = '\0';    // set to be end of string;
             vResult = pszTmp;
@@ -653,10 +653,10 @@ AUT_RESULT ModuleBuiltIn::F_StringStripWS(VectorVariant &vParams, Variant &vResu
         delete [] pszTmp;
     }
     if (flags & 4) {    // strip double spaces
-        pszTmp = Util_StrCpyAlloc(vResult.szValue());
+        pszTmp = g_oStrUtil.StrCpyAlloc(vResult.szValue());
 
         for (i=1; pszTmp[i];) {
-            if (Util_IsSpace(pszTmp[i]) && Util_IsSpace(pszTmp[i-1]))
+            if (g_oStrUtil.IsSpace(pszTmp[i]) && g_oStrUtil.IsSpace(pszTmp[i-1]))
                 for(int k=i; pszTmp[k]; ++k)    // copy characters up
                     pszTmp[k]=pszTmp[k+1];
             else
@@ -829,7 +829,7 @@ AUT_RESULT ModuleBuiltIn::F_StringFormat(VectorVariant &vParams, Variant &vResul
     // Make a copy of the format spec - we can't just use a pointer to the vParam because
     // we modify it and that is NOT allowed (it is a const) but the compiler was not warning about
     // it in this case
-    szFormat = Util_StrCpyAlloc(vParams[0].szValue());
+    szFormat = g_oStrUtil.StrCpyAlloc(vParams[0].szValue());
 
     for (n=1; n<=(int)iNumParam; ++n)                // to loop once more for concatenating after last format specification
     {                                            // Append this to our output while not '%'
@@ -1079,7 +1079,7 @@ AUT_RESULT ModuleBuiltIn::F_StringIsSpace(VectorVariant &vParams, Variant &vResu
     if (*pChar == '\0')    // empty string.  Not valid
         return AUT_OK;
     for (; *pChar != '\0'; ++pChar)
-        if (!Util_IsSpace(*pChar))
+        if (!g_oStrUtil.IsSpace(*pChar))
             return AUT_OK;
     // entire string read.  It passed.
     vResult = 1;

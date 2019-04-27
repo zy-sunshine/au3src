@@ -519,7 +519,7 @@ AUT_RESULT Parser::UserFunctionCall(VectorToken &vLineToks, uint &ivPos, Variant
         return AUT_ERR;
     }
 
-    //Util_WinPrintf("", "%d %d", nNumParams, nNumParamsMax);
+    //SysUtil::WinPrintf("", "%d %d", nNumParams, nNumParamsMax);
 
 
     // Ok, we have parsed the function call and have a list of the parameters (values and/or reference)
@@ -1724,7 +1724,7 @@ void Parser::Keyword_NEXT(VectorToken &vLineToks, uint &ivPos, int &nScriptLine)
 
     if ( (tFORDetails.vForStep > vTemp) || (tFORDetails.vForStep == vTemp) )
     {
-//        Util_WinPrintf("", "pvtemp = %f, forto = %f", (*pvTemp).fValue(), tFORDetails.vForTo.fValue());
+//        SysUtil::WinPrintf("", "pvtemp = %f, forto = %f", (*pvTemp).fValue(), tFORDetails.vForTo.fValue());
 //        (*pvTemp).ChangeToString();
 //        (*pvTemp) = (*pvTemp).fValue();
 

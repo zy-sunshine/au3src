@@ -46,8 +46,7 @@
 
 // Includes
 #include "AutoIt.h"
-#include "utility.h"
-
+#include "SysUtil.h"
 
 class HS_SendKeys
 {
@@ -82,8 +81,8 @@ private:
 
     // Functions
     void    WinAttach(HWND hWnd, bool bAttach);
-    inline void DoKeyDelay(void) { Util_Sleep(m_nKeyDelay); }
-    inline void DoKeyDownDelay(void) { Util_Sleep(m_nKeyDownDelay); }
+    inline void DoKeyDelay(void) { g_oSysUtil.Sleep(m_nKeyDelay); }
+    inline void DoKeyDownDelay(void) { g_oSysUtil.Sleep(m_nKeyDownDelay); }
     bool    SetToggleState(UINT vk, bool bState);
     void    SendCh(char ch, int nRep);
     void    SendVk(UINT vk, int nRep, bool bForceExtended = false);

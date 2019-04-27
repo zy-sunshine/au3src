@@ -52,7 +52,9 @@
     #include <shlobj.h>
 #endif
 
-#include "Utils/utility.h"
+#include "Utils/StrUtil.h"
+#include "Utils/SysUtil.h"
+#include "Utils/FileUtil.h"
 #include "Utils/OSVersion.h"
 #include "Utils/SendKeys.h"
 
@@ -155,7 +157,7 @@ AUT_RESULT ModuleFile::F_IniRead(VectorVariant &vParams, Variant &vResult)
     char    szBuffer[65535];                    // Max ini file size is 65535 under 95
 
     // Get the fullpathname (ini functions need a full path)
-    Util_GetFullPathName(vParams[0].szValue(), szFileTemp);
+    g_oFileUtil.GetFullPathName(vParams[0].szValue(), szFileTemp);
 
     GetPrivateProfileString(vParams[1].szValue(), vParams[2].szValue(),
                             vParams[3].szValue(), szBuffer, 65535, szFileTemp);
@@ -177,7 +179,7 @@ AUT_RESULT ModuleFile::F_IniWrite(VectorVariant &vParams, Variant &vResult)
     char    szFileTemp[_MAX_PATH+1];
 
     // Get the fullpathname (ini functions need a full path)
-    Util_GetFullPathName(vParams[0].szValue(), szFileTemp);
+    g_oFileUtil.GetFullPathName(vParams[0].szValue(), szFileTemp);
 
 
     if (WritePrivateProfileString(vParams[1].szValue(), vParams[2].szValue(), vParams[3].szValue(), szFileTemp))
@@ -200,7 +202,7 @@ AUT_RESULT ModuleFile::F_IniDelete(VectorVariant &vParams, Variant &vResult)
     char    szFileTemp[_MAX_PATH+1];
 
     // Get the fullpathname (ini functions need a full path)
-    Util_GetFullPathName(vParams[0].szValue(), szFileTemp);
+    g_oFileUtil.GetFullPathName(vParams[0].szValue(), szFileTemp);
 
     // If there are only 2 parameters then assume we want to delete the entire section
     if (vParams.size() == 2)
@@ -244,7 +246,7 @@ AUT_RESULT ModuleFile::F_IniReadSection(VectorVariant &vParams, Variant &vResult
     char    szFileTemp[_MAX_PATH+1];
 
     // Get the fullpathname (ini functions need a full path)
-    Util_GetFullPathName(vParams[0].szValue(), szFileTemp);
+    g_oFileUtil.GetFullPathName(vParams[0].szValue(), szFileTemp);
 
     int        i;
     char    szBuffer[32767];    // Temporary buffer, max size of INI _section_ in 95 (See MSDN for GetPrivateProfileSection)
@@ -310,7 +312,7 @@ AUT_RESULT ModuleFile::F_IniReadSection(VectorVariant &vParams, Variant &vResult
             vResult.ArraySubscriptSetNext(2);                    // Number of elements ([0]=name. [1]=pid)
             vResult.ArrayDim();                                    // Dimension array
 
-            Util_Variant2DArrayAssign<int>(&vResult, 0, 0, count);    // Set the size
+            engine->Variant2DArrayAssign<int>(&vResult, 0, 0, count);    // Set the size
 
             pCurrent = pStart;    // Reset our pointer
 
@@ -320,12 +322,12 @@ AUT_RESULT ModuleFile::F_IniReadSection(VectorVariant &vParams, Variant &vResult
                 // Key
                 sKey.erase();
                 sKey.assign(szBuffer, pCurrent->iKeyStart, pCurrent->iKeyEnd);
-                Util_Variant2DArrayAssign(&vResult, i+1, 0, sKey.c_str());
+                engine->Variant2DArrayAssign<const char*>(&vResult, i+1, 0, sKey.c_str());
 
                 // Value
                 sValue.erase();
                 sValue.assign(szBuffer, pCurrent->iValueStart, pCurrent->iValueEnd);
-                Util_Variant2DArrayAssign(&vResult, i+1, 1, sValue.c_str());
+                engine->Variant2DArrayAssign<const char*>(&vResult, i+1, 1, sValue.c_str());
 
                 // Set up for next loop and delete the the struct
                 KeyValue *pTemp = pCurrent;
@@ -357,7 +359,7 @@ AUT_RESULT ModuleFile::F_IniReadSectionNames(VectorVariant &vParams, Variant &vR
     char    szFileTemp[_MAX_PATH+1];
 
     // Get the fullpathname (ini functions need a full path)
-    Util_GetFullPathName(vParams[0].szValue(), szFileTemp);
+    g_oFileUtil.GetFullPathName(vParams[0].szValue(), szFileTemp);
 
     int        i;
     char    szBuffer[65535];    // Temporary buffer, max size of INI in 95 (According to F_IniRead above)
@@ -394,8 +396,8 @@ AUT_RESULT ModuleFile::F_IniReadSectionNames(VectorVariant &vParams, Variant &vR
         }
 
         // Dim the array
-        Util_VariantArrayDim(&vResult, count+1);        // +1 to hold size element
-        Util_VariantArrayAssign<int>(&vResult, 0, count);
+        engine->VariantArrayDim(&vResult, count+1);        // +1 to hold size element
+        engine->VariantArrayAssign<int>(&vResult, 0, count);
 
         pCurrent = pStart;    // Reset our pointer
 
@@ -404,7 +406,7 @@ AUT_RESULT ModuleFile::F_IniReadSectionNames(VectorVariant &vParams, Variant &vR
         {
             sSection.erase();
             sSection.assign(szBuffer, pCurrent->iStart, pCurrent->iEnd);
-            Util_VariantArrayAssign(&vResult, i+1, sSection.c_str());
+            engine->VariantArrayAssign(&vResult, i+1, sSection.c_str());
 
             // Set up for next loop and delete the the struct
             Section *pTemp = pCurrent;
@@ -614,7 +616,7 @@ AUT_RESULT ModuleFile::F_FileReadLine(VectorVariant &vParams, Variant &vResult)
 
         for (i=0; i<nLine; ++i)
         {
-            if ( Util_fgetsb(szBuffer, 65535, fptr) == NULL )
+            if ( g_oFileUtil.fgetsb(szBuffer, 65535, fptr) == NULL )
             {
                 engine->SetFuncErrorCode(-1);                // EOF reached
                 bError = true;
@@ -625,7 +627,7 @@ AUT_RESULT ModuleFile::F_FileReadLine(VectorVariant &vParams, Variant &vResult)
     else
     {
         // Read next line
-        if (Util_fgetsb(szBuffer, 65535, fptr) == NULL)
+        if (g_oFileUtil.fgetsb(szBuffer, 65535, fptr) == NULL)
         {
             engine->SetFuncErrorCode(-1);                // EOF reached
             bError = true;
@@ -912,30 +914,30 @@ AUT_RESULT ModuleFile::F_FileGetTime(VectorVariant &vParams, Variant &vResult)
 
                 // Setup vResult as an Array to hold the 6 values we want to return - save the values as strings
                 // so that we can specify the number of digits (01 instead of 1, etc)
-                Util_VariantArrayDim(&vResult, 6);
+                engine->VariantArrayDim(&vResult, 6);
 
-                pvTemp = Util_VariantArrayGetRef(&vResult, 0);    //    First element
+                pvTemp = engine->VariantArrayGetRef(&vResult, 0);    //    First element
                 sprintf(szTime, "%4d", st.wYear);
                 *pvTemp = szTime;                                // Year YYYY
 
 
-                pvTemp = Util_VariantArrayGetRef(&vResult, 1);
+                pvTemp = engine->VariantArrayGetRef(&vResult, 1);
                 sprintf(szTime, "%02d", st.wMonth);
                 *pvTemp = szTime;                                // Month MM
 
-                pvTemp = Util_VariantArrayGetRef(&vResult, 2);
+                pvTemp = engine->VariantArrayGetRef(&vResult, 2);
                 sprintf(szTime, "%02d", st.wDay);
                 *pvTemp = szTime;                                // Day DD
 
-                pvTemp = Util_VariantArrayGetRef(&vResult, 3);
+                pvTemp = engine->VariantArrayGetRef(&vResult, 3);
                 sprintf(szTime, "%02d", st.wHour);
                 *pvTemp = szTime;                                // Hour HH
 
-                pvTemp = Util_VariantArrayGetRef(&vResult, 4);
+                pvTemp = engine->VariantArrayGetRef(&vResult, 4);
                 sprintf(szTime, "%02d", st.wMinute);
                 *pvTemp = szTime;                                // Min MM
 
-                pvTemp = Util_VariantArrayGetRef(&vResult, 5);
+                pvTemp = engine->VariantArrayGetRef(&vResult, 5);
                 sprintf(szTime, "%02d", st.wSecond);
                 *pvTemp = szTime;                                // Sec SS
             }
@@ -1019,29 +1021,29 @@ AUT_RESULT ModuleFile::F_FileGetTime(VectorVariant &vParams, Variant &vResult)
 
         // Setup vResult as an Array to hold the 6 values we want to return - save the values as strings
         // so that we can specify the number of digits (01 instead of 1, etc)
-        Util_VariantArrayDim(&vResult, 6);
+        engine->VariantArrayDim(&vResult, 6);
 
-        pvTemp = Util_VariantArrayGetRef(&vResult, 0);    //    First element
+        pvTemp = engine->VariantArrayGetRef(&vResult, 0);    //    First element
         sprintf(szTime, "%4d", st.wYear);
         *pvTemp = szTime;                                // Year YYYY
 
-        pvTemp = Util_VariantArrayGetRef(&vResult, 1);
+        pvTemp = engine->VariantArrayGetRef(&vResult, 1);
         sprintf(szTime, "%02d", st.wMonth);
         *pvTemp = szTime;                                // Month MM
 
-        pvTemp = Util_VariantArrayGetRef(&vResult, 2);
+        pvTemp = engine->VariantArrayGetRef(&vResult, 2);
         sprintf(szTime, "%02d", st.wDay);
         *pvTemp = szTime;                                // Day DD
 
-        pvTemp = Util_VariantArrayGetRef(&vResult, 3);
+        pvTemp = engine->VariantArrayGetRef(&vResult, 3);
         sprintf(szTime, "%02d", st.wHour);
         *pvTemp = szTime;                                // Hour HH
 
-        pvTemp = Util_VariantArrayGetRef(&vResult, 4);
+        pvTemp = engine->VariantArrayGetRef(&vResult, 4);
         sprintf(szTime, "%02d", st.wMinute);
         *pvTemp = szTime;                                // Min MM
 
-        pvTemp = Util_VariantArrayGetRef(&vResult, 5);
+        pvTemp = engine->VariantArrayGetRef(&vResult, 5);
         sprintf(szTime, "%02d", st.wSecond);
         *pvTemp = szTime;                                // Sec SS
     }
@@ -1089,7 +1091,7 @@ AUT_RESULT ModuleFile::F_FileSetTime (VectorVariant &vParams, Variant &vResult)
 
     if (szTime[0] != '\0')
     {
-        if (!Util_ConvSystemTime(szTime, &st, true, 0))
+        if (!g_oSysUtil.ConvSystemTime(szTime, &st, true, 0))
         {
             vResult = 0;
             return AUT_OK;
@@ -1109,7 +1111,7 @@ AUT_RESULT ModuleFile::F_FileSetTime (VectorVariant &vParams, Variant &vResult)
     // Make a copy of the requested filename and remove trailing \s
     strncpy(szPath, vParams[0].szValue(), _MAX_PATH);
     szPath[_MAX_PATH] = '\0';
-    Util_StripTrailingDir(szPath);
+    g_oFileUtil.StripTrailingDir(szPath);
 
     // Get the FULL pathname including drive directory etc
     GetFullPathName(szPath, _MAX_PATH, szPath, &szFilePart);
@@ -1125,9 +1127,9 @@ AUT_RESULT ModuleFile::F_FileSetTime (VectorVariant &vParams, Variant &vResult)
 
 
     // Is the requested filename a directory?
-    if (Util_IsDir(szFile))
+    if (g_oFileUtil.IsDir(szFile))
     {
-        if (Util_FileSetTime(szFile, &ft, nWhichTime) == false)
+        if (g_oFileUtil.FileSetTime(szFile, &ft, nWhichTime) == false)
         {
             vResult = 0;                        // Error opening
             return AUT_OK;
@@ -1171,7 +1173,7 @@ bool ModuleFile::FileSetTime_recurse (const char *szIn, FILETIME *ft, int nWhich
         // Make sure the returned handle is not . or ..
         if ( strcmp(findData.cFileName, ".") && strcmp(findData.cFileName, "..") )
         {
-            if (Util_FileSetTime(findData.cFileName, ft, nWhichTime) == false)
+            if (g_oFileUtil.FileSetTime(findData.cFileName, ft, nWhichTime) == false)
             {
                 FindClose(hSearch);                // Error opening
                 return false;
@@ -1548,8 +1550,8 @@ AUT_RESULT ModuleFile::F_DriveMapAdd(VectorVariant &vParams, Variant &vResult)
     DWORD        dwResult;
 
     // Get the basic parameters
-    char *szDrive = Util_StrCpyAlloc(vParams[0].szValue());
-    char *szRemote = Util_StrCpyAlloc(vParams[1].szValue());
+    char *szDrive = g_oStrUtil.StrCpyAlloc(vParams[0].szValue());
+    char *szRemote = g_oStrUtil.StrCpyAlloc(vParams[1].szValue());
 
     if (iNumParams > 2)
         dwFlags = vParams[2].nValue();
@@ -1570,7 +1572,7 @@ AUT_RESULT ModuleFile::F_DriveMapAdd(VectorVariant &vParams, Variant &vResult)
     if (szDrive[0] == '*')
         dwFlags |= CONNECT_REDIRECT;            // Use first available drive
 
-    if (iNumParams < 4 || engine->g_oVersion->IsWin9x())
+    if (iNumParams < 4 || g_oVersion.IsWin9x())
         res = WNetUseConnection(NULL,&nr, NULL, NULL, dwFlags, szBuffer, &dwBuffersize, &dwResult); // Use current user/password
     else
     {
@@ -1718,14 +1720,14 @@ AUT_RESULT ModuleFile::F_DriveGetDrive(VectorVariant &vParams, Variant &vResult)
     }
     if ( nFound > 0 )
     {
-        Util_VariantArrayDim(&vResult, nFound + 1);
+        engine->VariantArrayDim(&vResult, nFound + 1);
 
-        pvTemp = Util_VariantArrayGetRef(&vResult, 0);    // First element
+        pvTemp = engine->VariantArrayGetRef(&vResult, 0);    // First element
         *pvTemp = (int)nFound;
 
         for( n=1;n<=nFound; ++n)
         {
-            pvTemp = Util_VariantArrayGetRef(&vResult, n);
+            pvTemp = engine->VariantArrayGetRef(&vResult, n);
             *pvTemp = szVat[n-1];
         }
     }
@@ -2155,7 +2157,7 @@ AUT_RESULT ModuleFile::F_FileGetShortcut(VectorVariant &vParams, Variant &vResul
         sLink += ".lnk";
 
     engine->SetFuncErrorCode(1);
-    if (Util_DoesFileExist(sLink.c_str()))
+    if (g_oFileUtil.DoesFileExist(sLink.c_str()))
     {
         CoInitialize(NULL);
         if( SUCCEEDED(CoCreateInstance(CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, IID_IShellLink, (LPVOID *)&psl)) )
@@ -2165,32 +2167,32 @@ AUT_RESULT ModuleFile::F_FileGetShortcut(VectorVariant &vParams, Variant &vResul
                 MultiByteToWideChar(CP_ACP,0,sLink.c_str(),-1,(LPWSTR)wsz,MAX_PATH);
                 if (SUCCEEDED(ppf->Load((const WCHAR*)wsz,0)))
                 {
-                    Util_VariantArrayDim(&vResult,7);
+                    engine->VariantArrayDim(&vResult,7);
 
                     psl->GetPath(szGotPath,MAX_PATH,NULL,SLGP_UNCPRIORITY);
-                    pvTemp = Util_VariantArrayGetRef(&vResult,0);
+                    pvTemp = engine->VariantArrayGetRef(&vResult,0);
                     *pvTemp = szGotPath;
 
                     psl->GetWorkingDirectory(szWorkingDir,MAX_PATH);
-                    pvTemp = Util_VariantArrayGetRef(&vResult,1);
+                    pvTemp = engine->VariantArrayGetRef(&vResult,1);
                     *pvTemp = szWorkingDir;
 
                     psl->GetArguments(szArguments,MAX_PATH);
-                    pvTemp = Util_VariantArrayGetRef(&vResult,2);
+                    pvTemp = engine->VariantArrayGetRef(&vResult,2);
                     *pvTemp = szArguments;
 
                     psl->GetDescription(szDescription,MAX_PATH);
-                    pvTemp = Util_VariantArrayGetRef(&vResult,3);
+                    pvTemp = engine->VariantArrayGetRef(&vResult,3);
                     *pvTemp = szDescription;
 
                     psl->GetIconLocation(szIconLocation,MAX_PATH,&nIconIndex);
-                    pvTemp = Util_VariantArrayGetRef(&vResult,4);
+                    pvTemp = engine->VariantArrayGetRef(&vResult,4);
                     *pvTemp = szIconLocation;
-                    pvTemp = Util_VariantArrayGetRef(&vResult,5);
+                    pvTemp = engine->VariantArrayGetRef(&vResult,5);
                     *pvTemp = nIconIndex;
 
                     psl->GetShowCmd(&nShowCmd);
-                    pvTemp = Util_VariantArrayGetRef(&vResult,6);
+                    pvTemp = engine->VariantArrayGetRef(&vResult,6);
                     *pvTemp = nShowCmd;
                     engine->SetFuncErrorCode(0);
                 }
@@ -2259,11 +2261,11 @@ AUT_RESULT ModuleFile::F_FileInstall(VectorVariant &vParams, Variant &vResult)
     strcat(szDest, szFile);        strcat(szDest, szExt);
 
     // Expand the destination based on source/dest
-    Util_ExpandFilenameWildcard(vParams[0].szValue(), szDest, szExpandedDest);
+    g_oFileUtil.ExpandFilenameWildcard(vParams[0].szValue(), szDest, szExpandedDest);
 
 
     // Does the destination exist?
-    bDestExists = Util_DoesFileExist(szExpandedDest);
+    bDestExists = g_oFileUtil.DoesFileExist(szExpandedDest);
 
     // Extract the file - maybe
     if ( (bDestExists == true  && bOverwrite == true) ||
@@ -2300,7 +2302,7 @@ AUT_RESULT ModuleFile::F_FileInstall(VectorVariant &vParams, Variant &vResult)
     else
         bOverwrite = false;
 
-    if (Util_CopyFile(vParams[0].szValue(), vParams[1].szValue(), bOverwrite, false) == false)
+    if (g_oFileUtil.CopyFile(vParams[0].szValue(), vParams[1].szValue(), bOverwrite, false) == false)
         vResult = 0;                            // Error (default is 1)
 
     return AUT_OK;
@@ -2324,7 +2326,7 @@ AUT_RESULT ModuleFile::F_FileRecycle(VectorVariant &vParams, Variant &vResult)
     char            szFileTemp[_MAX_PATH+2];
 
     // Get the fullpathname - required for UNDO to work
-    Util_GetFullPathName(vParams[0].szValue(), szFileTemp);
+    g_oFileUtil.GetFullPathName(vParams[0].szValue(), szFileTemp);
 
     // We must also make it a double nulled string *sigh*
     szFileTemp[strlen(szFileTemp)+1] = '\0';
@@ -2508,7 +2510,7 @@ AUT_RESULT ModuleFile::F_FileSetAttrib (VectorVariant &vParams, Variant &vResult
     // Make a copy of the requested filename and remove trailing \s
     strncpy(szPath, vParams[0].szValue(), _MAX_PATH);
     szPath[_MAX_PATH] = '\0';
-    Util_StripTrailingDir(szPath);
+    g_oFileUtil.StripTrailingDir(szPath);
 
     // Get the FULL pathname including drive directory etc
     GetFullPathName(szPath, _MAX_PATH, szPath, &szFilePart);
@@ -2524,7 +2526,7 @@ AUT_RESULT ModuleFile::F_FileSetAttrib (VectorVariant &vParams, Variant &vResult
 
 
     // Is the requested filename a directory?
-    if (Util_IsDir(szFile))
+    if (g_oFileUtil.IsDir(szFile))
     {
         dwTemp = GetFileAttributes(szFile);
         dwTemp = dwTemp | dwAdd;
@@ -2638,11 +2640,11 @@ bool ModuleFile::FileSetAttrib_recurse (const char *szIn, DWORD dwAdd, DWORD dwR
 
 AUT_RESULT ModuleFile::F_FileGetVersion (VectorVariant &vParams, Variant &vResult)
 {
-    char    szVersion[43+1];                    // See Util_FileGetVersion for 43+1
+    char    szVersion[43+1];                    // See g_oSysUtil.FileGetVersion for 43+1
 
-    char *szFile = Util_StrCpyAlloc(vParams[0].szValue());
+    char *szFile = g_oStrUtil.StrCpyAlloc(vParams[0].szValue());
 
-    if (Util_GetFileVersion(szFile, szVersion) == true)
+    if (g_oSysUtil.GetFileVersion(szFile, szVersion) == true)
     {
         vResult = szVersion;
     }
@@ -2698,7 +2700,7 @@ AUT_RESULT    ModuleFile::F_FileFindFirstFile(VectorVariant &vParams, Variant &v
     m_FileHandleDetails[nFreeHandle]->nType = AUT_FILEFIND;        // File find type
     m_FileHandleDetails[nFreeHandle]->hFind = hFind;            // Store handle
 
-    char *szFind = Util_StrCpyAlloc(wfd.cFileName);                    // Store the first find result
+    char *szFind = g_oStrUtil.StrCpyAlloc(wfd.cFileName);                    // Store the first find result
     m_FileHandleDetails[nFreeHandle]->szFind = szFind;            // Store string
 
     ++m_nNumFileHandles;
@@ -2765,7 +2767,7 @@ AUT_RESULT ModuleFile::F_FileGetLongName(VectorVariant &vParams, Variant &vResul
 {
     char    szLFN[_MAX_PATH+1];
 
-    if (Util_GetLongFileName(vParams[0].szValue(), szLFN) == true)
+    if (g_oFileUtil.GetLongFileName(vParams[0].szValue(), szLFN) == true)
         vResult = szLFN;
     else
     {
@@ -2811,7 +2813,7 @@ AUT_RESULT ModuleFile::F_DirCopy(VectorVariant &vParams, Variant &vResult)
     if (vParams.size() >= 3 && vParams[2].nValue() != 0)
         bTemp = true;
 
-    if (Util_CopyDir(vParams[0].szValue(), vParams[1].szValue(), bTemp) == false)
+    if (g_oFileUtil.CopyDir(vParams[0].szValue(), vParams[1].szValue(), bTemp) == false)
         vResult = 0;                // Error, default is 1
 
     return AUT_OK;
@@ -2825,7 +2827,7 @@ AUT_RESULT ModuleFile::F_DirCopy(VectorVariant &vParams, Variant &vResult)
 
 AUT_RESULT ModuleFile::F_FileExists(VectorVariant &vParams, Variant &vResult)
 {
-    if (Util_DoesFileExist(vParams[0].szValue()) == false)
+    if (g_oFileUtil.DoesFileExist(vParams[0].szValue()) == false)
         vResult = 0;                    // Default is 1
     return AUT_OK;
 
@@ -2838,7 +2840,7 @@ AUT_RESULT ModuleFile::F_FileExists(VectorVariant &vParams, Variant &vResult)
 
 AUT_RESULT ModuleFile::F_DirCreate(VectorVariant &vParams, Variant &vResult)
 {
-    if (Util_CreateDir(vParams[0].szValue()) == false)
+    if (g_oFileUtil.CreateDir(vParams[0].szValue()) == false)
         vResult = 0;                    // Error, default is 1
     return AUT_OK;
 
@@ -2856,7 +2858,7 @@ AUT_RESULT ModuleFile::F_DirRemove(VectorVariant &vParams, Variant &vResult)
     if (vParams.size() >= 2 && vParams[1].nValue() != 0)
         bTemp = true;
 
-    if (Util_RemoveDir(vParams[0].szValue(), bTemp) == false)
+    if (g_oFileUtil.RemoveDir(vParams[0].szValue(), bTemp) == false)
         vResult = 0;                // Error, default is 1
 
         return AUT_OK;
@@ -2875,7 +2877,7 @@ AUT_RESULT ModuleFile::F_FileCopy(VectorVariant &vParams, Variant &vResult)
     if (vParams.size() >= 3 && vParams[2].nValue() != 0)
         bTemp = true;
 
-    if (Util_CopyFile(vParams[0].szValue(), vParams[1].szValue(), bTemp, false) == false)
+    if (g_oFileUtil.CopyFile(vParams[0].szValue(), vParams[1].szValue(), bTemp, false) == false)
         vResult = 0;                // Error, default is 1
 
     return AUT_OK;
@@ -2889,7 +2891,7 @@ AUT_RESULT ModuleFile::F_FileCopy(VectorVariant &vParams, Variant &vResult)
 
 AUT_RESULT ModuleFile::F_FileDelete(VectorVariant &vParams, Variant &vResult)
 {
-    if (Util_DeleteFile(vParams[0].szValue()) == false)
+    if (g_oFileUtil.DeleteFile(vParams[0].szValue()) == false)
         vResult = 0;                            // Error (default is 1)
     return AUT_OK;
 
@@ -2907,7 +2909,7 @@ AUT_RESULT ModuleFile::F_FileMove(VectorVariant &vParams, Variant &vResult)
     if (vParams.size() >= 3 && vParams[2].nValue() != 0)
         bTemp = true;
 
-    if (Util_CopyFile(vParams[0].szValue(), vParams[1].szValue(), bTemp, true) == false)
+    if (g_oFileUtil.CopyFile(vParams[0].szValue(), vParams[1].szValue(), bTemp, true) == false)
         vResult = 0;                // Error, default is 1
 
     return AUT_OK;
@@ -2939,7 +2941,7 @@ AUT_RESULT ModuleFile::F_DirMove(VectorVariant &vParams, Variant &vResult)
     if (vParams.size() >= 3 && vParams[2].nValue() != 0)
         bTemp = true;
 
-    if (Util_MoveDir(vParams[0].szValue(), vParams[1].szValue(), bTemp) == false)
+    if (g_oFileUtil.MoveDir(vParams[0].szValue(), vParams[1].szValue(), bTemp) == false)
         vResult = 0;                // Error, default is 1
 
     return AUT_OK;
@@ -2969,7 +2971,7 @@ AUT_RESULT ModuleFile::F_DirGetSize(VectorVariant &vParams, Variant &vResult)
     if (sInputPath[sInputPath.length()-1] != '\\')    // Attempt to fix the parameter passed
         sInputPath += "\\";
 
-    if (!Util_IsDir(sInputPath.c_str()))
+    if (!g_oFileUtil.IsDir(sInputPath.c_str()))
     {
         vResult = -1;
         engine->SetFuncErrorCode(1);
@@ -2994,15 +2996,15 @@ AUT_RESULT ModuleFile::F_DirGetSize(VectorVariant &vParams, Variant &vResult)
     if (bExt)
     {
         Variant    *pvTemp;
-        Util_VariantArrayDim(&vResult,3);
+        engine->VariantArrayDim(&vResult,3);
 
-        pvTemp = Util_VariantArrayGetRef(&vResult,0);
+        pvTemp = engine->VariantArrayGetRef(&vResult,0);
         *pvTemp = nSize;
 
-        pvTemp = Util_VariantArrayGetRef(&vResult,1);
+        pvTemp = engine->VariantArrayGetRef(&vResult,1);
         *pvTemp = nFiles;
 
-        pvTemp = Util_VariantArrayGetRef(&vResult,2);
+        pvTemp = engine->VariantArrayGetRef(&vResult,2);
         *pvTemp = nDirs;
     }
     else

@@ -1,9 +1,8 @@
 #include "StdAfx.h"                                // Pre-compiled headers
 #include "WinUtil.h"
 #include "AutoIt.h"
-#include "Engine/Engine.h"
 
-WinUtil WinUtil::instance = WinUtil();
+WinUtil g_oWinUtil = WinUtil();
 
 //////////////////////////////////////////////////////////////////////////
 // ConvertCoords()

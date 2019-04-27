@@ -52,7 +52,7 @@
     #include <string.h>
 #endif
 
-#include "Utils/utility.h"
+#include "Utils/StrUtil.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -90,7 +90,7 @@ void CmdLine::SetCmdLine(char *szCmdLine)
     Reset();                                    // Reset any previous command lines
 
     // Store the raw command line
-    m_szCmdLineRaw = Util_StrCpyAlloc(szCmdLine);
+    m_szCmdLineRaw = g_oStrUtil.StrCpyAlloc(szCmdLine);
 
     // Command line parameters are separated by spaces
     // If spaces are required in a parameter, it should be surrounded by quotes
@@ -166,7 +166,7 @@ void CmdLine::StoreParam(char *szParam)
 {
     // Create enough space to store our line + \0
     //m_szParams[m_nNumParameters] = (char *)malloc((strlen(szParam)+1) * sizeof(char));
-    m_szParams[m_nNumParameters++] = Util_StrCpyAlloc(szParam);
+    m_szParams[m_nNumParameters++] = g_oStrUtil.StrCpyAlloc(szParam);
 
 } // StoreParam()
 

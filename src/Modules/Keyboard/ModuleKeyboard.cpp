@@ -1,6 +1,5 @@
 #include "StdAfx.h"                                // Pre-compiled headers
 #include "Engine/Engine.h"
-#include "Engine/Parser/Parser.h"
 #include "ModuleKeyboard.h"
 
 //AU3_FuncInfo ModuleKeyboard::funcInfo[] = {
@@ -68,7 +67,7 @@ AUT_RESULT ModuleKeyboard::F_HotKeySet(VectorVariant &vParams, Variant &vResult)
 
 
     // Unless blank, check that the requested user function exists
-    if (iNumParams >= 2 && engine->parser()->FindUserFunction(vParams[1].szValue(), nTemp1, nTemp2, nTemp3, nTemp4) == false)
+    if (iNumParams >= 2 && engine->FindUserFunction(vParams[1].szValue(), nTemp1, nTemp2, nTemp3, nTemp4) == false)
     {
         engine->FatalError(IDS_AUT_E_UNKNOWNUSERFUNC);
         return AUT_ERR;

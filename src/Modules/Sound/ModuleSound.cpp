@@ -1,7 +1,7 @@
 #include "StdAfx.h"                                // Pre-compiled headers
 #include "Engine/Engine.h"
 #include "ModuleSound.h"
-#include "Utils/utility.h"
+#include "Utils/SysUtil.h"
 
 //AU3_FuncInfo ModuleSound::funcInfo[] = {
 //    {"SOUNDPLAY", &ModuleSound::F_SoundPlay, 1, 2},
@@ -15,9 +15,9 @@
 AUT_RESULT ModuleSound::F_SoundPlay(VectorVariant &vParams, Variant &vResult)
 {
     if (vParams.size() == 2 && vParams[1].nValue() == 1)
-        Util_SoundPlay(vParams[0].szValue(), true);
+        g_oSysUtil.SoundPlay(vParams[0].szValue(), true);
     else
-        Util_SoundPlay(vParams[0].szValue(), false);
+        g_oSysUtil.SoundPlay(vParams[0].szValue(), false);
     return AUT_OK;
 
 } // SoundPlay()

@@ -53,7 +53,7 @@
     #include <commctrl.h>
 #endif
 
-#include "Utils/utility.h"
+#include "Utils/SysUtil.h"
 #include "Utils/WinUtil.h"
 #include "Utils/SetForegroundWinEx.h"
 #include "Utils/SendKeys.h"
@@ -159,7 +159,7 @@ AUT_RESULT ModuleWin::F_WinWait(VectorVariant &vParams, Variant &vResult)
         }
     }
 
-    Util_Sleep(engine->nWinWaitDelay());        // Briefly pause before continuing
+    g_oSysUtil.Sleep(engine->nWinWaitDelay());        // Briefly pause before continuing
     return AUT_OK;
 
 } // F_WinWait()
@@ -187,7 +187,7 @@ AUT_RESULT ModuleWin::F_WinWaitActive(VectorVariant &vParams, Variant &vResult)
         }
     }
 
-    Util_Sleep(engine->nWinWaitDelay());        // Briefly pause before continuing
+    g_oSysUtil.Sleep(engine->nWinWaitDelay());        // Briefly pause before continuing
     return AUT_OK;
 
 } // F_WinWaitActive()
@@ -215,7 +215,7 @@ AUT_RESULT ModuleWin::F_WinWaitNotActive(VectorVariant &vParams, Variant &vResul
         }
     }
 
-    Util_Sleep(engine->nWinWaitDelay());        // Briefly pause before continuing
+    g_oSysUtil.Sleep(engine->nWinWaitDelay());        // Briefly pause before continuing
     return AUT_OK;
 
 } // F_WinWaitNotActive()
@@ -243,7 +243,7 @@ AUT_RESULT ModuleWin::F_WinWaitClose(VectorVariant &vParams, Variant &vResult)
         }
     }
 
-    Util_Sleep(engine->nWinWaitDelay());        // Briefly pause before continuing
+    g_oSysUtil.Sleep(engine->nWinWaitDelay());        // Briefly pause before continuing
     return AUT_OK;
 
 } // F_WinWaitClose()
@@ -294,7 +294,7 @@ AUT_RESULT ModuleWin::F_WinActivate(VectorVariant &vParams, Variant &vResult)
         return AUT_OK;                            // No window to activate
 
     engine->g_oSetForeWinEx->Activate(util.m_WindowSearchHWND);
-    Util_Sleep(engine->nWinWaitDelay());                // Briefly pause before continuing
+    g_oSysUtil.Sleep(engine->nWinWaitDelay());                // Briefly pause before continuing
 
     return AUT_OK;
 
@@ -322,7 +322,7 @@ AUT_RESULT ModuleWin::F_WinShow(VectorVariant &vParams, Variant &vResult)
     else
     {
         ShowWindow(util.m_WindowSearchHWND, nFlag);
-        Util_Sleep(engine->nWinWaitDelay());                // Briefly pause before continuing
+        g_oSysUtil.Sleep(engine->nWinWaitDelay());                // Briefly pause before continuing
     }
 
     return AUT_OK;
@@ -360,7 +360,7 @@ AUT_RESULT ModuleWin::F_WinMove(VectorVariant &vParams, Variant &vResult)
         nHeight = vParams[5].nValue();
 
     MoveWindow(util.m_WindowSearchHWND, vParams[2].nValue(), vParams[3].nValue(), nWidth, nHeight, TRUE);
-    //Util_Sleep(engine->nWinWaitDelay());                // Briefly pause before continuing
+    //g_oSysUtil.Sleep(engine->nWinWaitDelay());                // Briefly pause before continuing
 
     return AUT_OK;
 
@@ -380,7 +380,7 @@ AUT_RESULT ModuleWin::F_WinClose(VectorVariant &vParams, Variant &vResult)
         return AUT_OK;                            // Required window not found
 
     PostMessage(util.m_WindowSearchHWND, WM_CLOSE, 0, 0L);
-    Util_Sleep(engine->nWinWaitDelay());                // Briefly pause before continuing
+    g_oSysUtil.Sleep(engine->nWinWaitDelay());                // Briefly pause before continuing
 
     return AUT_OK;
 
@@ -400,8 +400,8 @@ AUT_RESULT ModuleWin::F_WinKill(VectorVariant &vParams, Variant &vResult)
     if (util.Win_WindowSearch() == false)
         return AUT_OK;                            // Required window not found
 
-    Util_WinKill(util.m_WindowSearchHWND);
-    Util_Sleep(engine->nWinWaitDelay());                // Briefly pause before continuing
+    g_oSysUtil.WinKill(util.m_WindowSearchHWND);
+    g_oSysUtil.Sleep(engine->nWinWaitDelay());                // Briefly pause before continuing
 
     return AUT_OK;
 
@@ -469,7 +469,7 @@ AUT_RESULT ModuleWin::F_WinGetText(VectorVariant &vParams, Variant &vResult)
     if (util.Win_WindowSearch() == false)
         return AUT_OK;                                    // Required window not found
 
-    vResult = Util_GetWinText(util.m_WindowSearchHWND, engine->bDetectHiddenText());
+    vResult = g_oSysUtil.GetWinText(util.m_WindowSearchHWND, engine->bDetectHiddenText());
 
     return AUT_OK;
 
@@ -523,18 +523,18 @@ AUT_RESULT ModuleWin::F_WinGetPos(VectorVariant &vParams, Variant &vResult)
     GetWindowRect(util.m_WindowSearchHWND, &rect);    // Load the window stats
 
     // Setup vResult as an Array to hold the 4 values we want to return
-    Util_VariantArrayDim(&vResult, 4);
+    engine->VariantArrayDim(&vResult, 4);
 
-    pvTemp = Util_VariantArrayGetRef(&vResult, 0);    // First element
+    pvTemp = engine->VariantArrayGetRef(&vResult, 0);    // First element
     *pvTemp = (int)rect.left;                    // X
 
-    pvTemp = Util_VariantArrayGetRef(&vResult, 1);
+    pvTemp = engine->VariantArrayGetRef(&vResult, 1);
     *pvTemp = (int)rect.top;                    // Y
 
-    pvTemp = Util_VariantArrayGetRef(&vResult, 2);
+    pvTemp = engine->VariantArrayGetRef(&vResult, 2);
     *pvTemp = (int)(rect.right - rect.left);    // Width
 
-    pvTemp = Util_VariantArrayGetRef(&vResult, 3);
+    pvTemp = engine->VariantArrayGetRef(&vResult, 3);
     *pvTemp = (int)(rect.bottom - rect.top);    // Height
 
     return AUT_OK;
@@ -555,12 +555,12 @@ AUT_RESULT ModuleWin::F_ControlFocus(VectorVariant &vParams, Variant &vResult)
         return AUT_OK;                                    // Required control not found
     }
 
-    Util_AttachThreadInput(util.m_WindowSearchHWND, true);
+    g_oSysUtil.AttachThreadInput(util.m_WindowSearchHWND, true);
 
     if ( SetFocus(util.m_ControlSearchHWND) == NULL)
         vResult = 0;            // Error
 
-    Util_AttachThreadInput(util.m_WindowSearchHWND, false);
+    g_oSysUtil.AttachThreadInput(util.m_WindowSearchHWND, false);
 
     return AUT_OK;
 
@@ -588,7 +588,7 @@ AUT_RESULT ModuleWin::F_ControlClick(VectorVariant &vParams, Variant &vResult)
         return AUT_OK;                                    // Required control not found
     }
 
-    Util_AttachThreadInput(util.m_WindowSearchHWND, true);
+    g_oSysUtil.AttachThreadInput(util.m_WindowSearchHWND, true);
 
     SetActiveWindow(util.m_WindowSearchHWND);        // See BM_CLICK documentation, applies to this too
 
@@ -628,10 +628,10 @@ AUT_RESULT ModuleWin::F_ControlClick(VectorVariant &vParams, Variant &vResult)
         PostMessage(util.m_ControlSearchHWND, msgdown, wParam, lParam);
         //Sleep(m_nMouseClickDownDelay); - causing failures?
         PostMessage(util.m_ControlSearchHWND, msgup, 0, lParam);
-        Util_Sleep(engine->nMouseClickDelay());
+        g_oSysUtil.Sleep(engine->nMouseClickDelay());
     }
 
-    Util_AttachThreadInput(util.m_WindowSearchHWND, false);
+    g_oSysUtil.AttachThreadInput(util.m_WindowSearchHWND, false);
 
     return AUT_OK;
 
@@ -713,18 +713,18 @@ AUT_RESULT ModuleWin::F_ControlGetPos(VectorVariant &vParams, Variant &vResult)
         ScreenToClient(util.m_WindowSearchHWND,&point);
 
         // Setup vResult as an Array to hold the 4 values we want to return
-        Util_VariantArrayDim(&vResult, 4);
+        engine->VariantArrayDim(&vResult, 4);
 
-        pvTemp = Util_VariantArrayGetRef(&vResult, 0);        // First element
+        pvTemp = engine->VariantArrayGetRef(&vResult, 0);        // First element
         *pvTemp = (int)point.x;                    // X
 
-        pvTemp = Util_VariantArrayGetRef(&vResult, 1);
+        pvTemp = engine->VariantArrayGetRef(&vResult, 1);
         *pvTemp = (int)point.y;                    // Y
 
-        pvTemp = Util_VariantArrayGetRef(&vResult, 2);
+        pvTemp = engine->VariantArrayGetRef(&vResult, 2);
         *pvTemp = (int)(rect.right - rect.left);        // Width
 
-        pvTemp = Util_VariantArrayGetRef(&vResult, 3);
+        pvTemp = engine->VariantArrayGetRef(&vResult, 3);
         *pvTemp = (int)(rect.bottom - rect.top);        // Height
 
     }
@@ -753,7 +753,7 @@ AUT_RESULT ModuleWin::F_ControlMove(VectorVariant &vParams, Variant &vResult)
         return AUT_OK;                                    // Required control not found
     }
 
-    Util_AttachThreadInput(util.m_WindowSearchHWND, true);
+    g_oSysUtil.AttachThreadInput(util.m_WindowSearchHWND, true);
 
     if ( GetWindowRect(util.m_ControlSearchHWND, &rect) )    // Load the window stats
     {
@@ -775,7 +775,7 @@ AUT_RESULT ModuleWin::F_ControlMove(VectorVariant &vParams, Variant &vResult)
         return AUT_OK;
     }
 
-    Util_AttachThreadInput(util.m_WindowSearchHWND, false);
+    g_oSysUtil.AttachThreadInput(util.m_WindowSearchHWND, false);
 
     return AUT_OK;
 
@@ -916,7 +916,7 @@ AUT_RESULT ModuleWin::F_ControlCommand(VectorVariant &vParams,  Variant &vResult
         vParams.push_back(vTemp);
 
 
-    Util_AttachThreadInput(util.m_WindowSearchHWND, true);
+    g_oSysUtil.AttachThreadInput(util.m_WindowSearchHWND, true);
 
     // Easy access to the command parameter
     szCmd = vParams[3].szValue();
@@ -1271,7 +1271,7 @@ AUT_RESULT ModuleWin::F_ControlCommand(VectorVariant &vParams,  Variant &vResult
         break;
     }
 
-    Util_AttachThreadInput(util.m_WindowSearchHWND, false);
+    g_oSysUtil.AttachThreadInput(util.m_WindowSearchHWND, false);
 
     return AUT_OK;
 
@@ -1376,9 +1376,9 @@ AUT_RESULT ModuleWin::F_WinMenuSelectItem(VectorVariant &vParams, Variant &vResu
         vResult = 0;                                // Default is 1
     else
     {
-        Util_AttachThreadInput(util.m_WindowSearchHWND, true);
+        g_oSysUtil.AttachThreadInput(util.m_WindowSearchHWND, true);
         PostMessage(util.m_WindowSearchHWND,WM_COMMAND,(WPARAM)nId,0);
-        Util_AttachThreadInput(util.m_WindowSearchHWND, false);
+        g_oSysUtil.AttachThreadInput(util.m_WindowSearchHWND, false);
     }
 
     return AUT_OK;
@@ -1405,7 +1405,7 @@ AUT_RESULT ModuleWin::F_WinGetClassList(VectorVariant &vParams, Variant &vResult
         return AUT_OK;                                    // Required window not found
     }
 
-    vResult = Util_GetClassList(util.m_WindowSearchHWND);
+    vResult = g_oSysUtil.GetClassList(util.m_WindowSearchHWND);
 
     return AUT_OK;
 
@@ -1433,12 +1433,12 @@ AUT_RESULT ModuleWin::F_WinGetClientSize(VectorVariant &vParams, Variant &vResul
     if ( GetClientRect(util.m_WindowSearchHWND, &rect) )    // Load the window stats
     {
         // Setup vResult as an Array to hold the 4 values we want to return
-        Util_VariantArrayDim(&vResult, 2);
+        engine->VariantArrayDim(&vResult, 2);
 
-        pvTemp = Util_VariantArrayGetRef(&vResult, 0);    // First element
+        pvTemp = engine->VariantArrayGetRef(&vResult, 0);    // First element
         *pvTemp = (int)(rect.right - rect.left);    // Width
 
-        pvTemp = Util_VariantArrayGetRef(&vResult, 1);
+        pvTemp = engine->VariantArrayGetRef(&vResult, 1);
         *pvTemp = (int)(rect.bottom - rect.top);    // Height
     }
     else
@@ -1535,7 +1535,7 @@ AUT_RESULT ModuleWin::F_WinGetCaretPos(VectorVariant &vParams, Variant &vResult)
     HWND hWnd = GetForegroundWindow();
 
     // Doesn't work without attaching
-    Util_AttachThreadInput(hWnd, true);
+    g_oSysUtil.AttachThreadInput(hWnd, true);
 
     if (GetCaretPos(&point) == FALSE)
         engine->SetFuncErrorCode(1);
@@ -1544,20 +1544,20 @@ AUT_RESULT ModuleWin::F_WinGetCaretPos(VectorVariant &vParams, Variant &vResult)
         // point contains the caret pos in CLIENT area coordinates, convert to screen (absolute coords)
         // and then let the current mode decide how they will be returned
         ClientToScreen(hWnd, &point);
-        WinUtil::instance.ConvertCoords(engine->nCoordCaretMode(), ptOrigin);
+        g_oWinUtil.ConvertCoords(engine->nCoordCaretMode(), ptOrigin);
         point.x -= ptOrigin.x;
         point.y -= ptOrigin.y;
 
-        Util_VariantArrayDim(&vResult, 2);
+        engine->VariantArrayDim(&vResult, 2);
 
-        pvTemp = Util_VariantArrayGetRef(&vResult, 0);        // First element
+        pvTemp = engine->VariantArrayGetRef(&vResult, 0);        // First element
         *pvTemp = (int)point.x;                    // X
 
-        pvTemp = Util_VariantArrayGetRef(&vResult, 1);
+        pvTemp = engine->VariantArrayGetRef(&vResult, 1);
         *pvTemp = (int)point.y;                    // Y
     }
 
-    Util_AttachThreadInput(hWnd, false);
+    g_oSysUtil.AttachThreadInput(hWnd, false);
 
     return AUT_OK;
 
@@ -1693,7 +1693,7 @@ AUT_RESULT ModuleWin::F_ToolTip(VectorVariant &vParams, Variant &vResult)
 AUT_RESULT ModuleWin::F_WinMinimizeAll(VectorVariant &vParams, Variant &vResult)
 {
     PostMessage(FindWindow("Shell_TrayWnd", NULL), WM_COMMAND, 419, 0);
-    Util_Sleep(engine->nWinWaitDelay());                // Briefly pause before continuing
+    g_oSysUtil.Sleep(engine->nWinWaitDelay());                // Briefly pause before continuing
 
     return AUT_OK;
 
@@ -1707,7 +1707,7 @@ AUT_RESULT ModuleWin::F_WinMinimizeAll(VectorVariant &vParams, Variant &vResult)
 AUT_RESULT ModuleWin::F_WinMinimizeAllUndo(VectorVariant &vParams, Variant &vResult)
 {
     PostMessage(FindWindow("Shell_TrayWnd", NULL), WM_COMMAND, 416, 0);
-    Util_Sleep(engine->nWinWaitDelay());                // Briefly pause before continuing
+    g_oSysUtil.Sleep(engine->nWinWaitDelay());                // Briefly pause before continuing
 
     return AUT_OK;
 

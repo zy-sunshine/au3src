@@ -74,7 +74,7 @@
     #include <windows.h>
 #endif
 
-#include "utility.h"
+#include "SysUtil.h"
 
 
 // Keys that we can use
@@ -294,7 +294,7 @@ void HS_SendKeys::Init(void)
 void HS_SendKeys::Send(const char *szSendKeys, HWND hWnd)
 {
 #ifdef _DEBUG
-    Util_DebugMsg("==> HS_SendKeys::Send : szSendKeys=%s)\n", szSendKeys);
+    g_oSysUtil.DebugMsg("==> HS_SendKeys::Send : szSendKeys=%s)\n", szSendKeys);
 #endif
     char    *szTemp;
     char    ch;
@@ -386,7 +386,7 @@ void HS_SendKeys::Send(const char *szSendKeys, HWND hWnd)
 void HS_SendKeys::SendRaw(const char *szSendKeys, HWND hWnd)
 {
 #ifdef _DEBUG
-    Util_DebugMsg("==> HS_SendKeys::SendRaw : szSendKeys=%s, hWnd=%.x8)\n", szSendKeys, hWnd);
+    g_oSysUtil.DebugMsg("==> HS_SendKeys::SendRaw : szSendKeys=%s, hWnd=%.x8)\n", szSendKeys, hWnd);
 #endif
     char    ch;
     int        nPos = 0;
@@ -488,7 +488,7 @@ bool HS_SendKeys::SetToggleState(UINT vk, bool bState)
         bInitial = false;                        // Was off
 
 #ifdef _DEBUG
-    Util_DebugMsg("==> HS_SendKeys::SetToggleState : vk=%d, bState=%d, bInitial=%d)\n", vk, bState, bInitial);
+    g_oSysUtil.DebugMsg("==> HS_SendKeys::SetToggleState : vk=%d, bState=%d, bInitial=%d)\n", vk, bState, bInitial);
 #endif
 
     // Do we need to do anything?
@@ -517,7 +517,7 @@ bool HS_SendKeys::SetToggleState(UINT vk, bool bState)
 void HS_SendKeys::SendCh(char ch, int nRep)
 {
 #ifdef _DEBUG
-    Util_DebugMsg("==> HS_SendKeys::SendCh : ch=%d, nRep=%d)\n", ch, nRep);
+    g_oSysUtil.DebugMsg("==> HS_SendKeys::SendCh : ch=%d, nRep=%d)\n", ch, nRep);
 #endif
     UINT    vkres;
 
@@ -559,7 +559,7 @@ void HS_SendKeys::SendCh(char ch, int nRep)
 void HS_SendKeys::SendVk(UINT vk, int nRep, bool bExtended)
 {
 #ifdef _DEBUG
-    Util_DebugMsg("==> HS_SendKeys::SendVk : vk=%d, nRep=%d, bExtended=%d)\n", vk, nRep, bExtended);
+    g_oSysUtil.DebugMsg("==> HS_SendKeys::SendVk : vk=%d, nRep=%d, bExtended=%d)\n", vk, nRep, bExtended);
 #endif
     // NOTE ch is a VK_CODE already
 
@@ -593,7 +593,7 @@ void HS_SendKeys::SendVk(UINT vk, int nRep, bool bExtended)
 void  HS_SendKeys::SendSpecialCh(char ch)
 {
 #ifdef _DEBUG
-    Util_DebugMsg("==> HS_SendKeys::SendSpecialCh : ch=%d)\n", ch);
+    g_oSysUtil.DebugMsg("==> HS_SendKeys::SendSpecialCh : ch=%d)\n", ch);
 #endif
 // Table to convert char >=128 to {Asc nnn} or to a diadic + letter
 // the comment above the value show as ? due to Courier Font but they are real Ansi chars
@@ -719,7 +719,7 @@ void HS_SendKeys::ResolveKeyModifiers(UINT vkres)
         m_nKeyMod ^= LWINMOD;                    // remove left win flag
 
 #ifdef _DEBUG
-    Util_DebugMsg("==> HS_SendKeys::ResolveKeyModifiers : vkres=%d, m_nKeyMod=%d)\n", vkres, m_nKeyMod);
+    g_oSysUtil.DebugMsg("==> HS_SendKeys::ResolveKeyModifiers : vkres=%d, m_nKeyMod=%d)\n", vkres, m_nKeyMod);
 #endif
 
     // Now check the physical state (as best as the buggy API lets us) to see if any
@@ -811,7 +811,7 @@ bool HS_SendKeys::IsVKExtended(UINT key)
 void HS_SendKeys::SimModsDown(void)
 {
 #ifdef _DEBUG
-    Util_DebugMsg("==> HS_SendKeys::SimModsDown : m_nKeyMod=%d)\n", m_nKeyMod);
+    g_oSysUtil.DebugMsg("==> HS_SendKeys::SimModsDown : m_nKeyMod=%d)\n", m_nKeyMod);
 #endif
     // If the window is NULL use keybd_event
     if (m_hWnd == NULL)
@@ -888,7 +888,7 @@ void HS_SendKeys::SimModsDown(void)
 void HS_SendKeys::SimModsUp(void)
 {
 #ifdef _DEBUG
-    Util_DebugMsg("==> HS_SendKeys::SimModsUp : m_nKeyMod=%d)\n", m_nKeyMod);
+    g_oSysUtil.DebugMsg("==> HS_SendKeys::SimModsUp : m_nKeyMod=%d)\n", m_nKeyMod);
 #endif
     // If the window is NULL use keybd_event
     if (m_hWnd == NULL)
@@ -964,7 +964,7 @@ void HS_SendKeys::SimModsUp(void)
 void HS_SendKeys::SimKeystroke(UINT vk, bool bForceExtended)
 {
 #ifdef _DEBUG
-    Util_DebugMsg("==> HS_SendKeys::SimKeystroke : vk=%d, bForceExtended=%d)\n", vk, bForceExtended);
+    g_oSysUtil.DebugMsg("==> HS_SendKeys::SimKeystroke : vk=%d, bForceExtended=%d)\n", vk, bForceExtended);
 #endif
 
     SimKeyDown(vk, bForceExtended);
@@ -983,7 +983,7 @@ void HS_SendKeys::SimKeystroke(UINT vk, bool bForceExtended)
 void HS_SendKeys::SimKeyDown(UINT vk, bool bForceExtended)
 {
 #ifdef _DEBUG
-    Util_DebugMsg("==> HS_SendKeys::SimKeyDown : vk=%d, bForceExtended=%d)\n", vk, bForceExtended);
+    g_oSysUtil.DebugMsg("==> HS_SendKeys::SimKeyDown : vk=%d, bForceExtended=%d)\n", vk, bForceExtended);
 #endif
     UINT    scan;
     LPARAM    lparam;
@@ -1021,7 +1021,7 @@ void HS_SendKeys::SimKeyDown(UINT vk, bool bForceExtended)
 void HS_SendKeys::SimKeyUp(UINT vk, bool bForceExtended)
 {
 #ifdef _DEBUG
-    Util_DebugMsg("==> HS_SendKeys::SimKeyUp : vk=%d, bForceExtended=%d)\n", vk, bForceExtended);
+    g_oSysUtil.DebugMsg("==> HS_SendKeys::SimKeyUp : vk=%d, bForceExtended=%d)\n", vk, bForceExtended);
 #endif
     UINT    scan;
     LPARAM    lparam;
@@ -1060,7 +1060,7 @@ void HS_SendKeys::SimKeyUp(UINT vk, bool bForceExtended)
 void HS_SendKeys::SendSpecial(char *szTemp)
 {
 #ifdef _DEBUG
-    Util_DebugMsg("==> HS_SendKeys::SendSpecial : szTemp=%s)\n", szTemp);
+    g_oSysUtil.DebugMsg("==> HS_SendKeys::SendSpecial : szTemp=%s)\n", szTemp);
 #endif
     int        nRep;
     int        nPos    = 0;

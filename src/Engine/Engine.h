@@ -284,6 +284,7 @@ class OS_Version;
 class SetForegroundWinEx;
 class ScriptFile;
 class HS_SendKeys;
+
 // The AutoIt Script object
 class Engine
 {
@@ -441,7 +442,7 @@ private:
     Parser*     _parser;
 
 public:
-    inline Parser* parser() { return _parser; }
+    // inline Parser* parser() { return _parser; }
     void quit();
 
 public:
@@ -466,6 +467,9 @@ public:
     // === call functions ===
     AUT_RESULT  call(const char* szName, Variant &vResult);
     AUT_RESULT  interruptCall(const char* szName, Variant &vResult);
+
+    bool FindUserFunction(const char *szName, int &nLineNum, int &nNumParams,
+            int &nNumParamsMin, int &nEndLineNum);
 
 public:
 
@@ -498,7 +502,6 @@ public:
     int                     g_nExitCode;            // Windows exit code
     int                     g_nExitMethod;          // The way AutoIt finished
     
-    OS_Version              *g_oVersion;             // Version object
     SetForegroundWinEx      *g_oSetForeWinEx;        // Foreground window hack object
     ScriptFile              *g_oScriptFile;          // The script file object
     HS_SendKeys             *g_oSendKeys;           // SendKeys object
@@ -516,6 +519,35 @@ public:
     
     WPARAM                  g_HotKeyQueue[AUT_HOTKEYQUEUESIZE];    // Queue for hotkeys pressed
     int                     g_HotKeyNext;           // Next free hotkey position in queue
+
+public:
+    // some utility functions
+    void    VariantArrayDim(Variant *pvVariant, unsigned int iElements);
+    Variant * VariantArrayGetRef(Variant *pvVariant, unsigned int iElement);
+
+    template<typename T> inline void VariantArrayAssign(Variant *pvVariant,
+            unsigned int iElement, T tParam);
+    
+    template<typename T> inline void Variant2DArrayAssign(Variant *pvVariant,
+            unsigned int iElement0, unsigned int iElement1, T tParam);
 };
+
+template<typename T> inline void Engine::VariantArrayAssign(Variant *pvVariant,
+    unsigned int iElement, T tParam)
+{
+    Variant *pvTemp = VariantArrayGetRef(pvVariant, iElement);
+    *pvTemp = tParam;
+}    // VariantArrayAssign()
+    
+template<typename T> inline void Engine::Variant2DArrayAssign(Variant *pvVariant,
+    unsigned int iElement0, unsigned int iElement1, T tParam)
+{
+    Variant *pvTemp;
+    pvVariant->ArraySubscriptClear();    // Reset the subscript
+    pvVariant->ArraySubscriptSetNext(iElement0);    // First dimension
+    pvVariant->ArraySubscriptSetNext(iElement1);    // Second dimension
+    pvTemp    = pvVariant->ArrayGetRef();    // Get reference to the element
+    *pvTemp = tParam;        // Assign parameter
+}    // Variant2DArrayAssign()
 
 ///////////////////////////////////////////////////////////////////////////////

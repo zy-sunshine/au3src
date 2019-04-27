@@ -51,7 +51,7 @@
     #include <windows.h>
 #endif
 
-#include "Utils/utility.h"
+#include "Utils/StrUtil.h"
 
 //AU3_FuncInfo ModuleReg::funcInfo[] = {
 //    {"REGDELETE", &ModuleReg::F_RegDelete, 1, 2},
@@ -410,7 +410,7 @@ AUT_RESULT ModuleReg::F_RegWrite(VectorVariant &vParams, Variant &vResult)
 
     if (!stricmp(vParams[2].szValue(), "REG_MULTI_SZ"))
     {
-        Util_Strncpy(szRegBuffer, vParams[3].szValue(), 65535+1);    // Leave space for another null
+        g_oStrUtil.Strncpy(szRegBuffer, vParams[3].szValue(), 65535+1);    // Leave space for another null
         // Change all \n to \0 then double null terminate
         nLen = (int)strlen(szRegBuffer);
         szRegBuffer[nLen] = '\0';                // Double null

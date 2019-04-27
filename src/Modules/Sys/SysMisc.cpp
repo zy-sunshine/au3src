@@ -1,7 +1,6 @@
 #include "StdAfx.h"                                // Pre-compiled headers
 #include "ModuleSys.h"
 #include "Engine/Engine.h"
-#include "Engine/Parser/Parser.h"
 #include "Utils/SendKeys.h"
 #include "Utils/OSVersion.h"
 
@@ -154,7 +153,7 @@ AUT_RESULT ModuleSys::F_AdlibEnable(VectorVariant &vParams, Variant &vResult)
     engine->setAdlibEnabled(false);            // Disable by default in case of error
 
     // Check that this user function exists
-    if (engine->parser()->FindUserFunction(vParams[0].szValue(), nTemp1, nTemp2, nTemp3, nTemp4) == false)
+    if (engine->FindUserFunction(vParams[0].szValue(), nTemp1, nTemp2, nTemp3, nTemp4) == false)
     {
         engine->FatalError(IDS_AUT_E_UNKNOWNUSERFUNC);
         return AUT_ERR;
@@ -259,7 +258,7 @@ AUT_RESULT ModuleSys::F_IsAdmin(VectorVariant &vParams, Variant &vResult)
 {
     vResult = 0;                                // Set default
 
-    if (engine->g_oVersion->IsWin9x())
+    if (g_oVersion.IsWin9x())
     {
         vResult = 1;
         return AUT_OK;
@@ -662,28 +661,28 @@ AUT_RESULT ModuleSys::F_MemGetStats(VectorVariant &vParams, Variant &vResult)
 
     Variant    *pvTemp;
 
-    Util_VariantArrayDim(&vResult, 7);
+    engine->VariantArrayDim(&vResult, 7);
 
     // We have to cast all of these because of the overloaded operator= in the Variant class
-    pvTemp = Util_VariantArrayGetRef(&vResult, 0);
+    pvTemp = engine->VariantArrayGetRef(&vResult, 0);
     *pvTemp = (double)mem.dwMemoryLoad;
 
-    pvTemp = Util_VariantArrayGetRef(&vResult, 1);
+    pvTemp = engine->VariantArrayGetRef(&vResult, 1);
     *pvTemp = (double)mem.dwTotalPhys / 1024.0;            // Conv to KB
 
-    pvTemp = Util_VariantArrayGetRef(&vResult, 2);
+    pvTemp = engine->VariantArrayGetRef(&vResult, 2);
     *pvTemp = (double)mem.dwAvailPhys / 1024.0;
 
-    pvTemp = Util_VariantArrayGetRef(&vResult, 3);
+    pvTemp = engine->VariantArrayGetRef(&vResult, 3);
     *pvTemp = (double)mem.dwTotalPageFile / 1024.0;
 
-    pvTemp = Util_VariantArrayGetRef(&vResult, 4);
+    pvTemp = engine->VariantArrayGetRef(&vResult, 4);
     *pvTemp = (double)mem.dwAvailPageFile / 1024.0;
 
-    pvTemp = Util_VariantArrayGetRef(&vResult, 5);
+    pvTemp = engine->VariantArrayGetRef(&vResult, 5);
     *pvTemp = (double)mem.dwTotalVirtual / 1024.0;
 
-    pvTemp = Util_VariantArrayGetRef(&vResult, 6);
+    pvTemp = engine->VariantArrayGetRef(&vResult, 6);
     *pvTemp = (double)mem.dwAvailVirtual / 1024.0;
 
     return AUT_OK;

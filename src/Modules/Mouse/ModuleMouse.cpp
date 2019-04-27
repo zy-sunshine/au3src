@@ -2,7 +2,7 @@
 #include "Engine/Engine.h"
 #include "ModuleMouse.h"
 #include "Utils/WinUtil.h"
-#include "Utils/utility.h"
+#include "Utils/SysUtil.h"
 
 //AU3_FuncInfo ModuleMouse::funcInfo[] = {
 //    {"MOUSECLICK", &ModuleMouse::F_MouseClick, 1, 5},
@@ -26,7 +26,7 @@ ModuleMouse::ModuleMouse(Engine* engine)
 
 AUT_RESULT ModuleMouse::F_MouseDown(VectorVariant &vParams, Variant &vResult)
 {
-    if (Util_MouseDown(vParams[0].szValue()) == 0)
+    if (g_oSysUtil.MouseDown(vParams[0].szValue()) == 0)
         vResult = 0;
 
     return AUT_OK;
@@ -40,7 +40,7 @@ AUT_RESULT ModuleMouse::F_MouseDown(VectorVariant &vParams, Variant &vResult)
 
 AUT_RESULT ModuleMouse::F_MouseUp(VectorVariant &vParams, Variant &vResult)
 {
-    if (Util_MouseUp(vParams[0].szValue()) == 0)
+    if (g_oSysUtil.MouseUp(vParams[0].szValue()) == 0)
         vResult = 0;
 
     return AUT_OK;
@@ -98,19 +98,19 @@ AUT_RESULT ModuleMouse::F_MouseClick(VectorVariant &vParams, Variant &vResult)
     for (int i=0; i<nClicks; ++i)
     {
         // Do the click
-        if (Util_MouseDown(vParams[0].szValue()) == 0)
+        if (g_oSysUtil.MouseDown(vParams[0].szValue()) == 0)
         {
             // not a valid click
             vResult = 0;
             return AUT_OK;
         }
-        Util_Sleep(engine->nMouseClickDownDelay());
-        if (Util_MouseUp(vParams[0].szValue()) == 0) {
+        g_oSysUtil.Sleep(engine->nMouseClickDownDelay());
+        if (g_oSysUtil.MouseUp(vParams[0].szValue()) == 0) {
             // not a valid click
             vResult = 0;
             return AUT_OK;
         }
-        Util_Sleep(engine->nMouseClickDelay());
+        g_oSysUtil.Sleep(engine->nMouseClickDelay());
     }
 
     return AUT_OK;
@@ -153,7 +153,7 @@ void ModuleMouse::MouseMoveExecute(int x, int y, int nSpeed)
 
 
     // Convert coords to screen/active window/client
-    WinUtil::instance.ConvertCoords(engine->nCoordMouseMode(), ptOrigin);
+    g_oWinUtil.ConvertCoords(engine->nCoordMouseMode(), ptOrigin);
     x += ptOrigin.x;
     y += ptOrigin.y;
 
@@ -180,7 +180,7 @@ void ModuleMouse::MouseMoveExecute(int x, int y, int nSpeed)
     if (nSpeed == 0)
     {
         mouse_event(MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE, x, y, 0, 0);
-        Util_Sleep(10);                            // Hopefully fixes "clicks before moving" bug
+        g_oSysUtil.Sleep(10);                            // Hopefully fixes "clicks before moving" bug
         return;
     }
 
@@ -242,7 +242,7 @@ void ModuleMouse::MouseMoveExecute(int x, int y, int nSpeed)
 
         mouse_event(MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE, xCur, yCur, 0, 0);
 
-        Util_Sleep(10);                            // 20 ms sleep inbetween moves
+        g_oSysUtil.Sleep(10);                            // 20 ms sleep inbetween moves
     }
 
 } // MouseMoveExecute()
@@ -260,19 +260,19 @@ AUT_RESULT ModuleMouse::F_MouseGetPos(VectorVariant &vParams, Variant &vResult)
     GetCursorPos(&pt);
 
     // Convert coords to screen/active window/client
-    WinUtil::instance.ConvertCoords(engine->nCoordMouseMode(), ptOrigin);
+    g_oWinUtil.ConvertCoords(engine->nCoordMouseMode(), ptOrigin);
     pt.x -= ptOrigin.x;
     pt.y -= ptOrigin.y;
 
     // Setup vResult as an Array to hold the 2 values we want to return
     Variant    *pvTemp;
 
-    Util_VariantArrayDim(&vResult, 2);
+    engine->VariantArrayDim(&vResult, 2);
 
-    pvTemp = Util_VariantArrayGetRef(&vResult, 0);    //First element
+    pvTemp = engine->VariantArrayGetRef(&vResult, 0);    //First element
     *pvTemp = (int)pt.x;                        // X
 
-    pvTemp = Util_VariantArrayGetRef(&vResult, 1);
+    pvTemp = engine->VariantArrayGetRef(&vResult, 1);
     *pvTemp = (int)pt.y    ;                        // Y
 
     return AUT_OK;
@@ -359,20 +359,20 @@ AUT_RESULT ModuleMouse::F_MouseClickDrag(VectorVariant &vParams, Variant &vResul
         nSpeed = 2;
 
     // Do the drag operation
-    if (Util_MouseDown(vParams[0].szValue()) == 0)
+    if (g_oSysUtil.MouseDown(vParams[0].szValue()) == 0)
     {
         vResult = 0;
         return AUT_OK;
     }
-    Util_Sleep(engine->nMouseClickDragDelay());
+    g_oSysUtil.Sleep(engine->nMouseClickDragDelay());
     MouseMoveExecute(nX2, nY2, nSpeed);
-    Util_Sleep(engine->nMouseClickDragDelay());
-    if (Util_MouseUp(vParams[0].szValue()) == 0)
+    g_oSysUtil.Sleep(engine->nMouseClickDragDelay());
+    if (g_oSysUtil.MouseUp(vParams[0].szValue()) == 0)
     {
         vResult = 0;
         return AUT_OK;
     }
-    Util_Sleep(engine->nMouseClickDelay());
+    g_oSysUtil.Sleep(engine->nMouseClickDelay());
 
     return AUT_OK;
 
@@ -400,12 +400,12 @@ AUT_RESULT ModuleMouse::F_MouseWheel(VectorVariant &vParams, Variant &vResult)
     for (int i=0; i<nClicks; ++i)
     {
         // Do the click
-        if (Util_MouseWheel(vParams[0].szValue())==0)
+        if (g_oSysUtil.MouseWheel(vParams[0].szValue())==0)
         {
             vResult = 0;
             return AUT_OK;
         }
-        Util_Sleep(engine->nMouseClickDelay());
+        g_oSysUtil.Sleep(engine->nMouseClickDelay());
     }
 
     return AUT_OK;

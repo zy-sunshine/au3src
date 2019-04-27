@@ -60,7 +60,9 @@
     #include <windows.h>
 #endif
 
-#include "Utils/utility.h"
+#include "Utils/SysUtil.h"
+#include "Utils/StrUtil.h"
+#include "Utils/FileUtil.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Constructor()
@@ -195,7 +197,7 @@ void ScriptFile::AddLine(int nLineNum,  const char *szLine, int nIncludeID)
     m_lpScriptLast->lpNext        = NULL;                // Next
 
     // Store our line
-    szTemp = Util_StrCpyAlloc(szLine);
+    szTemp = g_oStrUtil.StrCpyAlloc(szLine);
     m_lpScriptLast->szLine        = szTemp;
     m_lpScriptLast->nLineNum    = nLineNum;
     m_lpScriptLast->nIncludeID    = nIncludeID;
@@ -267,7 +269,7 @@ int ScriptFile::AddIncludeName(const char *szFileName)
 
 
     // New entry
-    szTemp = Util_StrCpyAlloc(szFullPath);
+    szTemp = g_oStrUtil.StrCpyAlloc(szFullPath);
 
     m_szIncludeIDs[m_nNumIncludes] = szTemp;
     m_nIncludeCounts[m_nNumIncludes] = 1;
@@ -456,7 +458,7 @@ bool ScriptFile::IncludeParse(const char *szLine, char *szTemp)
         szTemp[j++] = szLine[i++];
     szTemp[j] = '\0';                            // Terminate
 
-    szTemp2 = Util_StrCpyAlloc(szTemp);
+    szTemp2 = g_oStrUtil.StrCpyAlloc(szTemp);
 
     // This can be confusing, here's what's going on:
     // if bRSearch is true, we perform a reverse search.  This means we start in the local directory, then
@@ -468,7 +470,7 @@ bool ScriptFile::IncludeParse(const char *szLine, char *szTemp)
     // fopen will fail inside Include() and catch it.
     if (bRSearch)
     {
-        if (Util_DoesFileExist(szTemp))
+        if (g_oFileUtil.DoesFileExist(szTemp))
         {
             delete[] szTemp2;
             return true;
@@ -478,7 +480,7 @@ bool ScriptFile::IncludeParse(const char *szLine, char *szTemp)
         {
             strcpy(szTemp, m_pIncludeDirs[i]);
             strcat(szTemp, szTemp2);
-            if (Util_DoesFileExist(szTemp))
+            if (g_oFileUtil.DoesFileExist(szTemp))
                 break;
             else
                 strcpy(szTemp, szTemp2);    // Reset back to the filename so Include()'s failure will contain a good message
@@ -491,7 +493,7 @@ bool ScriptFile::IncludeParse(const char *szLine, char *szTemp)
         {
             strcpy(szTemp, m_pIncludeDirs[i]);
             strcat(szTemp, szTemp2);
-            if (Util_DoesFileExist(szTemp))
+            if (g_oFileUtil.DoesFileExist(szTemp))
                 break;
             else
                 strcpy(szTemp, szTemp2);    // Just copy it into the buffer and let Include fail on it if it doesn't exist
@@ -629,8 +631,8 @@ bool ScriptFile::LoadScript(char *szFile)
     }
 
     // Get the full LFN pathname (it is passed back for other uses)
-    Util_GetFullPathName(szFile, szFile);
-    Util_GetLongFileName(szFile, szFile);
+    g_oFileUtil.GetFullPathName(szFile, szFile);
+    g_oFileUtil.GetLongFileName(szFile, szFile);
 
     // Read in the script and any include files
     return Include(szFile, AddIncludeName(szFile));
@@ -671,7 +673,7 @@ bool ScriptFile::Include(const char *szFileName, int nIncludeID)
         strcpy(szBuffer, "Error reading the file:\n\n");
         strcat(szBuffer, szFileName);
 
-        Util_FatalError("AutoIt", szBuffer, NULL);
+        g_oSysUtil.FatalError("AutoIt", szBuffer, NULL);
         return false;
     }
 

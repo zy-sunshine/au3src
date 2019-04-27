@@ -52,8 +52,7 @@
     #include <windef.h>
 #endif
 
-//#include "Engine/globaldata.h"
-#include "Utils/utility.h"
+#include "Utils/SysUtil.h"
 #include "Engine/Application.h"
 #include "Utils/SetForegroundWinEx.h"
 
@@ -72,7 +71,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     engine->g_nExitMethod        = AUT_EXITBY_NATURAL;    // Default exit method
 
 #ifdef _MSC_VER
-    _set_new_handler(Util_NewHandler);            // Functon to call if "new" fails
+    _set_new_handler(SysUtil::NewHandler);            // Functon to call if "new" fails
     _set_new_mode(1);                            // Make "malloc" use the "new" handler as well
 #endif
 

@@ -56,8 +56,7 @@
 //    #include "qmath.h"                            // MinGW doesn't like our asm maths functions
 #endif
 
-#include "Utils/utility.h"
-#include "Utils/StrUtil.h"
+#include "Utils/SysUtil.h"
 
 #include "Engine/ScriptFile.h"
 #include "Utils/OSVersion.h"
@@ -139,10 +138,8 @@ Engine::Engine()
 
     g_oScriptFile = new ScriptFile(this);
     g_oSetForeWinEx = new SetForegroundWinEx();
-    g_oVersion = new OS_Version();
     g_oSendKeys = new HS_SendKeys();
     g_oSendKeys->Init();                            // Init sendkeys to defaults
-
 } // Engine()
 
 static int funcNameSort(AU3_FuncInfo *a0,  AU3_FuncInfo *a1)
@@ -242,7 +239,7 @@ AUT_RESULT Engine::InitScript(char *szFile)
     // Initialise the random number routine (must be done after the script has
     // loaded as the compiled script loader also uses random numbers and must
     // be reseeded now to get random numbers again!
-    Util_RandInit();
+    g_oSysUtil.RandInit();
 
     return AUT_OK;
 
@@ -664,3 +661,41 @@ void Engine::FatalError(int iErr, const char *szText2)
 {
     _parser->FatalError(iErr, szText2);
 }
+
+bool Engine::FindUserFunction(const char *szName, int &nLineNum, int &nNumParams,
+    int &nNumParamsMin, int &nEndLineNum)
+{
+    return _parser->FindUserFunction(szName, nLineNum, nNumParams, nNumParamsMin, nEndLineNum);
+}
+// === utility functions ===
+///////////////////////////////////////////////////////////////////////////////
+// Engine::VariantArrayDim()
+//
+// Simple helper function for Diming a SINGLE dimension variant with specified
+// number of elements
+//
+///////////////////////////////////////////////////////////////////////////////
+
+void Engine::VariantArrayDim(Variant *pvVariant, unsigned int iElements)
+{
+    pvVariant->ArraySubscriptClear();            // Reset the subscript
+    pvVariant->ArraySubscriptSetNext(iElements);// Number of elements
+    pvVariant->ArrayDim();                        // Dimension array
+
+} // Engine::VariantArrayDim()
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Engine::VariantArrayGetRef()
+//
+// Simple helper function for getting a ref to an element of our simple array
+//
+///////////////////////////////////////////////////////////////////////////////
+
+Variant * Engine::VariantArrayGetRef(Variant *pvVariant, unsigned int iElement)
+{
+    pvVariant->ArraySubscriptClear();            // Reset the subscript
+    pvVariant->ArraySubscriptSetNext(iElement);    // Set subscript we want to access
+    return pvVariant->ArrayGetRef();            // Get reference to the element
+
+} // Engine::VariantArrayGetRef()
