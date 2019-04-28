@@ -23,9 +23,9 @@ public:
     AUT_RESULT    F_Shutdown(VectorVariant &vParams, Variant &vResult);
     AUT_RESULT    F_ProcessSetPriority(VectorVariant &vParams, Variant &vResult);
     AUT_RESULT    F_ProcessList(VectorVariant &vParams, Variant &vResult);
-    AUT_RESULT    F_DllCall(VectorVariant &vParams, Variant &vResult);
-    AUT_RESULT    F_DllOpen(VectorVariant &vParams, Variant &vResult);
-    AUT_RESULT    F_DllClose(VectorVariant &vParams, Variant &vResult);
+    // AUT_RESULT    F_DllCall(VectorVariant &vParams, Variant &vResult);
+    // AUT_RESULT    F_DllOpen(VectorVariant &vParams, Variant &vResult);
+    // AUT_RESULT    F_DllClose(VectorVariant &vParams, Variant &vResult);
 
     // form script_misc.cpp
     AUT_RESULT    F_EnvGet(VectorVariant &vString, Variant &vResult);

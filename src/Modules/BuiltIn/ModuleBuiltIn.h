@@ -53,8 +53,8 @@ public:
     AUT_RESULT    F_StringIsInt(VectorVariant &vParams, Variant &vResult);
     AUT_RESULT    F_StringSplit(VectorVariant &vParams, Variant &vResult); // 2, 3
     AUT_RESULT    F_StringFormat(VectorVariant &vParams, Variant &vResult); // 1, 33
-    AUT_RESULT    F_StringRegExp(VectorVariant &vParams, Variant &vResult); // 2, 3
-    AUT_RESULT    F_StringRegExpReplace(VectorVariant &vParams, Variant &vResult); // 3, 4
+    // AUT_RESULT    F_StringRegExp(VectorVariant &vParams, Variant &vResult); // 2, 3
+    // AUT_RESULT    F_StringRegExpReplace(VectorVariant &vParams, Variant &vResult); // 3, 4
 
     // BuiltInArray.cpp
     AUT_RESULT    F_UBound(VectorVariant &vParams, Variant &vResult); // 1, 2

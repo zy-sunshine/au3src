@@ -1,12 +1,12 @@
 #include "StdAfx.h"
 #include "WinSearchUtil.h"
+#include "Utils/SysUtil.h"
+#include "Utils/StrUtil.h"
 
 WinSearchUtil::WinSearchUtil(Engine *engine)
     : engine(engine)
 {
     m_WindowSearchHWND          = NULL;        // Last window found set to NULL
-    m_bDetectHiddenText         = false;       // Don't detect hidden text by default
-    m_bWinSearchChildren        = false;       // Only search top level windows by default
 
     m_lpWinListFirst            = NULL;            // First entry in window list
     m_lpWinListLast             = NULL;            // First entry in window list
@@ -164,7 +164,7 @@ bool WinSearchUtil::Win_WindowSearch(bool bFirstOnly)
 
             // Assumes int32 is big enough for HWND (it currently is... 4 bytes)
             // We can always bump up to 64 if required in the future (IA64?)
-            g_oStrUtil.ConvDec( &m_vWindowSearchTitle.szValue()[7], nTemp );
+            g_oStrUtil.HexToDec( &m_vWindowSearchTitle.szValue()[7], nTemp );
             m_WindowSearchHWND = (HWND)nTemp;
 
             if (IsWindow(m_WindowSearchHWND) )
@@ -184,10 +184,10 @@ bool WinSearchUtil::Win_WindowSearch(bool bFirstOnly)
     }
 
     // Do the search
-    if (!m_bWinSearchChildren)
-        EnumWindows((WNDENUMPROC)Win_WindowSearchProc, this);
+    if (!engine->bWinSearchChildren())
+        EnumWindows((WNDENUMPROC)Win_WindowSearchProc, (LPARAM)this);
     else
-        EnumChildWindows(GetDesktopWindow(), (WNDENUMPROC)Win_WindowSearchProc, this);
+        EnumChildWindows(GetDesktopWindow(), (WNDENUMPROC)Win_WindowSearchProc, (LPARAM)this);
 
     if (m_nWinListCount)
     {
@@ -205,7 +205,7 @@ bool WinSearchUtil::Win_WindowSearch(bool bFirstOnly)
 
 BOOL CALLBACK WinSearchUtil::Win_WindowSearchProc(HWND hWnd, LPARAM lParam)
 {
-    return (WinSearchUtil*)(lParam)->Win_WindowSearchProcHandler(hWnd, lParam);
+    return ((WinSearchUtil*)lParam)->Win_WindowSearchProcHandler(hWnd, lParam);
 }
 
 BOOL WinSearchUtil::Win_WindowSearchProcHandler(HWND hWnd, LPARAM lParam)
@@ -295,7 +295,7 @@ bool WinSearchUtil::Win_WindowSearchText(void)
 
     int nLastCount = m_nWinListCount;
 
-    EnumChildWindows(m_WindowSearchHWND, (WNDENUMPROC)Win_WindowSearchTextProc, this);
+    ::EnumChildWindows(m_WindowSearchHWND, (WNDENUMPROC)Win_WindowSearchTextProc, (LPARAM)this);
 
     if (nLastCount != m_nWinListCount)
         return true;                            // New window matched
@@ -305,7 +305,7 @@ bool WinSearchUtil::Win_WindowSearchText(void)
 
 BOOL CALLBACK WinSearchUtil::Win_WindowSearchTextProc(HWND hWnd, LPARAM lParam)
 {
-    return (WinSearchUtil*)(lParam)->Win_WindowSearchTextProcHandler(hWnd, lParam);
+    return ((WinSearchUtil*)lParam)->Win_WindowSearchTextProcHandler(hWnd, lParam);
 }
 
 BOOL WinSearchUtil::Win_WindowSearchTextProcHandler(HWND hWnd, LPARAM lParam)
@@ -317,7 +317,7 @@ BOOL WinSearchUtil::Win_WindowSearchTextProcHandler(HWND hWnd, LPARAM lParam)
     szBuffer[0] = '\0';                            // Blank in case of error with WM_GETTEXT
 
     // Hidden text?
-    if ( (IsWindowVisible(hWnd)) || (m_bDetectHiddenText == true) )
+    if ( (IsWindowVisible(hWnd)) || (engine->bDetectHiddenText() == true) )
     {
         if (engine->nWindowSearchTextMode() == 2)
         {
@@ -411,17 +411,17 @@ bool WinSearchUtil::ControlSearch(VectorVariant &vParams)
     if (m_vControlSearchValue.isNumber())
     {
         m_nControlSearchMethod = AUT_CONTROLSEARCH_ID;
-        EnumChildWindows(m_WindowSearchHWND, (WNDENUMPROC)ControlSearchProc, this);
+        EnumChildWindows(m_WindowSearchHWND, (WNDENUMPROC)ControlSearchProc, (LPARAM)this);
     }
     else
     {
         m_nControlSearchMethod = AUT_CONTROLSEARCH_CLASS;
-        EnumChildWindows(m_WindowSearchHWND, (WNDENUMPROC)ControlSearchProc, this);
+        EnumChildWindows(m_WindowSearchHWND, (WNDENUMPROC)ControlSearchProc, (LPARAM)this);
 
         if (m_bControlSearchFoundFlag == false)
         {
             m_nControlSearchMethod = AUT_CONTROLSEARCH_TEXT;
-            EnumChildWindows(m_WindowSearchHWND, (WNDENUMPROC)ControlSearchProc, this);
+            EnumChildWindows(m_WindowSearchHWND, (WNDENUMPROC)ControlSearchProc, (LPARAM)this);
         }
     }
 
@@ -430,7 +430,7 @@ bool WinSearchUtil::ControlSearch(VectorVariant &vParams)
 
 BOOL CALLBACK WinSearchUtil::ControlSearchProc(HWND hWnd, LPARAM lParam)
 {
-    return (WinSearchUtil*)(lParam)->ControlSearchProcHandler(hWnd, lParam);
+    return ((WinSearchUtil*)lParam)->ControlSearchProcHandler(hWnd, lParam);
 }
 
 BOOL WinSearchUtil::ControlSearchProcHandler(HWND hWnd, LPARAM lParam)
@@ -515,7 +515,7 @@ void WinSearchUtil::ControlWithFocus(HWND hWnd, Variant &vResult)
 
 BOOL CALLBACK WinSearchUtil::ControlWithFocusProc(HWND hWnd, LPARAM lParam)
 {
-    return (WinSearchUtil*)(lParam)->ControlWithFocusProcHandler(hWnd, lParam);
+    return ((WinSearchUtil*)lParam)->ControlWithFocusProcHandler(hWnd, lParam);
 }
 
 BOOL WinSearchUtil::ControlWithFocusProcHandler(HWND hWnd, LPARAM lParam)

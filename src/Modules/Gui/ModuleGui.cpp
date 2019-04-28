@@ -65,7 +65,7 @@
 // GuiSwitch( guihandle )
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_GUISwitch(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModulesGui::F_GUISwitch(VectorVariant &vParams, Variant &vResult)
 {
     vResult = g_oGUI.SwitchGUI(vParams[0].hWnd());
     return AUT_OK;
@@ -79,7 +79,7 @@ AUT_RESULT AutoIt_Script::F_GUISwitch(VectorVariant &vParams, Variant &vResult)
 // GuiGetMsg( [1] )
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_GUIGetMsg(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModulesGui::F_GUIGetMsg(VectorVariant &vParams, Variant &vResult)
 {
     GUIEVENT    Event;
     Variant        *pvTemp;
@@ -140,7 +140,7 @@ AUT_RESULT AutoIt_Script::F_GUIGetMsg(VectorVariant &vParams, Variant &vResult)
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_GUICreate(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModulesGui::F_GUICreate(VectorVariant &vParams, Variant &vResult)
 {
     uint    iNumParams = vParams.size();
 
@@ -180,7 +180,7 @@ AUT_RESULT AutoIt_Script::F_GUICreate(VectorVariant &vParams, Variant &vResult)
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_GUISetState(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModulesGui::F_GUISetState(VectorVariant &vParams, Variant &vResult)
 {
     int nState = SW_SHOW;
     HWND hWnd = NULL;
@@ -199,12 +199,12 @@ AUT_RESULT AutoIt_Script::F_GUISetState(VectorVariant &vParams, Variant &vResult
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_GUISetOnEvent(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModulesGui::F_GUISetOnEvent(VectorVariant &vParams, Variant &vResult)
 {
     int        nTemp1, nTemp2, nTemp3, nTemp4;
 
     // Check that this user function exists
-    if (engine->parser()->FindUserFunction(vParams[1].szValue(), nTemp1, nTemp2, nTemp3, nTemp4) == false)
+    if (engine->FindUserFunction(vParams[1].szValue(), nTemp1, nTemp2, nTemp3, nTemp4) == false)
     {
         engine->FatalError(IDS_AUT_E_UNKNOWNUSERFUNC);
         return AUT_ERR;
@@ -226,7 +226,7 @@ AUT_RESULT AutoIt_Script::F_GUISetOnEvent(VectorVariant &vParams, Variant &vResu
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_GUISetBkColor(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModulesGui::F_GUISetBkColor(VectorVariant &vParams, Variant &vResult)
 {
     HWND hWnd = NULL;
     if (vParams.size() > 1) hWnd = vParams[1].hWnd();
@@ -242,7 +242,7 @@ AUT_RESULT AutoIt_Script::F_GUISetBkColor(VectorVariant &vParams, Variant &vResu
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_GUISetIcon(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModulesGui::F_GUISetIcon(VectorVariant &vParams, Variant &vResult)
 {
     int        nIcon    = -1;
     HWND    hWnd = NULL;
@@ -261,7 +261,7 @@ AUT_RESULT AutoIt_Script::F_GUISetIcon(VectorVariant &vParams, Variant &vResult)
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_GUISetHelp(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModulesGui::F_GUISetHelp(VectorVariant &vParams, Variant &vResult)
 {
     HWND hWnd = NULL;
     if (vParams.size() > 1) hWnd = vParams[1].hWnd();
@@ -278,7 +278,7 @@ AUT_RESULT AutoIt_Script::F_GUISetHelp(VectorVariant &vParams, Variant &vResult)
 // Change the mouse cursor to CursorID, or revert mouse to original cursor.
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_GUISetCursor(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModulesGui::F_GUISetCursor(VectorVariant &vParams, Variant &vResult)
 {
     uint    iNumParams = vParams.size();
     int        n = 2;                                // Default is ID 2
@@ -301,7 +301,7 @@ AUT_RESULT AutoIt_Script::F_GUISetCursor(VectorVariant &vParams, Variant &vResul
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_GUISetFont(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModulesGui::F_GUISetFont(VectorVariant &vParams, Variant &vResult)
 {
     uint    iNumParams    = vParams.size();
     int        nWeight        = -1;
@@ -326,7 +326,7 @@ AUT_RESULT AutoIt_Script::F_GUISetFont(VectorVariant &vParams, Variant &vResult)
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_GUICtrlDelete(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModulesGui::F_GUICtrlDelete(VectorVariant &vParams, Variant &vResult)
 {
     vResult = g_oGUI.CtrlDelete(vParams[0].nValue());
 
@@ -340,7 +340,7 @@ AUT_RESULT AutoIt_Script::F_GUICtrlDelete(VectorVariant &vParams, Variant &vResu
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_GUICtrlSetFont(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModulesGui::F_GUICtrlSetFont(VectorVariant &vParams, Variant &vResult)
 {
     uint    iNumParams    = vParams.size();
     int        nWeight        = -1;
@@ -364,12 +364,12 @@ AUT_RESULT AutoIt_Script::F_GUICtrlSetFont(VectorVariant &vParams, Variant &vRes
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_GUICtrlSetOnEvent(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModulesGui::F_GUICtrlSetOnEvent(VectorVariant &vParams, Variant &vResult)
 {
     int        nTemp1, nTemp2, nTemp3, nTemp4;
 
     // Check that this user function exists
-    if (engine->parser()->FindUserFunction(vParams[1].szValue(), nTemp1, nTemp2, nTemp3, nTemp4) == false)
+    if (engine->FindUserFunction(vParams[1].szValue(), nTemp1, nTemp2, nTemp3, nTemp4) == false)
     {
         engine->FatalError(IDS_AUT_E_UNKNOWNUSERFUNC);
         return AUT_ERR;
@@ -386,7 +386,7 @@ AUT_RESULT AutoIt_Script::F_GUICtrlSetOnEvent(VectorVariant &vParams, Variant &v
 // GUICtrlSetColor(controlid, textcolor)
 //
 ///////////////////////////////////////////////////////////////////////////////
-AUT_RESULT AutoIt_Script::F_GUICtrlSetColor(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModulesGui::F_GUICtrlSetColor(VectorVariant &vParams, Variant &vResult)
 {
     vResult = g_oGUI.CtrlSetColor(vParams[0].nValue(), vParams[1].nValue());
 
@@ -399,7 +399,7 @@ AUT_RESULT AutoIt_Script::F_GUICtrlSetColor(VectorVariant &vParams, Variant &vRe
 // GUICtrlSetCursor()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_GUICtrlSetCursor(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModulesGui::F_GUICtrlSetCursor(VectorVariant &vParams, Variant &vResult)
 {
     vResult = g_oGUI.CtrlSetCursor(vParams[0].nValue(), vParams[1].nValue());
 
@@ -413,7 +413,7 @@ AUT_RESULT AutoIt_Script::F_GUICtrlSetCursor(VectorVariant &vParams, Variant &vR
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_GUICtrlSetBkColor(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModulesGui::F_GUICtrlSetBkColor(VectorVariant &vParams, Variant &vResult)
 {
     vResult = g_oGUI.CtrlSetBkColor(vParams[0].nValue(), vParams[1].nValue());
 
@@ -427,7 +427,7 @@ AUT_RESULT AutoIt_Script::F_GUICtrlSetBkColor(VectorVariant &vParams, Variant &v
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::GUICtrlCreate(int nType, VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModulesGui::GUICtrlCreate(int nType, VectorVariant &vParams, Variant &vResult)
 {
     int i = 0;
     int iNumParams = vParams.size();
@@ -536,165 +536,165 @@ AUT_RESULT AutoIt_Script::GUICtrlCreate(int nType, VectorVariant &vParams, Varia
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_GUICtrlCreateAvi(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModulesGui::F_GUICtrlCreateAvi(VectorVariant &vParams, Variant &vResult)
 {
     return GUICtrlCreate(AUT_GUI_AVI,vParams,vResult);
 } // GUICtrlCreateAvi()
 
 
 
-AUT_RESULT AutoIt_Script::F_GUICtrlCreateLabel(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModulesGui::F_GUICtrlCreateLabel(VectorVariant &vParams, Variant &vResult)
 {
     return GUICtrlCreate(AUT_GUI_LABEL,vParams,vResult);
 } // GUICtrlCreateLabel()
 
 
-AUT_RESULT AutoIt_Script::F_GUICtrlCreateButton(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModulesGui::F_GUICtrlCreateButton(VectorVariant &vParams, Variant &vResult)
 {
     return GUICtrlCreate(AUT_GUI_BUTTON,vParams,vResult);
 } // GUICtrlCreateButton()
 
 
-AUT_RESULT AutoIt_Script::F_GUICtrlCreateCheckbox(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModulesGui::F_GUICtrlCreateCheckbox(VectorVariant &vParams, Variant &vResult)
 {
     return GUICtrlCreate(AUT_GUI_CHECKBOX,vParams,vResult);
 } // GUICtrlCreateCheckbox()
 
 
-AUT_RESULT AutoIt_Script::F_GUICtrlCreateCombo(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModulesGui::F_GUICtrlCreateCombo(VectorVariant &vParams, Variant &vResult)
 {
     return GUICtrlCreate(AUT_GUI_COMBO,vParams,vResult);
 } // GUICtrlCreateCombo()
 
 
-AUT_RESULT AutoIt_Script::F_GUICtrlCreateContextMenu(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModulesGui::F_GUICtrlCreateContextMenu(VectorVariant &vParams, Variant &vResult)
 {
     return GUICtrlCreate(AUT_GUI_CONTEXTMENU,vParams,vResult);
 } // GUICtrlCreateContextMenu()
 
 
-AUT_RESULT AutoIt_Script::F_GUICtrlCreateDate(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModulesGui::F_GUICtrlCreateDate(VectorVariant &vParams, Variant &vResult)
 {
     return GUICtrlCreate(AUT_GUI_DATE,vParams,vResult);
 } // GUICtrlCreateDate()
 
 
-AUT_RESULT AutoIt_Script::F_GUICtrlCreateEdit(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModulesGui::F_GUICtrlCreateEdit(VectorVariant &vParams, Variant &vResult)
 {
     return GUICtrlCreate(AUT_GUI_EDIT,vParams,vResult);
 } // GUICtrlCreateEdit()
 
 
-AUT_RESULT AutoIt_Script::F_GUICtrlCreateGroup(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModulesGui::F_GUICtrlCreateGroup(VectorVariant &vParams, Variant &vResult)
 {
     return GUICtrlCreate(AUT_GUI_GROUP,vParams,vResult);
 } // GUICtrlCreateGroup()
 
 
-AUT_RESULT AutoIt_Script::F_GUICtrlCreateIcon(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModulesGui::F_GUICtrlCreateIcon(VectorVariant &vParams, Variant &vResult)
 {
     return GUICtrlCreate(AUT_GUI_ICON,vParams,vResult);
 } // GUICtrlCreateIcon()
 
 
-AUT_RESULT AutoIt_Script::F_GUICtrlCreateInput(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModulesGui::F_GUICtrlCreateInput(VectorVariant &vParams, Variant &vResult)
 {
     return GUICtrlCreate(AUT_GUI_INPUT,vParams,vResult);
 } // GUICtrlCreateInput()
 
 
 
-AUT_RESULT AutoIt_Script::F_GUICtrlCreateList(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModulesGui::F_GUICtrlCreateList(VectorVariant &vParams, Variant &vResult)
 {
     return GUICtrlCreate(AUT_GUI_LIST,vParams,vResult);
 } // GUICtrlCreateList()
 
 
-AUT_RESULT AutoIt_Script::F_GUICtrlCreateListView(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModulesGui::F_GUICtrlCreateListView(VectorVariant &vParams, Variant &vResult)
 {
     return GUICtrlCreate(AUT_GUI_LISTVIEW,vParams,vResult);
 } // GUICtrlCreateListView()
 
 
-AUT_RESULT AutoIt_Script::F_GUICtrlCreateListViewItem(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModulesGui::F_GUICtrlCreateListViewItem(VectorVariant &vParams, Variant &vResult)
 {
     return GUICtrlCreate(AUT_GUI_LISTVIEWITEM,vParams,vResult);
 } // GUICtrlCreateListViewItem()
 
 
-AUT_RESULT AutoIt_Script::F_GUICtrlCreateMenu(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModulesGui::F_GUICtrlCreateMenu(VectorVariant &vParams, Variant &vResult)
 {
     return GUICtrlCreate(AUT_GUI_MENU,vParams,vResult);
 } // GUICtrlCreateMenu()
 
 
-AUT_RESULT AutoIt_Script::F_GUICtrlCreateMenuItem(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModulesGui::F_GUICtrlCreateMenuItem(VectorVariant &vParams, Variant &vResult)
 {
     return GUICtrlCreate(AUT_GUI_MENUITEM,vParams,vResult);
 } // GUICtrlCreateMenuItem()
 
 
-AUT_RESULT AutoIt_Script::F_GUICtrlCreatePic(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModulesGui::F_GUICtrlCreatePic(VectorVariant &vParams, Variant &vResult)
 {
     return GUICtrlCreate(AUT_GUI_PIC,vParams,vResult);
 } // GUICtrlCreatePic()
 
 
-AUT_RESULT AutoIt_Script::F_GUICtrlCreateProgress(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModulesGui::F_GUICtrlCreateProgress(VectorVariant &vParams, Variant &vResult)
 {
     return GUICtrlCreate(AUT_GUI_PROGRESS,vParams,vResult);
 } // GUICtrlCreateProgress()
 
 
-AUT_RESULT AutoIt_Script::F_GUICtrlCreateSlider(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModulesGui::F_GUICtrlCreateSlider(VectorVariant &vParams, Variant &vResult)
 {
     return GUICtrlCreate(AUT_GUI_SLIDER,vParams,vResult);
 } // GUICtrlCreateSlider()
 
 
-AUT_RESULT AutoIt_Script::F_GUICtrlCreateRadio(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModulesGui::F_GUICtrlCreateRadio(VectorVariant &vParams, Variant &vResult)
 {
     return GUICtrlCreate(AUT_GUI_RADIO,vParams,vResult);
 } // GUICtrlCreateRadio()
 
 
-AUT_RESULT AutoIt_Script::F_GUICtrlCreateTab(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModulesGui::F_GUICtrlCreateTab(VectorVariant &vParams, Variant &vResult)
 {
     return GUICtrlCreate(AUT_GUI_TAB,vParams,vResult);
 } // GUICtrlCreateTab()
 
 
-AUT_RESULT AutoIt_Script::F_GUICtrlCreateTabitem(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModulesGui::F_GUICtrlCreateTabitem(VectorVariant &vParams, Variant &vResult)
 {
     return GUICtrlCreate(AUT_GUI_TABITEM,vParams,vResult);
 } // GUICtrlCreateTabitem()
 
 /*
-AUT_RESULT AutoIt_Script::F_GUICtrlCreateTrayMenu(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModulesGui::F_GUICtrlCreateTrayMenu(VectorVariant &vParams, Variant &vResult)
 {
     return GUICtrlCreate(AUT_GUI_TRAYMENU,vParams,vResult);
 } // GUICtrlCreateTrayMenu()
 
 */
-AUT_RESULT AutoIt_Script::F_GUICtrlCreateTreeView(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModulesGui::F_GUICtrlCreateTreeView(VectorVariant &vParams, Variant &vResult)
 {
     return GUICtrlCreate(AUT_GUI_TREEVIEW,vParams,vResult);
 } // GUICtrlCreateTreeView()
 
 
-AUT_RESULT AutoIt_Script::F_GUICtrlCreateTreeViewItem(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModulesGui::F_GUICtrlCreateTreeViewItem(VectorVariant &vParams, Variant &vResult)
 {
     return GUICtrlCreate(AUT_GUI_TREEVIEWITEM,vParams,vResult);
 } // GUICtrlCreateTreeViewItem()
 
 
-AUT_RESULT AutoIt_Script::F_GUICtrlCreateUpdown(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModulesGui::F_GUICtrlCreateUpdown(VectorVariant &vParams, Variant &vResult)
 {
     return GUICtrlCreate(AUT_GUI_UPDOWN,vParams,vResult);
 } // GUICtrlCreateUpdown()
 
 
-AUT_RESULT AutoIt_Script::F_GUICtrlCreateDummy(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModulesGui::F_GUICtrlCreateDummy(VectorVariant &vParams, Variant &vResult)
 {
     return GUICtrlCreate(AUT_GUI_DUMMY,vParams,vResult);
 
@@ -705,7 +705,7 @@ AUT_RESULT AutoIt_Script::F_GUICtrlCreateDummy(VectorVariant &vParams, Variant &
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_GUICtrlSetImage(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModulesGui::F_GUICtrlSetImage(VectorVariant &vParams, Variant &vResult)
 {
     uint    iNumParams = vParams.size();
     int        nId = 0, nMode = -1;
@@ -725,7 +725,7 @@ AUT_RESULT AutoIt_Script::F_GUICtrlSetImage(VectorVariant &vParams, Variant &vRe
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_GUICtrlSetState(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModulesGui::F_GUICtrlSetState(VectorVariant &vParams, Variant &vResult)
 {
     vResult = g_oGUI.CtrlSetState(vParams[0].nValue(), vParams[1].nValue());
 
@@ -741,7 +741,7 @@ AUT_RESULT AutoIt_Script::F_GUICtrlSetState(VectorVariant &vParams, Variant &vRe
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_GUISetTrayBalloon(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModulesGui::F_GUISetTrayBalloon(VectorVariant &vParams, Variant &vResult)
 {
     if (g_oGUI.m_bShowTrayIcon == false)
     {
@@ -776,7 +776,7 @@ AUT_RESULT AutoIt_Script::F_GUISetTrayBalloon(VectorVariant &vParams, Variant &v
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_GUISetTrayIcon(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModulesGui::F_GUISetTrayIcon(VectorVariant &vParams, Variant &vResult)
 {
     uint    iNumParams = vParams.size();
 
@@ -798,7 +798,7 @@ AUT_RESULT AutoIt_Script::F_GUISetTrayIcon(VectorVariant &vParams, Variant &vRes
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_GUISetTrayTip(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModulesGui::F_GUISetTrayTip(VectorVariant &vParams, Variant &vResult)
 {
     g_oStrUtil.Strncpy(g_oGUI.m_szTrayToolTip,vParams[0].szValue(),64);
 
@@ -819,7 +819,7 @@ AUT_RESULT AutoIt_Script::F_GUISetTrayTip(VectorVariant &vParams, Variant &vResu
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_GUIStartGroup(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModulesGui::F_GUIStartGroup(VectorVariant &vParams, Variant &vResult)
 {
     HWND hWnd = NULL;
 
@@ -843,7 +843,7 @@ AUT_RESULT AutoIt_Script::F_GUIStartGroup(VectorVariant &vParams, Variant &vResu
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_GUICtrlSetData(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModulesGui::F_GUICtrlSetData(VectorVariant &vParams, Variant &vResult)
 {
     AString sDefault;
 
@@ -862,7 +862,7 @@ AUT_RESULT AutoIt_Script::F_GUICtrlSetData(VectorVariant &vParams, Variant &vRes
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_GUICtrlSetLimit(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModulesGui::F_GUICtrlSetLimit(VectorVariant &vParams, Variant &vResult)
 {
     int        nMin = -1;
 
@@ -880,7 +880,7 @@ AUT_RESULT AutoIt_Script::F_GUICtrlSetLimit(VectorVariant &vParams, Variant &vRe
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_GUICtrlSetPos(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModulesGui::F_GUICtrlSetPos(VectorVariant &vParams, Variant &vResult)
 {
     int nW = -1;
     int nH = -1;
@@ -900,7 +900,7 @@ AUT_RESULT AutoIt_Script::F_GUICtrlSetPos(VectorVariant &vParams, Variant &vResu
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_GUICtrlSetResizing(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModulesGui::F_GUICtrlSetResizing(VectorVariant &vParams, Variant &vResult)
 {
     int        nResizing = -1;
 
@@ -918,7 +918,7 @@ AUT_RESULT AutoIt_Script::F_GUICtrlSetResizing(VectorVariant &vParams, Variant &
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_GUICtrlGetState(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModulesGui::F_GUICtrlGetState(VectorVariant &vParams, Variant &vResult)
 {
     vResult= g_oGUI.CtrlGetState(vParams[0].nValue());
 
@@ -932,7 +932,7 @@ AUT_RESULT AutoIt_Script::F_GUICtrlGetState(VectorVariant &vParams, Variant &vRe
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_GUICtrlSetStyle(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModulesGui::F_GUICtrlSetStyle(VectorVariant &vParams, Variant &vResult)
 {
     int        nExStyle = -1;
 
@@ -950,7 +950,7 @@ AUT_RESULT AutoIt_Script::F_GUICtrlSetStyle(VectorVariant &vParams, Variant &vRe
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_GUICtrlSetTip(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModulesGui::F_GUICtrlSetTip(VectorVariant &vParams, Variant &vResult)
 {
     vResult = g_oGUI.CtrlSetTip( vParams[0].nValue(), vParams[1].szValue());
 
@@ -964,7 +964,7 @@ AUT_RESULT AutoIt_Script::F_GUICtrlSetTip(VectorVariant &vParams, Variant &vResu
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_GUIRead(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModulesGui::F_GUIRead(VectorVariant &vParams, Variant &vResult)
 {
     uint    iNumParams = vParams.size();
     char *szText;
@@ -992,7 +992,7 @@ AUT_RESULT AutoIt_Script::F_GUIRead(VectorVariant &vParams, Variant &vResult)
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_GUISetCoord(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModulesGui::F_GUISetCoord(VectorVariant &vParams, Variant &vResult)
 {
     uint    iNumParams = vParams.size();
     int nW = -1;
@@ -1015,7 +1015,7 @@ AUT_RESULT AutoIt_Script::F_GUISetCoord(VectorVariant &vParams, Variant &vResult
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_GUISendToDummy(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModulesGui::F_GUISendToDummy(VectorVariant &vParams, Variant &vResult)
 {
     Variant vState;
 
@@ -1032,7 +1032,7 @@ AUT_RESULT AutoIt_Script::F_GUISendToDummy(VectorVariant &vParams, Variant &vRes
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_GUISendMsg(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModulesGui::F_GUISendMsg(VectorVariant &vParams, Variant &vResult)
 {
     int nTemp = 0;
     if (vParams[2].type() == VAR_STRING)
@@ -1065,7 +1065,7 @@ AUT_RESULT AutoIt_Script::F_GUISendMsg(VectorVariant &vParams, Variant &vResult)
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_GUIRecvMsg(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModulesGui::F_GUIRecvMsg(VectorVariant &vParams, Variant &vResult)
 {
     uint    iNumParams = vParams.size();
     int nWparam = 0;
@@ -1132,7 +1132,7 @@ AUT_RESULT AutoIt_Script::F_GUIRecvMsg(VectorVariant &vParams, Variant &vResult)
 // GUIDelete()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_GUIDelete(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModulesGui::F_GUIDelete(VectorVariant &vParams, Variant &vResult)
 {
     HWND    hWnd = NULL;                        // NULL will be set to delete current GUI
 
@@ -1150,7 +1150,7 @@ AUT_RESULT AutoIt_Script::F_GUIDelete(VectorVariant &vParams, Variant &vResult)
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::F_GUIGetCursorInfo(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT ModulesGui::F_GUIGetCursorInfo(VectorVariant &vParams, Variant &vResult)
 {
     HWND    hWnd = NULL;
     int        nX, nY, nPrimary, nSecondary, nGlobalID;

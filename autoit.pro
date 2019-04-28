@@ -42,6 +42,7 @@ HEADERS = \
     src/Modules/Sys/ModuleSys.h \
     src/Modules/Win/InputBox.h \
     src/Modules/Win/ModuleWin.h \
+    src/Modules/Win/WinSearchUtil.h \
     src/resources/AutoIt_VersionInfo.h \
     src/resources/resource.h \
     src/Engine/Application.h \
@@ -92,6 +93,7 @@ SOURCES = \
     src/Modules/Win/InputBox.cpp \
     src/Modules/Win/ModuleWin.cpp \
     src/Modules/Win/WinMisc.cpp \
+    src/Modules/Win/WinSearchUtil.cpp \
     src/Engine/Application.cpp \
     src/Engine/CmdLine.cpp \
     src/Engine/Type/AString.cpp \

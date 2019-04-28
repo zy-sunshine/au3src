@@ -131,12 +131,6 @@ AUT_RESULT F_StringSplit(void *self, VectorVariant &vParams, Variant &vResult)
 AUT_RESULT F_StringFormat(void *self, VectorVariant &vParams, Variant &vResult)
 { return ((ModuleBuiltIn*)self)->F_StringFormat(vParams, vResult); }
 
-AUT_RESULT F_StringRegExp(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleBuiltIn*)self)->F_StringRegExp(vParams, vResult); }
-
-AUT_RESULT F_StringRegExpReplace(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleBuiltIn*)self)->F_StringRegExpReplace(vParams, vResult); }
-
 AUT_RESULT F_UBound(void *self, VectorVariant &vParams, Variant &vResult)
 { return ((ModuleBuiltIn*)self)->F_UBound(vParams, vResult); }
 
@@ -317,192 +311,6 @@ AUT_RESULT F_DirGetSize(void *self, VectorVariant &vParams, Variant &vResult)
             
 #include "Modules/Gui/ModuleGui.h"
 
-AUT_RESULT F_GUICreate(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleGui*)self)->F_GUICreate(vParams, vResult); }
-
-AUT_RESULT F_GUISwitch(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleGui*)self)->F_GUISwitch(vParams, vResult); }
-
-AUT_RESULT F_GUICtrlDelete(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleGui*)self)->F_GUICtrlDelete(vParams, vResult); }
-
-AUT_RESULT F_GUICtrlCreateAvi(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleGui*)self)->F_GUICtrlCreateAvi(vParams, vResult); }
-
-AUT_RESULT F_GUICtrlCreateButton(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleGui*)self)->F_GUICtrlCreateButton(vParams, vResult); }
-
-AUT_RESULT F_GUICtrlCreateCombo(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleGui*)self)->F_GUICtrlCreateCombo(vParams, vResult); }
-
-AUT_RESULT F_GUICtrlCreateContextMenu(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleGui*)self)->F_GUICtrlCreateContextMenu(vParams, vResult); }
-
-AUT_RESULT F_GUICtrlCreateDate(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleGui*)self)->F_GUICtrlCreateDate(vParams, vResult); }
-
-AUT_RESULT F_GUICtrlCreateEdit(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleGui*)self)->F_GUICtrlCreateEdit(vParams, vResult); }
-
-AUT_RESULT F_GUICtrlCreateGroup(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleGui*)self)->F_GUICtrlCreateGroup(vParams, vResult); }
-
-AUT_RESULT F_GUICtrlCreateIcon(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleGui*)self)->F_GUICtrlCreateIcon(vParams, vResult); }
-
-AUT_RESULT F_GUICtrlCreateInput(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleGui*)self)->F_GUICtrlCreateInput(vParams, vResult); }
-
-AUT_RESULT F_GUICtrlCreateLabel(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleGui*)self)->F_GUICtrlCreateLabel(vParams, vResult); }
-
-AUT_RESULT F_GUICtrlCreateList(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleGui*)self)->F_GUICtrlCreateList(vParams, vResult); }
-
-AUT_RESULT F_GUICtrlCreateMenu(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleGui*)self)->F_GUICtrlCreateMenu(vParams, vResult); }
-
-AUT_RESULT F_GUICtrlCreateMenuItem(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleGui*)self)->F_GUICtrlCreateMenuItem(vParams, vResult); }
-
-AUT_RESULT F_GUICtrlCreatePic(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleGui*)self)->F_GUICtrlCreatePic(vParams, vResult); }
-
-AUT_RESULT F_GUICtrlCreateProgress(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleGui*)self)->F_GUICtrlCreateProgress(vParams, vResult); }
-
-AUT_RESULT F_GUICtrlCreateRadio(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleGui*)self)->F_GUICtrlCreateRadio(vParams, vResult); }
-
-AUT_RESULT F_GUICtrlCreateSlider(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleGui*)self)->F_GUICtrlCreateSlider(vParams, vResult); }
-
-AUT_RESULT F_GUICtrlCreateTab(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleGui*)self)->F_GUICtrlCreateTab(vParams, vResult); }
-
-AUT_RESULT F_GUICtrlCreateTabitem(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleGui*)self)->F_GUICtrlCreateTabitem(vParams, vResult); }
-
-AUT_RESULT F_GUICtrlCreateTrayMenu(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleGui*)self)->F_GUICtrlCreateTrayMenu(vParams, vResult); }
-
-AUT_RESULT F_GUICtrlCreateTreeView(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleGui*)self)->F_GUICtrlCreateTreeView(vParams, vResult); }
-
-AUT_RESULT F_GUICtrlCreateTreeViewItem(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleGui*)self)->F_GUICtrlCreateTreeViewItem(vParams, vResult); }
-
-AUT_RESULT F_GUICtrlCreateListView(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleGui*)self)->F_GUICtrlCreateListView(vParams, vResult); }
-
-AUT_RESULT F_GUICtrlCreateListViewItem(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleGui*)self)->F_GUICtrlCreateListViewItem(vParams, vResult); }
-
-AUT_RESULT F_GUICtrlCreateUpdown(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleGui*)self)->F_GUICtrlCreateUpdown(vParams, vResult); }
-
-AUT_RESULT F_GUICtrlCreateDummy(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleGui*)self)->F_GUICtrlCreateDummy(vParams, vResult); }
-
-AUT_RESULT F_GUICtrlGetState(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleGui*)self)->F_GUICtrlGetState(vParams, vResult); }
-
-AUT_RESULT F_GUICtrlSetBkColor(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleGui*)self)->F_GUICtrlSetBkColor(vParams, vResult); }
-
-AUT_RESULT F_GUICtrlSetOnEvent(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleGui*)self)->F_GUICtrlSetOnEvent(vParams, vResult); }
-
-AUT_RESULT F_GUICtrlSetColor(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleGui*)self)->F_GUICtrlSetColor(vParams, vResult); }
-
-AUT_RESULT F_GUICtrlSetCursor(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleGui*)self)->F_GUICtrlSetCursor(vParams, vResult); }
-
-AUT_RESULT F_GUICtrlSetData(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleGui*)self)->F_GUICtrlSetData(vParams, vResult); }
-
-AUT_RESULT F_GUICtrlSetImage(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleGui*)self)->F_GUICtrlSetImage(vParams, vResult); }
-
-AUT_RESULT F_GUICtrlSetFont(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleGui*)self)->F_GUICtrlSetFont(vParams, vResult); }
-
-AUT_RESULT F_GUICtrlSetLimit(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleGui*)self)->F_GUICtrlSetLimit(vParams, vResult); }
-
-AUT_RESULT F_GUICtrlSetPos(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleGui*)self)->F_GUICtrlSetPos(vParams, vResult); }
-
-AUT_RESULT F_GUICtrlSetResizing(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleGui*)self)->F_GUICtrlSetResizing(vParams, vResult); }
-
-AUT_RESULT F_GUICtrlSetState(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleGui*)self)->F_GUICtrlSetState(vParams, vResult); }
-
-AUT_RESULT F_GUICtrlSetStyle(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleGui*)self)->F_GUICtrlSetStyle(vParams, vResult); }
-
-AUT_RESULT F_GUICtrlSetTip(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleGui*)self)->F_GUICtrlSetTip(vParams, vResult); }
-
-AUT_RESULT F_GUIDelete(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleGui*)self)->F_GUIDelete(vParams, vResult); }
-
-AUT_RESULT F_GUIGetMsg(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleGui*)self)->F_GUIGetMsg(vParams, vResult); }
-
-AUT_RESULT F_GUIRead(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleGui*)self)->F_GUIRead(vParams, vResult); }
-
-AUT_RESULT F_GUISendToDummy(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleGui*)self)->F_GUISendToDummy(vParams, vResult); }
-
-AUT_RESULT F_GUISendMsg(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleGui*)self)->F_GUISendMsg(vParams, vResult); }
-
-AUT_RESULT F_GUIRecvMsg(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleGui*)self)->F_GUIRecvMsg(vParams, vResult); }
-
-AUT_RESULT F_GUISetBkColor(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleGui*)self)->F_GUISetBkColor(vParams, vResult); }
-
-AUT_RESULT F_GUISetCoord(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleGui*)self)->F_GUISetCoord(vParams, vResult); }
-
-AUT_RESULT F_GUIGetCursorInfo(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleGui*)self)->F_GUIGetCursorInfo(vParams, vResult); }
-
-AUT_RESULT F_GUISetOnEvent(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleGui*)self)->F_GUISetOnEvent(vParams, vResult); }
-
-AUT_RESULT F_GUISetCursor(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleGui*)self)->F_GUISetCursor(vParams, vResult); }
-
-AUT_RESULT F_GUISetFont(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleGui*)self)->F_GUISetFont(vParams, vResult); }
-
-AUT_RESULT F_GUISetHelp(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleGui*)self)->F_GUISetHelp(vParams, vResult); }
-
-AUT_RESULT F_GUISetIcon(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleGui*)self)->F_GUISetIcon(vParams, vResult); }
-
-AUT_RESULT F_GUISetState(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleGui*)self)->F_GUISetState(vParams, vResult); }
-
-AUT_RESULT F_GUISetTrayTip(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleGui*)self)->F_GUISetTrayTip(vParams, vResult); }
-
-AUT_RESULT F_GUISetTrayBalloon(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleGui*)self)->F_GUISetTrayBalloon(vParams, vResult); }
-
-AUT_RESULT F_GUISetTrayIcon(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleGui*)self)->F_GUISetTrayIcon(vParams, vResult); }
-
-AUT_RESULT F_GUIStartGroup(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleGui*)self)->F_GUIStartGroup(vParams, vResult); }
-
             
 #include "Modules/Keyboard/ModuleKeyboard.h"
 
@@ -610,15 +418,6 @@ AUT_RESULT F_ProcessSetPriority(void *self, VectorVariant &vParams, Variant &vRe
 
 AUT_RESULT F_ProcessList(void *self, VectorVariant &vParams, Variant &vResult)
 { return ((ModuleSys*)self)->F_ProcessList(vParams, vResult); }
-
-AUT_RESULT F_DllCall(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleSys*)self)->F_DllCall(vParams, vResult); }
-
-AUT_RESULT F_DllOpen(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleSys*)self)->F_DllOpen(vParams, vResult); }
-
-AUT_RESULT F_DllClose(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleSys*)self)->F_DllClose(vParams, vResult); }
 
 AUT_RESULT F_EnvGet(void *self, VectorVariant &vParams, Variant &vResult)
 { return ((ModuleSys*)self)->F_EnvGet(vParams, vResult); }
@@ -749,12 +548,6 @@ AUT_RESULT F_ControlGetPos(void *self, VectorVariant &vParams, Variant &vResult)
 AUT_RESULT F_ControlCommand(void *self, VectorVariant &vParams, Variant &vResult)
 { return ((ModuleWin*)self)->F_ControlCommand(vParams, vResult); }
 
-AUT_RESULT F_ControlListView(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleWin*)self)->F_ControlListView(vParams, vResult); }
-
-AUT_RESULT F_ControlTreeView(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleWin*)self)->F_ControlTreeView(vParams, vResult); }
-
 AUT_RESULT F_ControlEnable(void *self, VectorVariant &vParams, Variant &vResult)
 { return ((ModuleWin*)self)->F_ControlEnable(vParams, vResult); }
 
@@ -772,9 +565,6 @@ AUT_RESULT F_ControlShow(void *self, VectorVariant &vParams, Variant &vResult)
 
 AUT_RESULT F_WinGetClassList(void *self, VectorVariant &vParams, Variant &vResult)
 { return ((ModuleWin*)self)->F_WinGetClassList(vParams, vResult); }
-
-AUT_RESULT F_StatusbarGetText(void *self, VectorVariant &vParams, Variant &vResult)
-{ return ((ModuleWin*)self)->F_StatusbarGetText(vParams, vResult); }
 
 AUT_RESULT F_ControlSend(void *self, VectorVariant &vParams, Variant &vResult)
 { return ((ModuleWin*)self)->F_ControlSend(vParams, vResult); }
@@ -908,8 +698,6 @@ AU3_FuncInfo funcInfo[] = {
 
     {NULL, "ModuleWin", "CONTROLHIDE", &F_ControlHide, 1, 1},
 
-    {NULL, "ModuleWin", "CONTROLLISTVIEW", &F_ControlListView, 1, 1},
-
     {NULL, "ModuleWin", "CONTROLMOVE", &F_ControlMove, 1, 1},
 
     {NULL, "ModuleWin", "CONTROLSEND", &F_ControlSend, 1, 1},
@@ -917,8 +705,6 @@ AU3_FuncInfo funcInfo[] = {
     {NULL, "ModuleWin", "CONTROLSETTEXT", &F_ControlSetText, 1, 1},
 
     {NULL, "ModuleWin", "CONTROLSHOW", &F_ControlShow, 1, 1},
-
-    {NULL, "ModuleWin", "CONTROLTREEVIEW", &F_ControlTreeView, 1, 1},
 
     {NULL, "ModuleBuiltIn", "DEC", &F_Dec, 1, 1},
 
@@ -931,12 +717,6 @@ AU3_FuncInfo funcInfo[] = {
     {NULL, "ModuleFile", "DIRMOVE", &F_DirMove, 1, 1},
 
     {NULL, "ModuleFile", "DIRREMOVE", &F_DirRemove, 1, 1},
-
-    {NULL, "ModuleSys", "DLLCALL", &F_DllCall, 1, 1},
-
-    {NULL, "ModuleSys", "DLLCLOSE", &F_DllClose, 1, 1},
-
-    {NULL, "ModuleSys", "DLLOPEN", &F_DllOpen, 1, 1},
 
     {NULL, "ModuleFile", "DRIVEGETDRIVE", &F_DriveGetDrive, 1, 1},
 
@@ -1029,130 +809,6 @@ AU3_FuncInfo funcInfo[] = {
     {NULL, "ModuleFile", "FILEWRITELINE", &F_FileWriteLine, 1, 1},
 
     {NULL, "ModuleNet", "FTPSETPROXY", &F_FtpSetProxy, 1, 1},
-
-    {NULL, "ModuleGui", "GUICREATE", &F_GUICreate, 1, 1},
-
-    {NULL, "ModuleGui", "GUICTRLCREATEAVI", &F_GUICtrlCreateAvi, 1, 1},
-
-    {NULL, "ModuleGui", "GUICTRLCREATEBUTTON", &F_GUICtrlCreateButton, 1, 1},
-
-    {NULL, "ModuleGui", "GUICTRLCREATECOMBO", &F_GUICtrlCreateCombo, 1, 1},
-
-    {NULL, "ModuleGui", "GUICTRLCREATECONTEXTMENU", &F_GUICtrlCreateContextMenu, 1, 1},
-
-    {NULL, "ModuleGui", "GUICTRLCREATEDATE", &F_GUICtrlCreateDate, 1, 1},
-
-    {NULL, "ModuleGui", "GUICTRLCREATEDUMMY", &F_GUICtrlCreateDummy, 1, 1},
-
-    {NULL, "ModuleGui", "GUICTRLCREATEEDIT", &F_GUICtrlCreateEdit, 1, 1},
-
-    {NULL, "ModuleGui", "GUICTRLCREATEGROUP", &F_GUICtrlCreateGroup, 1, 1},
-
-    {NULL, "ModuleGui", "GUICTRLCREATEICON", &F_GUICtrlCreateIcon, 1, 1},
-
-    {NULL, "ModuleGui", "GUICTRLCREATEINPUT", &F_GUICtrlCreateInput, 1, 1},
-
-    {NULL, "ModuleGui", "GUICTRLCREATELABEL", &F_GUICtrlCreateLabel, 1, 1},
-
-    {NULL, "ModuleGui", "GUICTRLCREATELIST", &F_GUICtrlCreateList, 1, 1},
-
-    {NULL, "ModuleGui", "GUICTRLCREATELISTVIEW", &F_GUICtrlCreateListView, 1, 1},
-
-    {NULL, "ModuleGui", "GUICTRLCREATELISTVIEWITEM", &F_GUICtrlCreateListViewItem, 1, 1},
-
-    {NULL, "ModuleGui", "GUICTRLCREATEMENU", &F_GUICtrlCreateMenu, 1, 1},
-
-    {NULL, "ModuleGui", "GUICTRLCREATEMENUITEM", &F_GUICtrlCreateMenuItem, 1, 1},
-
-    {NULL, "ModuleGui", "GUICTRLCREATEPIC", &F_GUICtrlCreatePic, 1, 1},
-
-    {NULL, "ModuleGui", "GUICTRLCREATEPROGRESS", &F_GUICtrlCreateProgress, 1, 1},
-
-    {NULL, "ModuleGui", "GUICTRLCREATERADIO", &F_GUICtrlCreateRadio, 1, 1},
-
-    {NULL, "ModuleGui", "GUICTRLCREATESLIDER", &F_GUICtrlCreateSlider, 1, 1},
-
-    {NULL, "ModuleGui", "GUICTRLCREATETAB", &F_GUICtrlCreateTab, 1, 1},
-
-    {NULL, "ModuleGui", "GUICTRLCREATETABITEM", &F_GUICtrlCreateTabitem, 1, 1},
-
-    {NULL, "ModuleGui", "GUICTRLCREATETRAYMENU", &F_GUICtrlCreateTrayMenu, 1, 1},
-
-    {NULL, "ModuleGui", "GUICTRLCREATETREEVIEW", &F_GUICtrlCreateTreeView, 1, 1},
-
-    {NULL, "ModuleGui", "GUICTRLCREATETREEVIEWITEM", &F_GUICtrlCreateTreeViewItem, 1, 1},
-
-    {NULL, "ModuleGui", "GUICTRLCREATEUPDOWN", &F_GUICtrlCreateUpdown, 1, 1},
-
-    {NULL, "ModuleGui", "GUICTRLDELETE", &F_GUICtrlDelete, 1, 1},
-
-    {NULL, "ModuleGui", "GUICTRLGETSTATE", &F_GUICtrlGetState, 1, 1},
-
-    {NULL, "ModuleGui", "GUICTRLSETBKCOLOR", &F_GUICtrlSetBkColor, 1, 1},
-
-    {NULL, "ModuleGui", "GUICTRLSETCOLOR", &F_GUICtrlSetColor, 1, 1},
-
-    {NULL, "ModuleGui", "GUICTRLSETCURSOR", &F_GUICtrlSetCursor, 1, 1},
-
-    {NULL, "ModuleGui", "GUICTRLSETDATA", &F_GUICtrlSetData, 1, 1},
-
-    {NULL, "ModuleGui", "GUICTRLSETFONT", &F_GUICtrlSetFont, 1, 1},
-
-    {NULL, "ModuleGui", "GUICTRLSETIMAGE", &F_GUICtrlSetImage, 1, 1},
-
-    {NULL, "ModuleGui", "GUICTRLSETLIMIT", &F_GUICtrlSetLimit, 1, 1},
-
-    {NULL, "ModuleGui", "GUICTRLSETONEVENT", &F_GUICtrlSetOnEvent, 1, 1},
-
-    {NULL, "ModuleGui", "GUICTRLSETPOS", &F_GUICtrlSetPos, 1, 1},
-
-    {NULL, "ModuleGui", "GUICTRLSETRESIZING", &F_GUICtrlSetResizing, 1, 1},
-
-    {NULL, "ModuleGui", "GUICTRLSETSTATE", &F_GUICtrlSetState, 1, 1},
-
-    {NULL, "ModuleGui", "GUICTRLSETSTYLE", &F_GUICtrlSetStyle, 1, 1},
-
-    {NULL, "ModuleGui", "GUICTRLSETTIP", &F_GUICtrlSetTip, 1, 1},
-
-    {NULL, "ModuleGui", "GUIDELETE", &F_GUIDelete, 1, 1},
-
-    {NULL, "ModuleGui", "GUIGETCURSORINFO", &F_GUIGetCursorInfo, 1, 1},
-
-    {NULL, "ModuleGui", "GUIGETMSG", &F_GUIGetMsg, 1, 1},
-
-    {NULL, "ModuleGui", "GUIREAD", &F_GUIRead, 1, 1},
-
-    {NULL, "ModuleGui", "GUIRECVMSG", &F_GUIRecvMsg, 1, 1},
-
-    {NULL, "ModuleGui", "GUISENDMSG", &F_GUISendMsg, 1, 1},
-
-    {NULL, "ModuleGui", "GUISENDTODUMMY", &F_GUISendToDummy, 1, 1},
-
-    {NULL, "ModuleGui", "GUISETBKCOLOR", &F_GUISetBkColor, 1, 1},
-
-    {NULL, "ModuleGui", "GUISETCOORD", &F_GUISetCoord, 1, 1},
-
-    {NULL, "ModuleGui", "GUISETCURSOR", &F_GUISetCursor, 1, 1},
-
-    {NULL, "ModuleGui", "GUISETFONT", &F_GUISetFont, 1, 1},
-
-    {NULL, "ModuleGui", "GUISETHELP", &F_GUISetHelp, 1, 1},
-
-    {NULL, "ModuleGui", "GUISETICON", &F_GUISetIcon, 1, 1},
-
-    {NULL, "ModuleGui", "GUISETONEVENT", &F_GUISetOnEvent, 1, 1},
-
-    {NULL, "ModuleGui", "GUISETSTATE", &F_GUISetState, 1, 1},
-
-    {NULL, "ModuleGui", "GUISETTRAYBALLOON", &F_GUISetTrayBalloon, 1, 1},
-
-    {NULL, "ModuleGui", "GUISETTRAYICON", &F_GUISetTrayIcon, 1, 1},
-
-    {NULL, "ModuleGui", "GUISETTRAYTIP", &F_GUISetTrayTip, 1, 1},
-
-    {NULL, "ModuleGui", "GUISTARTGROUP", &F_GUIStartGroup, 1, 1},
-
-    {NULL, "ModuleGui", "GUISWITCH", &F_GUISwitch, 1, 1},
 
     {NULL, "ModuleMath", "HEX", &F_Hex, 1, 1},
 
@@ -1266,8 +922,6 @@ AU3_FuncInfo funcInfo[] = {
 
     {NULL, "ModuleWin", "SPLASHTEXTON", &F_SplashTextOn, 1, 1},
 
-    {NULL, "ModuleWin", "STATUSBARGETTEXT", &F_StatusbarGetText, 1, 1},
-
     {NULL, "ModuleBuiltIn", "STRING", &F_String, 1, 1},
 
     {NULL, "ModuleBuiltIn", "STRINGADDCR", &F_StringAddCR, 1, 1},
@@ -1303,10 +957,6 @@ AU3_FuncInfo funcInfo[] = {
     {NULL, "ModuleBuiltIn", "STRINGLOWER", &F_StringLower, 1, 1},
 
     {NULL, "ModuleBuiltIn", "STRINGMID", &F_StringMid, 1, 1},
-
-    {NULL, "ModuleBuiltIn", "STRINGREGEXP", &F_StringRegExp, 1, 1},
-
-    {NULL, "ModuleBuiltIn", "STRINGREGEXPREPLACE", &F_StringRegExpReplace, 1, 1},
 
     {NULL, "ModuleBuiltIn", "STRINGREPLACE", &F_StringReplace, 1, 1},
 

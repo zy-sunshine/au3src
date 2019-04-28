@@ -37,17 +37,17 @@ public:
     AUT_RESULT    F_ControlSetText(VectorVariant &vParams, Variant &vResult);
     AUT_RESULT    F_ControlGetPos(VectorVariant &vParams, Variant &vResult);
     AUT_RESULT    F_ControlCommand(VectorVariant &vParams, Variant &vResult);
-    AUT_RESULT    F_ControlListView(VectorVariant &vParams,  Variant &vResult);
-    //void        ControlLVSelect(bool bSelect, int nFromIndex, int nToIndex);
+    // AUT_RESULT    F_ControlListView(VectorVariant &vParams,  Variant &vResult);
+    // void        ControlLVSelect(bool bSelect, int nFromIndex, int nToIndex);
     // NOTE: not expose
-    AUT_RESULT    F_ControlTreeView(VectorVariant &vParams,  Variant &vResult);
+    // AUT_RESULT    F_ControlTreeView(VectorVariant &vParams,  Variant &vResult);
     AUT_RESULT    F_ControlEnable(VectorVariant &vParams, Variant &vResult);
     AUT_RESULT    F_ControlDisable(VectorVariant &vParams, Variant &vResult);
     AUT_RESULT    F_ControlHide(VectorVariant &vParams, Variant &vResult);
     AUT_RESULT    F_ControlMove(VectorVariant &vParams, Variant &vResult);
     AUT_RESULT    F_ControlShow(VectorVariant &vParams, Variant &vResult);
     AUT_RESULT    F_WinGetClassList(VectorVariant &vParams, Variant &vResult);
-    AUT_RESULT    F_StatusbarGetText(VectorVariant &vParams, Variant &vResult);
+    // AUT_RESULT    F_StatusbarGetText(VectorVariant &vParams, Variant &vResult);
     AUT_RESULT    F_ControlSend(VectorVariant &vParams, Variant &vResult);
     AUT_RESULT    F_WinMenuSelectItem(VectorVariant &vParams, Variant &vResult);
     AUT_RESULT    F_WinGetClientSize(VectorVariant &vParams, Variant &vResult);

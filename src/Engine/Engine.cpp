@@ -121,6 +121,9 @@ Engine::Engine()
     m_nMouseClickDelay            = 10;            // Time between mouse clicks
     m_nMouseClickDownDelay        = 10;            // Time the click is held down
     m_nMouseClickDragDelay        = 250;            // The delay at the start and end of a drag operation
+
+    m_bDetectHiddenText         = false;       // Don't detect hidden text by default
+    m_bWinSearchChildren        = false;       // Only search top level windows by default
  
     // Initialise DLL handles to NULL
     for (i=0; i<AUT_MAXOPENFILES; ++i)
