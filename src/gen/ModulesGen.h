@@ -666,9 +666,9 @@ AU3_FuncInfo funcInfo[] = {
 
     {NULL, "ModuleSys", "BREAK", &F_Break, 1, 1},
 
-    {NULL, "ModuleFile", "CDTRAY", &F_CDTray, 1, 1},
-
     {NULL, "ModuleBuiltIn", "CALL", &F_Call, 1, 1},
+
+    {NULL, "ModuleFile", "CDTRAY", &F_CDTray, 1, 1},
 
     {NULL, "ModuleBuiltIn", "CHR", &F_Chr, 1, 1},
 
@@ -770,9 +770,9 @@ AU3_FuncInfo funcInfo[] = {
 
     {NULL, "ModuleFile", "FILEGETLONGNAME", &F_FileGetLongName, 1, 1},
 
-    {NULL, "ModuleFile", "FILEGETSHORTNAME", &F_FileGetShortName, 1, 1},
-
     {NULL, "ModuleFile", "FILEGETSHORTCUT", &F_FileGetShortcut, 1, 1},
+
+    {NULL, "ModuleFile", "FILEGETSHORTNAME", &F_FileGetShortName, 1, 1},
 
     {NULL, "ModuleFile", "FILEGETSIZE", &F_FileGetSize, 1, 1},
 
@@ -930,11 +930,11 @@ AU3_FuncInfo funcInfo[] = {
 
     {NULL, "ModuleBuiltIn", "STRINGINSTR", &F_StringInStr, 1, 1},
 
-    {NULL, "ModuleBuiltIn", "STRINGISASCII", &F_StringIsASCII, 1, 1},
-
     {NULL, "ModuleBuiltIn", "STRINGISALNUM", &F_StringIsAlnum, 1, 1},
 
     {NULL, "ModuleBuiltIn", "STRINGISALPHA", &F_StringIsAlpha, 1, 1},
+
+    {NULL, "ModuleBuiltIn", "STRINGISASCII", &F_StringIsASCII, 1, 1},
 
     {NULL, "ModuleBuiltIn", "STRINGISDIGIT", &F_StringIsDigit, 1, 1},
 

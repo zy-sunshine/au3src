@@ -11,11 +11,11 @@ public:
     ~ModuleSys();
 
     // Process related functions (script_process.cpp)
-    AUT_RESULT    F_Run(VectorVariant &vParams, Variant &vResult);
-    AUT_RESULT    F_RunWait(VectorVariant &vParams, Variant &vResult);
-    AUT_RESULT    F_RunAsSet(VectorVariant &vParams, Variant &vResult);
-    AUT_RESULT    F_ProcessClose(VectorVariant &vParams, Variant &vResult);
-    AUT_RESULT    F_ProcessExists(VectorVariant &vParams, Variant &vResult);
+    AUT_RESULT    F_Run(VectorVariant &vParams, Variant &vResult); // 1, 3
+    AUT_RESULT    F_RunWait(VectorVariant &vParams, Variant &vResult); // 1, 3
+    AUT_RESULT    F_RunAsSet(VectorVariant &vParams, Variant &vResult); // 0, 4
+    AUT_RESULT    F_ProcessClose(VectorVariant &vParams, Variant &vResult); // 1, 1
+    AUT_RESULT    F_ProcessExists(VectorVariant &vParams, Variant &vResult); // 1, 1
     // TODO: open
     //AUT_RESULT    F_ProcessWaitClose(VectorVariant &vParams, Variant &vResult);
     AUT_RESULT    F_ProcessWait(VectorVariant &vParams, Variant &vResult);
@@ -32,7 +32,7 @@ public:
     AUT_RESULT    F_EnvSet(VectorVariant &vString, Variant &vResult);
     AUT_RESULT    F_EnvUpdate(VectorVariant &vParams, Variant &vResult);
 
-    AUT_RESULT    F_Sleep(VectorVariant &vString, Variant &vResult);
+    AUT_RESULT    F_Sleep(VectorVariant &vString, Variant &vResult); // 1, 1
     AUT_RESULT    F_BlockInput(VectorVariant &vString, Variant &vResult);
     AUT_RESULT    F_AdlibDisable(VectorVariant &vString, Variant &vResult);
     AUT_RESULT    F_AdlibEnable(VectorVariant &vString, Variant &vResult);

@@ -342,7 +342,7 @@ AUT_RESULT Engine::Execute(int nScriptLine)
     // Run our Execute() loop
     while(m_bWinQuitProcessed == false && _parser->m_bUserFuncReturned == false)
     {
-        processEvents();
+        if (processEvents() == AUT_QUIT) break;
 
         // Get the next line, or quit if none left
         szScriptLine = g_oScriptFile->GetLine(nScriptLine++);

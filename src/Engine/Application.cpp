@@ -75,6 +75,17 @@ Application::Application()
     engine = new Engine();
     gApp = this;
 
+    _builtIn = NULL;
+    _file = NULL;
+    _gui = NULL;
+    _keyboard = NULL;
+    _math = NULL;
+    _mouse = NULL;
+    _net = NULL;
+    _reg = NULL;
+    _sound = NULL;
+    _sys = NULL;
+    _win = NULL;
 } // Application()
 
 
@@ -130,6 +141,9 @@ void Application::Run(void)
             GetFullPathName(m_szScriptFileName, _MAX_PATH, szTempFileName, &m_szScriptFilePart);
     }
 
+    // register modules before parse script
+    registerModules();
+
     // Prepare the script for use
     engine->g_oScriptFile->PrepareScript();
 
@@ -143,8 +157,6 @@ void Application::Run(void)
 
     // Save the current working directory
     GetCurrentDirectory(_MAX_PATH, szOldWorkingDir);
-
-    registerModules();
 
     // Register our classes (including the GUI class) and create the main windows
     RegisterClass();
@@ -941,6 +953,26 @@ void Application::registerModules()
     for(int idx=0; idx<length; idx++) {
         if (!strcmp(funcInfo[idx].szModule, "ModuleBuiltIn")) {
             funcInfo[idx].lpSelf = _builtIn;
+        } else if (!strcmp(funcInfo[idx].szModule, "ModuleFile")) {
+            funcInfo[idx].lpSelf = _file;
+        } else if (!strcmp(funcInfo[idx].szModule, "ModuleGui")) {
+            funcInfo[idx].lpSelf = _gui;
+        } else if (!strcmp(funcInfo[idx].szModule, "ModuleKeyboard")) {
+            funcInfo[idx].lpSelf = _keyboard;
+        } else if (!strcmp(funcInfo[idx].szModule, "ModuleMath")) {
+            funcInfo[idx].lpSelf = _math;
+        } else if (!strcmp(funcInfo[idx].szModule, "ModuleMouse")) {
+            funcInfo[idx].lpSelf = _mouse;
+        } else if (!strcmp(funcInfo[idx].szModule, "ModuleNet")) {
+            funcInfo[idx].lpSelf = _net;
+        } else if (!strcmp(funcInfo[idx].szModule, "ModuleReg")) {
+            funcInfo[idx].lpSelf = _reg;
+        } else if (!strcmp(funcInfo[idx].szModule, "ModuleSound")) {
+            funcInfo[idx].lpSelf = _sound;
+        } else if (!strcmp(funcInfo[idx].szModule, "ModuleSys")) {
+            funcInfo[idx].lpSelf = _sys;
+        } else if (!strcmp(funcInfo[idx].szModule, "ModuleWin")) {
+            funcInfo[idx].lpSelf = _win;
         }
     }
     engine->initModules(funcInfo, length);
@@ -948,15 +980,15 @@ void Application::registerModules()
 
 void Application::unregisterModules()
 {
-    delete(_builtIn);
-    delete(_file);
-    delete(_gui);
-    delete(_keyboard);
-    delete(_math);
-    delete(_mouse);
-    delete(_net);
-    delete(_reg);
-    delete(_sound);
-    delete(_sys);
-    delete(_win);
+    if(_builtIn) delete(_builtIn);
+    if(_file) delete(_file);
+    if(_gui) delete(_gui);
+    if(_keyboard) delete(_keyboard);
+    if(_math) delete(_math);
+    if(_mouse) delete(_mouse);
+    if(_net) delete(_net);
+    if(_reg) delete(_reg);
+    if(_sound) delete(_sound);
+    if(_sys) delete(_sys);
+    if(_win) delete(_win);
 }

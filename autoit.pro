@@ -1,4 +1,4 @@
-TEMPLATE = lib
+TEMPLATE = app
 #CONFIG += warn_on
 CONFIG -= qt
 CONFIG += debug

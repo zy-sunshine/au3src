@@ -29,7 +29,7 @@ class FuncInfoCppGenner(object):
             chunks.append(chunk)
             allFuncInfos.extend(funcInfos)
 
-        allFuncInfos.sort(key=lambda x: x['szName'])
+        allFuncInfos.sort(key=lambda x: x['szName'].upper())
         fileContent = self.genFile(chunks, allFuncInfos)
         if not pathexists('src/gen'):
             os.makedirs('src/gen')
