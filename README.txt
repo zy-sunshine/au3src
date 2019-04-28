@@ -84,6 +84,15 @@ cd au3src
 qmake
 nmake
 ```
+## 终止
+* 在封装 sip 的过程发现一些问题，比如 WinList 的返回值是封装成 Dim array 类型中，因此需要定制封装
+* 在搜索同类型库时，发现有pywinauto这个项目，支持比较广泛
+* pywinauto 在调用 Windows Dll 的时候比如 EnumWindows 使用 ctypes 可以完成回调函数设置
+* pywinauto 有活跃的开发社区
+* 因此 AutoIt这个项目对win gui控制这块代码已经没有封装价值
+* 其脚本引擎代码已经浏览完毕，或许有进一步的学习型项目使用价值
+* 后续所有win dll 调用均可参考AutoIt相关实现，快速在 pywinauto基础上实现
+* AutoIt作为一个从2005年封闭的项目，目前已经成为历史，就到这里吧
 
 AutoIt v3
 =========
